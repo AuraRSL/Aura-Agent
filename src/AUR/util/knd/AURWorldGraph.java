@@ -18,6 +18,7 @@ import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
+import AUR.util.ambo.sightArea.SightPolygonAllocator;
 import viewer.K_Viewer;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
@@ -49,6 +50,8 @@ public class AURWorldGraph extends AbstractModule {
 
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
 
+	//Ambo
+	public SightPolygonAllocator sightPolygonAllocator;
 	@SuppressWarnings("unchecked")
 	private void initGrid() {
 		if (grid != null && areaGraphsGrid != null) {
@@ -270,7 +273,7 @@ public class AURWorldGraph extends AbstractModule {
 				result.add(ag);
 			} else if (ag.areaType == AURAreaGraph.AREA_TYPE_ROAD_HYDRANT) {
 				//if (ag.ownerAgent == agentOrder) {
-					result.add(ag);
+				result.add(ag);
 				//}
 			}
 		}
@@ -288,15 +291,18 @@ public class AURWorldGraph extends AbstractModule {
 	}
 
 	public AURWorldGraph(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager,
-			DevelopData developData) {
+						 DevelopData developData) {
 		super(ai, wi, si, moduleManager, developData);
 		this.wi = wi;
 		this.ai = ai;
 		this.si = si;
-                
-                
-                
+		this.sightPolygonAllocator = new SightPolygonAllocator(worldInfo , scenarioInfo);
+
+
 		build();
+		long t = System.currentTimeMillis();
+		this.sightPolygonAllocator.calc();
+		System.out.println(" Timeeee : " + (System.currentTimeMillis()-t) );
 	}
 
 	public ArrayList<AURAreaGraph> getUnseens(Collection<EntityID> list) {
@@ -332,11 +338,11 @@ public class AURWorldGraph extends AbstractModule {
 
 	public int agentOrder = -1;
 
-	
-	
+
+
 	public final double colorCoe[][] = { { 1.0, 0.9, 0.8, 0.7 }, { 0.7, 1.0, 0.9, 0.8 }, { 0.8, 0.7, 1.0, 0.9 },
 			{ 0.9, 0.8, 0.7, 1.0 } };
-	
+
 	public int getAgentColor() {
 		if(agentColor != -1) {
 			return agentColor;
@@ -354,10 +360,10 @@ public class AURWorldGraph extends AbstractModule {
 		agentColor = sortedTeamAgents.indexOf(this.ai.me()) % 4;
 		return agentColor;
 	}
-	
-	
+
+
 	private int agentColor = -1;
-	
+
 	public void build() {
 //		long t = System.currentTimeMillis();
 		areas.clear();
@@ -413,20 +419,20 @@ public class AURWorldGraph extends AbstractModule {
 		setNeighbours();
 		addBorders();
 		addWalls();
-                
-                updateInfo(null);
-                
+
+		updateInfo(null);
+
                 /*dijkstra(this.ai.getPosition());
                 NoBlockadeDijkstra(this.ai.getPosition());
-                
+
                 K_Viewer.getInstance().update(this);*/
-		
+
 //		System.out.println("walls: " + walls.size());
 //		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
 	}
 
 	public int maxAgentOrder = 0;
-	
+
 	public void addWalls() {
 		for (AURAreaGraph ag : areas.values()) {
 			if (ag.isBuilding() == false) {
@@ -455,7 +461,6 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		walls.removeAll(dels);
-                walls.addAll(dels);
 	}
 
 	public void setNeighbours() {
@@ -526,51 +531,51 @@ public class AURWorldGraph extends AbstractModule {
 
 	@Override
 	synchronized public AbstractModule updateInfo(MessageManager messageManager) {
-            
-            if (updateTime >= ai.getTime()) {
-                    return this;
-            }
 
-            if (ai.getChanged() == null) {
-                    changes = new ArrayList<>();
-            } else {
-                    changes = ai.getChanged().getChangedEntities();
-            }
+		if (updateTime >= ai.getTime()) {
+			return this;
+		}
 
-            updateTime = ai.getTime();
-            this.setChangeSetSeen();
-            this.setChangeSetIfBurnt();
+		if (ai.getChanged() == null) {
+			changes = new ArrayList<>();
+		} else {
+			changes = ai.getChanged().getChangedEntities();
+		}
 
-            lastDijkstraFrom = null;
-            lastNoBlockadeDijkstraFrom = null;
-            ArrayList<AURAreaGraph> forceUpdate = new ArrayList<>();
-            for (AURAreaGraph ag : areas.values()) {
-                    ag.update(this);
-                    if (ag.needUpdate) {
-                            for (AURAreaGraph neiAg : ag.neighbours) {
-                                    forceUpdate.add(neiAg);
-                            }
-                    }
-            }
-            for (AURAreaGraph ag : forceUpdate) {
-                    ag.initForReCalc();
-            }
-            for (AURAreaGraph ag : areas.values()) {
-                    if (ag.needUpdate) {
-                            instanceAreaGrid.init(ag);
-                            instanceAreaGrid.setEdgePointsAndCreateGraph();
-                    }
-            }
-            for (EntityID entID : changes) {
-                    AURAreaGraph ag = getAreaGraph(entID);
-                    if (ag != null) {
-                            ag.fireChecked = true;
-                    }
-            }
-            calcFireProbability();
-                
-            K_Viewer.getInstance().update(this);
-            return this;
+		updateTime = ai.getTime();
+		this.setChangeSetSeen();
+		this.setChangeSetIfBurnt();
+
+		lastDijkstraFrom = null;
+		lastNoBlockadeDijkstraFrom = null;
+		ArrayList<AURAreaGraph> forceUpdate = new ArrayList<>();
+		for (AURAreaGraph ag : areas.values()) {
+			ag.update(this);
+			if (ag.needUpdate) {
+				for (AURAreaGraph neiAg : ag.neighbours) {
+					forceUpdate.add(neiAg);
+				}
+			}
+		}
+		for (AURAreaGraph ag : forceUpdate) {
+			ag.initForReCalc();
+		}
+		for (AURAreaGraph ag : areas.values()) {
+			if (ag.needUpdate) {
+				instanceAreaGrid.init(ag);
+				instanceAreaGrid.setEdgePointsAndCreateGraph();
+			}
+		}
+		for (EntityID entID : changes) {
+			AURAreaGraph ag = getAreaGraph(entID);
+			if (ag != null) {
+				ag.fireChecked = true;
+			}
+		}
+		calcFireProbability();
+
+		K_Viewer.getInstance().update(this);
+		return this;
 	}
 
 	public AURAreaGraph getAreaGraph(EntityID id) {
