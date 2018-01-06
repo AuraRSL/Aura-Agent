@@ -18,6 +18,7 @@ import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
+import viewer.K_Viewer;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Building;
@@ -35,7 +36,7 @@ public class AURWorldGraph extends AbstractModule {
 	public AURAreaGrid instanceAreaGrid = new AURAreaGrid();
 	public Collection<EntityID> changes = null;
 	public ArrayList<AURWall> walls = new ArrayList<AURWall>();
-	private AURNode startNullNode = new AURNode(0, 0, null, null);
+	public AURNode startNullNode = new AURNode(0, 0, null, null);
 	public EntityID lastDijkstraFrom = null;
 	public EntityID lastNoBlockadeDijkstraFrom = null;
 	private int updateTime = -1;
@@ -292,6 +293,9 @@ public class AURWorldGraph extends AbstractModule {
 		this.wi = wi;
 		this.ai = ai;
 		this.si = si;
+                
+                
+                
 		build();
 	}
 
@@ -409,6 +413,13 @@ public class AURWorldGraph extends AbstractModule {
 		setNeighbours();
 		addBorders();
 		addWalls();
+                
+                updateInfo(null);
+                
+                /*dijkstra(this.ai.getPosition());
+                NoBlockadeDijkstra(this.ai.getPosition());
+                
+                K_Viewer.getInstance().update(this);*/
 		
 //		System.out.println("walls: " + walls.size());
 //		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
@@ -444,6 +455,7 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		walls.removeAll(dels);
+                walls.addAll(dels);
 	}
 
 	public void setNeighbours() {
@@ -514,48 +526,51 @@ public class AURWorldGraph extends AbstractModule {
 
 	@Override
 	synchronized public AbstractModule updateInfo(MessageManager messageManager) {
-		if (updateTime >= ai.getTime()) {
-			return this;
-		}
+            
+            if (updateTime >= ai.getTime()) {
+                    return this;
+            }
 
-		if (ai.getChanged() == null) {
-			changes = new ArrayList<>();
-		} else {
-			changes = ai.getChanged().getChangedEntities();
-		}
+            if (ai.getChanged() == null) {
+                    changes = new ArrayList<>();
+            } else {
+                    changes = ai.getChanged().getChangedEntities();
+            }
 
-		updateTime = ai.getTime();
-		this.setChangeSetSeen();
-		this.setChangeSetIfBurnt();
+            updateTime = ai.getTime();
+            this.setChangeSetSeen();
+            this.setChangeSetIfBurnt();
 
-		lastDijkstraFrom = null;
-		lastNoBlockadeDijkstraFrom = null;
-		ArrayList<AURAreaGraph> forceUpdate = new ArrayList<>();
-		for (AURAreaGraph ag : areas.values()) {
-			ag.update(this);
-			if (ag.needUpdate) {
-				for (AURAreaGraph neiAg : ag.neighbours) {
-					forceUpdate.add(neiAg);
-				}
-			}
-		}
-		for (AURAreaGraph ag : forceUpdate) {
-			ag.initForReCalc();
-		}
-		for (AURAreaGraph ag : areas.values()) {
-			if (ag.needUpdate) {
-				instanceAreaGrid.init(ag);
-				instanceAreaGrid.setEdgePointsAndCreateGraph();
-			}
-		}
-		for (EntityID entID : changes) {
-			AURAreaGraph ag = getAreaGraph(entID);
-			if (ag != null) {
-				ag.fireChecked = true;
-			}
-		}
-		calcFireProbability();
-		return this;
+            lastDijkstraFrom = null;
+            lastNoBlockadeDijkstraFrom = null;
+            ArrayList<AURAreaGraph> forceUpdate = new ArrayList<>();
+            for (AURAreaGraph ag : areas.values()) {
+                    ag.update(this);
+                    if (ag.needUpdate) {
+                            for (AURAreaGraph neiAg : ag.neighbours) {
+                                    forceUpdate.add(neiAg);
+                            }
+                    }
+            }
+            for (AURAreaGraph ag : forceUpdate) {
+                    ag.initForReCalc();
+            }
+            for (AURAreaGraph ag : areas.values()) {
+                    if (ag.needUpdate) {
+                            instanceAreaGrid.init(ag);
+                            instanceAreaGrid.setEdgePointsAndCreateGraph();
+                    }
+            }
+            for (EntityID entID : changes) {
+                    AURAreaGraph ag = getAreaGraph(entID);
+                    if (ag != null) {
+                            ag.fireChecked = true;
+                    }
+            }
+            calcFireProbability();
+                
+            K_Viewer.getInstance().update(this);
+            return this;
 	}
 
 	public AURAreaGraph getAreaGraph(EntityID id) {

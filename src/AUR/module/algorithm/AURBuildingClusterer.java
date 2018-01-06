@@ -26,44 +26,44 @@ import rescuecore2.worldmodel.EntityID;
 
 public class AURBuildingClusterer extends StaticClustering {
 	
-	private int clusterNumber = 3;
-	private AgentInfo ai;
-	private WorldInfo wi;
-	private AURWorldGraph wsg = null;
-	private ArrayList<StandardEntity> sortedTeamAgents = new ArrayList<>();
-	private boolean calced = false;
+    private int clusterNumber = 3;
+    private AgentInfo ai;
+    private WorldInfo wi;
+    private AURWorldGraph wsg = null;
+    private ArrayList<StandardEntity> sortedTeamAgents = new ArrayList<>();
+    private boolean calced = false;
     private int lastClusterEntitiesQueryIndex = -1;
     private int lastClusterEntityIDsQueryIndex = -1;
     private Collection<StandardEntity> lastClusterEntitiesQueryResult = new ArrayList<>();
     private Collection<EntityID> lastClusterEntityIDsQueryResult = new ArrayList<>();
     private ArrayList<ClusterItem> items = new ArrayList<>();
-    
-	class ClusterItem implements Clusterable {
-		
-		public AURAreaGraph ag;
-		public int clusterIndex = 0;
-		double point[] = new double[2];
-		
-		@Override
-		public double[] getPoint() {
-			return point;
-		}
-		
-		public ClusterItem(AURAreaGraph ag, int clusterIndex) {
-			this.ag = ag;
-			this.clusterIndex = clusterIndex;
-			this.point[0] = this.ag.cx;
-			this.point[1] = this.ag.cy;
-		}
-		
-	}
-	
-	public AURBuildingClusterer(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
-		super(ai, wi, si, moduleManager, developData);
-		this.wi = wi;
-		this.ai = ai;
-		this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
-	}
+
+    class ClusterItem implements Clusterable {
+
+            public AURAreaGraph ag;
+            public int clusterIndex = 0;
+            double point[] = new double[2];
+
+            @Override
+            public double[] getPoint() {
+                    return point;
+            }
+
+            public ClusterItem(AURAreaGraph ag, int clusterIndex) {
+                    this.ag = ag;
+                    this.clusterIndex = clusterIndex;
+                    this.point[0] = this.ag.cx;
+                    this.point[1] = this.ag.cy;
+            }
+
+    }
+
+    public AURBuildingClusterer(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
+            super(ai, wi, si, moduleManager, developData);
+            this.wi = wi;
+            this.ai = ai;
+            this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
+    }
 
     public int getClusterNumber() {
     	return clusterNumber;
@@ -174,11 +174,12 @@ public class AURBuildingClusterer extends StaticClustering {
     	sortedTeamAgents.addAll(wi.getEntitiesOfType(ai.me().getStandardURN()));
     	
     	Collections.sort(sortedTeamAgents, new Comparator<StandardEntity>() {
-    		@Override
-    		public int compare(StandardEntity o1, StandardEntity o2) {
-    			return o1.getID().getValue() - o2.getID().getValue();
-    		}
-		});
+                    @Override
+                    public int compare(StandardEntity o1, StandardEntity o2) {
+                            return o1.getID().getValue() - o2.getID().getValue();
+                    }
+		}
+        );
     	this.clusterNumber = Math.max(1, sortedTeamAgents.size());
 		for(AURAreaGraph ag : wsg.areas.values()) {
 			if(ag.isBuilding()) {
@@ -195,6 +196,8 @@ public class AURBuildingClusterer extends StaticClustering {
 		for(CentroidCluster<ClusterItem> x : lcd) {
 			for(ClusterItem item : x.getPoints()) {
 				item.clusterIndex = ci;
+                                item.ag.clusterIndex = ci;
+                                //System.out.println(ci);
 			}
 			ci++;
 		}
@@ -204,12 +207,12 @@ public class AURBuildingClusterer extends StaticClustering {
 		return this;
     }
 
-	@Override
-	public Clustering resume(PrecomputeData precomputeData) {
-		 super.resume(precomputeData);
-		 this.preparate();
-		 return this;
-	}
+    @Override
+    public Clustering resume(PrecomputeData precomputeData) {
+             super.resume(precomputeData);
+             this.preparate();
+             return this;
+    }
 
 	@Override
     public Clustering preparate() {
