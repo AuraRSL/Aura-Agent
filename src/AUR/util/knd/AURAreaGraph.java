@@ -52,6 +52,7 @@ public class AURAreaGraph {
 	public int color = 0;
 	private boolean seen = false;
 	private boolean burnt = false;
+        public int clusterIndex = 0;
 
 	public boolean isNeighbour(AURAreaGraph ag) {
 		for (AURAreaGraph neiAg : neighbours) {
