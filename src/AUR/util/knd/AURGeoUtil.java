@@ -3,6 +3,7 @@ package AUR.util.knd;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 
+import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.standard.entities.Edge;
 
 public class AURGeoUtil {
@@ -43,6 +44,15 @@ public class AURGeoUtil {
 	public static boolean getIntersection(double Ax1, double Ay1, double Ax2, double Ay2, double Bx1, double By1,
 			double Bx2, double By2, double[] result) {
 		if (findLineSegmentIntersection(Ax1, Ay1, Ax2, Ay2, Bx1, By1, Bx2, By2, result) != 1) {
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean getIntersection(Line2D a , Line2D b , double[] result){
+		if (findLineSegmentIntersection(
+				a.getOrigin().getX(), a.getOrigin().getY(), a.getEndPoint().getX(),a.getEndPoint().getY()
+				,b.getOrigin().getX(), b.getOrigin().getY(), b.getEndPoint().getX(),b.getEndPoint().getY() , result ) != 1 ){
 			return false;
 		}
 		return true;
