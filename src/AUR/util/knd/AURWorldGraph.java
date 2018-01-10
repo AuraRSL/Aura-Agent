@@ -461,6 +461,7 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		walls.removeAll(dels);
+		walls.addAll(dels);
 	}
 
 	public void setNeighbours() {

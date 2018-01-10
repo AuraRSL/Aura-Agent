@@ -30,7 +30,9 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -39,21 +41,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.StyleConstants;
-import viewer.layers.AmboLayers.CivilianLayer;
-import viewer.layers.AmboLayers.SightPolygonLayer;
-import viewer.layers.knd.K_AreaExtinguishableRange;
-import viewer.layers.knd.K_AreaVertices;
-import viewer.layers.knd.K_ClosestPath;
-import viewer.layers.knd.K_LayerAliveBlockades;
-import viewer.layers.knd.K_LayerAllBlockades;
-import viewer.layers.knd.K_LayerAreaCenters;
-import viewer.layers.knd.K_LayerBuildings;
-import viewer.layers.knd.K_LayerBuildingsClusterColor;
-import viewer.layers.knd.K_LayerRoads;
-import viewer.layers.knd.K_LayerTravelCost;
-import viewer.layers.knd.K_LayerWalls;
-import viewer.layers.knd.K_LayerWorldGraph;
-import viewer.layers.knd.k_LayerReachableAreas;
+import viewer.layers.AmboLayers.*;
+import viewer.layers.knd.*;
 
 /**
  *
@@ -72,7 +61,7 @@ public class K_Viewer extends JFrame {
         addLayer(K_LayerAliveBlockades.class, true);
         addLayer(K_LayerAllBlockades.class, true);
         addLayer(K_LayerWalls.class, true);
-        addLayer(K_LayerWorldGraph.class, true);
+        addLayer(K_LayerWorldGraph.class, false);
         addLayer(K_AreaVertices.class, false);
         addLayer(K_AreaExtinguishableRange.class, false);
         addLayer(K_ClosestPath.class, true);
@@ -157,18 +146,22 @@ public class K_Viewer extends JFrame {
     ArrayList<AURWorldGraph> wsgs = new ArrayList<AURWorldGraph>();
     DefaultListModel<String> model = new DefaultListModel();
     
-    JList list = new JList(model);
+    //JList list = new JList(model);
+    
+    JComboBox list = new JComboBox();
     
     int lastUpdateTimeSelected = -2;
     
     public synchronized void update(AURWorldGraph wsg) {
         if(wsgs.contains(wsg) == false) {
             wsgs.add(wsg);
-            model.addElement(wsg.ai.me().getURN().replace("urn:rescuecore2.standard:entity:", "") + ": " + wsg.ai.getID().getValue());
+            list.addItem(wsg.ai.me().getURN().replace("urn:rescuecore2.standard:entity:", "") + ": " + wsg.ai.getID().getValue());
+            //model.addElement();
         }
         
         if(selected == null) {
-            list.setSelectedIndex(0);
+            //list.
+//            list.setSelectedIndex(0);
             selected = wsg;
         }
         if(selected == wsg && lastUpdateTimeSelected != wsg.ai.getTime()) {
@@ -210,33 +203,38 @@ public class K_Viewer extends JFrame {
             
             
 
-            list.addListSelectionListener(new ListSelectionListener() {
+            list.addItemListener(new ItemListener() {
                 @Override
-                public void valueChanged(ListSelectionEvent e) {
-                    if(e.getValueIsAdjusting() == false && wsgs.size() > 0) {
+                public void itemStateChanged(ItemEvent e) {
+                    if(e.getItem() != null && wsgs.size() > 0) {
                         selected = wsgs.get(list.getSelectedIndex());
                         selected_ag = null;
                         repaint();
-                    }
+                    }                
                 }
-
+                
             });
             
             
-            list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            JScrollPane pane = new JScrollPane(list);
-            panel.add(pane, BorderLayout.NORTH);
+            
+            
+            //list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            //JScrollPane pane = new JScrollPane(list);
+            //panel.add(pane, BorderLayout.NORTH);
 
-            pane.setPreferredSize(new Dimension(190, 800));
+            /*pane.setPreferredSize(new Dimension(190, 800));*/
             
 
-            
-            this.add(panel);
+
             
             
             JPanel panel_layers = new JPanel();
             BoxLayout bxl = new BoxLayout(panel_layers, BoxLayout.Y_AXIS);
             panel_layers.setLayout(bxl);
+            
+
+            
+            
             
             for(JCheckBox chb : layersCheckBox) {
                 panel_layers.add(chb);
@@ -254,10 +252,10 @@ public class K_Viewer extends JFrame {
     
     class DrawPanel extends JPanel {
 
-        int w = 800;
+        int w = 1000;
         int h = 800;
         
-        Checkbox agent = new Checkbox("Agent", true);
+        JCheckBox agent = new JCheckBox("Agent", true);
         
         public DrawPanel() {
             
@@ -268,7 +266,7 @@ public class K_Viewer extends JFrame {
             kst = new K_ScreenTransform(0, 0, w, h);
             kst.rescale(w, h);
             this.setLayout(new FlowLayout(StyleConstants.ALIGN_LEFT));
-            Button resetBtn = new Button("reset zoom");
+            JButton resetBtn = new JButton("reset zoom");
             resetBtn.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -278,7 +276,11 @@ public class K_Viewer extends JFrame {
                 }
             });
 
+            //list.setPreferredSize(new Dimension(190, 30));
+            this.add(list);
             this.add(resetBtn);
+            
+            this.setDoubleBuffered(true);
             
 
             agent.addItemListener(repaintEvent);
@@ -324,7 +326,8 @@ public class K_Viewer extends JFrame {
         @Override
         public void paint(Graphics g) {
             //System.err.println("paint");
-            super.paint(g);
+            //super.paint(g);
+            //list.repaint();
             if(selected == null) {
                 return;
             }
@@ -341,7 +344,7 @@ public class K_Viewer extends JFrame {
                     }
                 }
 
-                if(agent.getState() == true) {
+                if(agent.isSelected() == true) {
                     int agentX = (int) (selected.ai.getX());
                     int agentY = (int) (selected.ai.getY());
                     g.setColor(Color.white);
@@ -369,6 +372,8 @@ public class K_Viewer extends JFrame {
                     }
                 }
             //}
+            super.paintComponents(g);
+            //list.repaint();
         } 
     }
     
