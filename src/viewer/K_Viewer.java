@@ -39,6 +39,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.StyleConstants;
+import viewer.layers.AmboLayers.CivilianLayer;
+import viewer.layers.AmboLayers.SightPolygonLayer;
 import viewer.layers.knd.K_AreaExtinguishableRange;
 import viewer.layers.knd.K_AreaVertices;
 import viewer.layers.knd.K_ClosestPath;
@@ -74,6 +76,8 @@ public class K_Viewer extends JFrame {
         addLayer(K_AreaVertices.class, false);
         addLayer(K_AreaExtinguishableRange.class, false);
         addLayer(K_ClosestPath.class, true);
+        addLayer(CivilianLayer.class, true);
+        addLayer(SightPolygonLayer.class, true);
     }
     
     
