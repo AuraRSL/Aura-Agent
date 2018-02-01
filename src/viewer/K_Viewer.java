@@ -37,6 +37,7 @@ import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -66,7 +67,8 @@ public class K_Viewer extends JFrame {
         addLayer(K_AreaExtinguishableRange.class, false);
         addLayer(K_ClosestPath.class, true);
         addLayer(CivilianLayer.class, true);
-        addLayer(SightPolygonLayer.class, true);
+        addLayer(SightPolygonLayer.class, false);
+        addLayer(K_AreaPropery.class, true);
     }
     
     
@@ -95,45 +97,15 @@ public class K_Viewer extends JFrame {
     		colors_list.add(colors[i]);
     	}
     	for(int i = 0; i < 350; i++) {
-    		colors_list.add(new Color((int)( Math.random() * 255), (int)( Math.random() * 255), (int)( Math.random() * 255)));
+    		colors_list.add(new Color((int) (Math.random() * 255), (int) ( Math.random() * 255), (int) (Math.random() * 255)));
     	}
     }
-    
-    /*public void readRays() {
-        try {
-            File file = new File("/home/single2admin/app/roborescue-v1.2/boot/rays/34912632.rays");
-            Scanner scn = new Scanner(file);
-            scn.nextFloat();
-            while(scn.hasNext()) {
-                double arr_[][];
-                //scn.nextFloat();
-                double cx, cy;
-                cx = scn.nextFloat();
-                cy = scn.nextFloat();
-                int n = scn.nextInt();
-                arr_ = new double[n + 1][3];
-                arr_[0][0] = cx;
-                arr_[0][1] = cy;
-                for(int i = 0; i < n; i++) {
-                    arr_[i + 1][0] = scn.nextInt();
-                    arr_[i + 1][1] = scn.nextInt();
-                    arr_[i + 1][2] = scn.nextFloat();
-                }
-                arr.add(arr_);
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.err.println("rays.");
-    }*/
     
     private static K_Viewer _instance = null;
     
     public static synchronized K_Viewer getInstance() {
         if(_instance == null) {
             _instance = new K_Viewer();
-            //_instance.readRays();
         }
         return _instance;
     }
@@ -186,67 +158,67 @@ public class K_Viewer extends JFrame {
             repaint();
         }
     };
+    
+    JTextArea textArea = new JTextArea();
             
     public K_Viewer() {
 
         addLayers();
         
-        this.setResizable(false);
+//        this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new FlowLayout(StyleConstants.ALIGN_LEFT));
         
         
-        this.add(new DrawPanel());
+        
+        
+        
 
             
-            JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout());
             
             
 
-            list.addItemListener(new ItemListener() {
-                @Override
-                public void itemStateChanged(ItemEvent e) {
-                    if(e.getItem() != null && wsgs.size() > 0) {
-                        selected = wsgs.get(list.getSelectedIndex());
-                        selected_ag = null;
-                        repaint();
-                    }                
-                }
-                
-            });
-            
-            
-            
-            
-            //list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            //JScrollPane pane = new JScrollPane(list);
-            //panel.add(pane, BorderLayout.NORTH);
-
-            /*pane.setPreferredSize(new Dimension(190, 800));*/
-            
-
-
-            
-            
-            JPanel panel_layers = new JPanel();
-            BoxLayout bxl = new BoxLayout(panel_layers, BoxLayout.Y_AXIS);
-            panel_layers.setLayout(bxl);
-            
-
-            
-            
-            
-            for(JCheckBox chb : layersCheckBox) {
-                panel_layers.add(chb);
-                chb.addItemListener(repaintEvent);
+        list.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(e.getItem() != null && wsgs.size() > 0) {
+                    selected = wsgs.get(list.getSelectedIndex());
+                    selected_ag = null;
+                    repaint();
+                }                
             }
-            this.add(panel_layers);
 
-            this.setVisible(true);
-
-            this.pack();
+        });
             
-            this.setVisible(true);
+        JPanel panel_layers = new JPanel();
+        BoxLayout bxl = new BoxLayout(panel_layers, BoxLayout.Y_AXIS);
+        panel_layers.setLayout(bxl);
+
+
+        for(JCheckBox chb : layersCheckBox) {
+            panel_layers.add(chb);
+            chb.addItemListener(repaintEvent);
+        }
+        
+        this.setLayout(new BorderLayout());
+        
+        this.add(new DrawPanel(), BorderLayout.CENTER);
+        
+        this.add(panel_layers, BorderLayout.WEST);
+        
+        
+        JScrollPane jsp = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        jsp.setPreferredSize(new Dimension(250, 250));
+        this.add(jsp, BorderLayout.EAST);
+
+        
+
+        this.setVisible(true);
+
+        this.pack();
+
+        this.setVisible(true);
             
     }
     
@@ -374,7 +346,29 @@ public class K_Viewer extends JFrame {
             //}
             super.paintComponents(g);
             //list.repaint();
+            updateStringData();
         } 
+    }
+    
+    
+    private void updateStringData() {
+        String str = "";
+        
+        for(JCheckBox chb : layersCheckBox) {
+            if(chb.isSelected()) {
+                String s = K_ViewerLayerFactory.getInstance().getLayer(chb.getText()).getString(selected, selected_ag);
+                if(s != null) {
+                    str += chb.getText() + ": ";
+                    str += "\n";
+                    str += "\n";
+                    str += s;
+                    str += "\n";
+                    str += "---------------------------------------------------------\n\n";
+                }
+            }
+        }
+        
+        textArea.setText(str);
     }
     
 }
