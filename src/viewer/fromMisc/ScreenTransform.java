@@ -1,4 +1,4 @@
-package kndStuff.fromMisc;
+package viewer.fromMisc;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Point2D;

@@ -1,4 +1,4 @@
-package kndStuff.fromMisc;
+package viewer.fromMisc;
 
 
 import java.awt.event.MouseListener;

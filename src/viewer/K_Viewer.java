@@ -1,47 +1,32 @@
 package viewer;
 
-import kndStuff.fromMisc.PanZoomListener;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Checkbox;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.geom.Line2D;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Scanner;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.StyleConstants;
+import viewer.fromMisc.ScreenTransform;
+import viewer.fromMisc.PanZoomListener;
 import viewer.layers.AmboLayers.*;
 import viewer.layers.knd.*;
 
@@ -259,7 +244,7 @@ public class K_Viewer extends JFrame {
 
             agent.addItemListener(repaintEvent);
             this.add(agent);
-            
+			
             new PanZoomListener(DrawPanel.this).setScreenTransform(kst);
             
             this.addMouseListener(new MouseListener() {

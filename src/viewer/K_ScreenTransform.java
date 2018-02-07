@@ -1,6 +1,6 @@
 package viewer;
 
-import kndStuff.fromMisc.ScreenTransform;
+import viewer.fromMisc.ScreenTransform;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
