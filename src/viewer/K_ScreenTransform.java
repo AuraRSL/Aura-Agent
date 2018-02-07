@@ -2,11 +2,13 @@ package viewer;
 
 import kndStuff.fromMisc.ScreenTransform;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 
 /**
  *
- * @author Alireza Kandeh - 2017
+ * @author Alireza Kandeh - 2017 & 2018
  */
 
 public class K_ScreenTransform extends ScreenTransform {
@@ -22,6 +24,24 @@ public class K_ScreenTransform extends ScreenTransform {
             result.addPoint(this.xToScreen(polygon.xpoints[i]), this.yToScreen(polygon.ypoints[i]));
         }
         return result;
+    }
+    
+    public Rectangle2D getTransformedRectangle(Rectangle2D rect) {
+        return new Rectangle(
+            xToScreen(rect.getMinX()),
+            yToScreen(rect.getMinY() + rect.getHeight()),
+            (int) (rect.getWidth() * zoom),
+            (int) (rect.getHeight() * zoom)
+        );
+    }
+    
+    public Rectangle2D getTransformedRectangle(int x0, int y0, int w, int h) {
+        return new Rectangle(
+            xToScreen(x0),
+            yToScreen(y0 + h),
+            (int) (w * zoom),
+            (int) (h * zoom)
+        );
     }
     
 }

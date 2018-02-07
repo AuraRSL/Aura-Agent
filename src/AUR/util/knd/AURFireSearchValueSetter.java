@@ -4,17 +4,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
-
 import rescuecore2.standard.entities.Building;
-import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.worldmodel.EntityID;
+
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
 
 public class AURFireSearchValueSetter {
 
 	public AURConvexHull convexHullInstance = new AURConvexHull();
 	public ArrayList<AURValuePoint> points = new ArrayList<AURValuePoint>();
-	public AURFireSimulator fireSimulatorInstance = new AURFireSimulator();
+	public AURFireSimulator fireSimulatorInstance = null;
 
 	public void calc(AURWorldGraph wsg, ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster, EntityID lastTarget) {
 
@@ -22,6 +24,8 @@ public class AURFireSearchValueSetter {
 
 		wsg.updateInfo(null);
 		wsg.dijkstra(wsg.ai.getPosition());
+                
+		this.fireSimulatorInstance = wsg.fireSimulator;
 
 		this.points.clear();
 		this.points.addAll(points);
@@ -29,18 +33,14 @@ public class AURFireSearchValueSetter {
 			p.value = 0;
 		}
 
-		// calc_Capacity(this.points, 0.69);
-
 		add_Fieryness(this.points, 1.5);
 		add_GasStation(this.points, 0.55);
-		// add_CloseFire(this.points, 1.3);
-
-		// add_NoSeeTime(this.points, 1.1);
+                
 		add_TravelCost(this.points, 1.5);
 		add_InitialCluster(this.points, initialCluster, 1.6);
 		mul_Color(wsg, this.points, 1.1);
 		add_FireProbability(this.points, 1.9);
-		// calc_ConvexHull(this.points, 0.5);
+                
 		calc_noName(this.points, 1.0);
 		mul_Color(wsg, this.points, 1.1);
 		add_NoSeeTime(this.points, 1.08);

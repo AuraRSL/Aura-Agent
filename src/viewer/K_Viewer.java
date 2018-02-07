@@ -55,7 +55,7 @@ public class K_Viewer extends JFrame {
     private void addLayers() {
         addLayer(K_LayerRoads.class, true);
         addLayer(K_LayerBuildings.class, true);
-        addLayer(K_LayerBuildingsClusterColor.class, false);
+        addLayer(K_LayerBuildingsClusterColor.class, true);
         addLayer(K_LayerAreaCenters.class, false);
         addLayer(k_LayerReachableAreas.class, false);
         addLayer(K_LayerTravelCost.class, false);
@@ -69,6 +69,8 @@ public class K_Viewer extends JFrame {
         addLayer(CivilianLayer.class, true);
         addLayer(SightPolygonLayer.class, false);
         addLayer(K_AreaPropery.class, true);
+        addLayer(K_AirCells.class, false);
+        addLayer(K_BuildingAirCells.class, true);
     }
     
     
@@ -297,6 +299,7 @@ public class K_Viewer extends JFrame {
 
         @Override
         public void paint(Graphics g) {
+            
             //System.err.println("paint");
             //super.paint(g);
             //list.repaint();
@@ -353,17 +356,15 @@ public class K_Viewer extends JFrame {
     
     private void updateStringData() {
         String str = "";
-        
         for(JCheckBox chb : layersCheckBox) {
             if(chb.isSelected()) {
                 String s = K_ViewerLayerFactory.getInstance().getLayer(chb.getText()).getString(selected, selected_ag);
                 if(s != null) {
                     str += chb.getText() + ": ";
                     str += "\n";
-                    str += "\n";
                     str += s;
                     str += "\n";
-                    str += "---------------------------------------------------------\n\n";
+                    str += "---------------------------------------------------------\n";
                 }
             }
         }

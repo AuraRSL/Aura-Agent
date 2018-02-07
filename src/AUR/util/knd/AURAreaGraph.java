@@ -13,6 +13,12 @@ import rescuecore2.standard.entities.StandardEntityConstants.Fieryness;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
+
+
 public class AURAreaGraph {
 
 	public boolean vis = false;
@@ -54,6 +60,8 @@ public class AURAreaGraph {
 	private boolean burnt = false;
         public int clusterIndex = 0;
 
+        private AURBuilding building = null;
+        
 	public boolean isNeighbour(AURAreaGraph ag) {
 		for (AURAreaGraph neiAg : neighbours) {
 			if (neiAg.area.getID().equals(ag.area.getID())) {
@@ -218,7 +226,17 @@ public class AURAreaGraph {
 			break;
 		}
 		}
+                
+                if(isBuilding()) {
+			this.building = new AURBuilding(this.wsg, this);
+                }
 	}
+
+	public AURBuilding getBuilding() {
+                return this.building;
+	}
+        
+        
 
 	public boolean isBuilding() {
 		return (areaType == AREA_TYPE_BULDING || areaType == AREA_TYPE_GAS_STATION || areaType == AREA_TYPE_REFUGE);

@@ -9,17 +9,26 @@ import java.util.Collections;
 import java.util.Comparator;
 import rescuecore2.standard.entities.Building;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
+
 public class AURFireValueSetter {
 
 	public AURConvexHull convexHullInstance = new AURConvexHull();
 	public ArrayList<AURValuePoint> points = new ArrayList<AURValuePoint>();
-	public AURFireSimulator fireSimulatorInstance = new AURFireSimulator();
+	public AURFireSimulator fireSimulatorInstance = null;
 
 	public void calc(AURWorldGraph wsg, ArrayList<AURValuePoint> points) {
 
+                
+            
 		wsg.updateInfo(null);
 		wsg.dijkstra(wsg.ai.getPosition());
 
+                this.fireSimulatorInstance = wsg.fireSimulator;
+                
 		this.points.clear();
 		this.points.addAll(points);
 

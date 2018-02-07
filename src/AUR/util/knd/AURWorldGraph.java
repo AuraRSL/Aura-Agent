@@ -28,6 +28,12 @@ import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityConstants.Fieryness;
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
+
+
 public class AURWorldGraph extends AbstractModule {
 
 	public WorldInfo wi = null;
@@ -47,11 +53,14 @@ public class AURWorldGraph extends AbstractModule {
 	public int gridRows = 0;
 	public double worldGridSize = 500 * 2 * 22.08568;
 	public boolean grid[][] = null;
+        
+        public AURFireSimulator fireSimulator = null;
 
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
 
-	//Ambo
-	public SightPolygonAllocator sightPolygonAllocator;
+	
+	public SightPolygonAllocator sightPolygonAllocator; // added by arman (2018)
+        
 	@SuppressWarnings("unchecked")
 	private void initGrid() {
 		if (grid != null && areaGraphsGrid != null) {
@@ -290,19 +299,19 @@ public class AURWorldGraph extends AbstractModule {
 		return result;
 	}
 
-	public AURWorldGraph(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager,
-						 DevelopData developData) {
+	public AURWorldGraph(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
 		super(ai, wi, si, moduleManager, developData);
 		this.wi = wi;
 		this.ai = ai;
 		this.si = si;
-		this.sightPolygonAllocator = new SightPolygonAllocator(worldInfo , scenarioInfo);
-
 
 		build();
-		long t = System.currentTimeMillis();
-		this.sightPolygonAllocator.calc();
-		System.out.println(" Timeeee : " + (System.currentTimeMillis()-t) );
+                
+                
+                
+		this.sightPolygonAllocator = new SightPolygonAllocator(worldInfo, scenarioInfo); // added by arman (2018)
+		this.sightPolygonAllocator.calc(); // added by arman (2018)
+                
 	}
 
 	public ArrayList<AURAreaGraph> getUnseens(Collection<EntityID> list) {
@@ -420,6 +429,9 @@ public class AURWorldGraph extends AbstractModule {
 		addBorders();
 		addWalls();
 
+                
+                this.fireSimulator = new AURFireSimulator(this);
+                
 		updateInfo(null);
 
                 /*dijkstra(this.ai.getPosition());
