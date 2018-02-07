@@ -9,6 +9,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Stack;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
+
 public class AURConvexHull {
 
 	public ArrayList<AURValuePoint> points = new ArrayList<AURValuePoint>();
@@ -54,7 +59,7 @@ public class AURConvexHull {
 			Collections.sort(this.points, new Comparator<AURValuePoint>() {
 				@Override
 				public int compare(AURValuePoint o1, AURValuePoint o2) {
-					int orination = AURGeoUtil.getOrination(mblP.x, mblP.y, o1.x, o1.y, o2.x, o2.y);
+					int orination = AURGeoUtil.getOrientation(mblP.x, mblP.y, o1.x, o1.y, o2.x, o2.y);
 					if (orination == 0) {
 						return Double.compare(mblP.distPower2(o1), mblP.distPower2(o2));
 					}
@@ -74,7 +79,7 @@ public class AURConvexHull {
 				}
 				curPoint = this.points.get(i);
 				nexPoint = this.points.get(i + 1);
-				ori = AURGeoUtil.getOrination(mblP.x, mblP.y, curPoint.x, curPoint.y, nexPoint.x, nexPoint.y);
+				ori = AURGeoUtil.getOrientation(mblP.x, mblP.y, curPoint.x, curPoint.y, nexPoint.x, nexPoint.y);
 				if (ori != 0) {
 					temp.add(this.points.get(i));
 				}
@@ -97,7 +102,7 @@ public class AURConvexHull {
 				p1 = stack.elementAt(stack.size() - 2);
 				p2 = stack.peek();
 				p3 = temp.get(i);
-				while (AURGeoUtil.getOrination(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y) == 1) {
+				while (AURGeoUtil.getOrientation(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y) == 1) {
 					stack.pop();
 					p1 = stack.elementAt(stack.size() - 2);
 					p2 = stack.peek();

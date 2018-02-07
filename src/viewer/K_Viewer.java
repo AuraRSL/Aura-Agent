@@ -25,7 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.StyleConstants;
-import viewer.fromMisc.ScreenTransform;
 import viewer.fromMisc.PanZoomListener;
 import viewer.layers.AmboLayers.*;
 import viewer.layers.knd.*;
@@ -40,7 +39,7 @@ public class K_Viewer extends JFrame {
     private void addLayers() {
         addLayer(K_LayerRoads.class, true);
         addLayer(K_LayerBuildings.class, true);
-        addLayer(K_LayerBuildingsClusterColor.class, true);
+        addLayer(K_LayerBuildingsClusterColor.class, false);
         addLayer(K_LayerAreaCenters.class, false);
         addLayer(k_LayerReachableAreas.class, false);
         addLayer(K_LayerTravelCost.class, false);
@@ -55,7 +54,7 @@ public class K_Viewer extends JFrame {
         addLayer(SightPolygonLayer.class, false);
         addLayer(K_AreaPropery.class, true);
         addLayer(K_AirCells.class, false);
-        addLayer(K_BuildingAirCells.class, true);
+        addLayer(K_BuildingAirCells.class, false);
     }
     
     

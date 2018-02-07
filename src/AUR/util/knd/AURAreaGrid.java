@@ -37,7 +37,7 @@ public class AURAreaGrid {
 	double boundsY0 = 0;
 	double boundsX1 = 0;
 	double boundsY1 = 0;
-	private int setCenter_temp[] = { 0, 0 };
+	private int setCenter_temp[] = {0, 0};
 	private int getCellResult[] = new int[2];
 	public int edgePointsSize = 0;
 	public static final int TYPE = 0;
@@ -50,14 +50,44 @@ public class AURAreaGrid {
 	private ArrayList<Polygon> blockaePolygons = new ArrayList<Polygon>();
 	public AURAreaGraph areaGraph = null;
 
-	int dij_5[][] = { { +0, +0 }, { +1, +0 }, { -1, +0 }, { +0, +1 }, { +0, -1 } };
-	int dij_4[][] = { { -1, +0 }, { +1, +0 }, { +0, +1 }, { +0, -1 } };
-	int dij[][] = { { -1, +1 }, { +0, +1 }, { +1, +1 }, { -1, +0 }, { +0, +0 }, { +1, +0 }, { -1, -1 }, { +0, -1 },
-			{ +1, -1 } };
+	public final static int dij_4[][] = {
+		{-1, +0},
+		{+1, +0},
+		{+0, +1},
+		{+0, -1}
+	};
+	
+	public final static int dij_5[][] = {
+		{+0, +0},
+		{+1, +0},
+		{-1, +0},
+		{+0, +1},
+		{+0, -1}
+	};
 
-	int dij_8[][] = { { -1, +1 }, { +0, +1 }, { +1, +1 }, { -1, +0 }, /*******/
-			{ +1, +0 }, { -1, -1 }, { +0, -1 }, { +1, -1 } };
-
+	public final static int dij_8[][] = {
+		{ -1, +1 },
+		{ +0, +1 },
+		{ +1, +1 },
+		{ -1, +0 },
+		{ +1, +0 },
+		{ -1, -1 },
+		{ +0, -1 },
+		{ +1, -1 }
+	};
+	
+	public final static int[][] dij_9 = {
+		{-1, +1},
+		{+0, +1},
+		{+1, +1},
+		{-1, +0},
+		{+0, +0},
+		{+1, +0},
+		{-1, -1},
+		{+0, -1},
+		{+1, -1}
+	};
+	
 	private void checkGridArraySize(int m, int n) {
 		if (currentSizeM >= m && currentSizeN >= n) {
 			return;
@@ -97,8 +127,8 @@ public class AURAreaGrid {
 			}
 		}
 		for (int d = 0; d < 9; d++) {
-			ip = i + dij[d][0];
-			jp = j + dij[d][1];
+			ip = i + dij_9[d][0];
+			jp = j + dij_9[d][1];
 
 			if (inside(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
 				gridIntInfo[ip][jp][TYPE] = CELL_FREE;
@@ -178,8 +208,8 @@ public class AURAreaGrid {
 			}
 		}
 		for (int d = 0; d < 9; d++) {
-			ip = i + dij[d][0];
-			jp = j + dij[d][1];
+			ip = i + dij_9[d][0];
+			jp = j + dij_9[d][1];
 
 			if (inside(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
 				gridIntInfo[ip][jp][TYPE] = CELL_FREE;
@@ -365,8 +395,8 @@ public class AURAreaGrid {
 		i = ij[0];
 		j = ij[1];
 		for (int d = 0; d < 9; d++) {
-			ip = i + dij[d][0];
-			jp = j + dij[d][1];
+			ip = i + dij_9[d][0];
+			jp = j + dij_9[d][1];
 			if (inside(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
 				gridIntInfo[ip][jp][TYPE] = CELL_FREE;
 			}
@@ -396,8 +426,8 @@ public class AURAreaGrid {
 			}
 
 			for (int d = 0; d < 9; d++) {
-				ip = i + dij[d][0];
-				jp = j + dij[d][1];
+				ip = i + dij_9[d][0];
+				jp = j + dij_9[d][1];
 				if (false || (inside(ip, jp) == false) || gridIntInfo[ip][jp][COST] > 0
 						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
@@ -517,8 +547,8 @@ public class AURAreaGrid {
 			}
 
 			for (int d = 0; d < 9; d++) {
-				ip = i + dij[d][0];
-				jp = j + dij[d][1];
+				ip = i + dij_9[d][0];
+				jp = j + dij_9[d][1];
 				if (false || (inside(ip, jp) == false) || gridIntInfo[ip][jp][COST] > 0
 						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;

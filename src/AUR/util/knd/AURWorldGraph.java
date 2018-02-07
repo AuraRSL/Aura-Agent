@@ -53,14 +53,32 @@ public class AURWorldGraph extends AbstractModule {
 	public int gridRows = 0;
 	public double worldGridSize = 500 * 2 * 22.08568;
 	public boolean grid[][] = null;
-        
-        public AURFireSimulator fireSimulator = null;
-
+	public AURFireSimulator fireSimulator = null;
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
 
-	
 	public SightPolygonAllocator sightPolygonAllocator; // added by arman (2018)
-        
+
+	public int agentOrder = -1;
+	
+	public final static double colorCoe[][] = {
+		{1.0, 0.9, 0.8, 0.7},
+		{0.7, 1.0, 0.9, 0.8},
+		{0.8, 0.7, 1.0, 0.9},
+		{0.9, 0.8, 0.7, 1.0}
+	};
+	
+	public final static int dij_9[][] = {
+		{-1, +1},
+		{+0, +1},
+		{+1, +1},
+		{-1, +0},
+		{+0, +0},
+		{+1, +0},
+		{-1, -1},
+		{+0, -1},
+		{+1, -1},
+	};
+	
 	@SuppressWarnings("unchecked")
 	private void initGrid() {
 		if (grid != null && areaGraphsGrid != null) {
@@ -85,9 +103,6 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 	}
-
-	int dij_9[][] = { { -1, +1 }, { +0, +1 }, { +1, +1 }, { -1, +0 }, { +0, +0 }, { +1, +0 }, { -1, -1 }, { +0, -1 },
-			{ +1, -1 }, };
 
 	private void calcFireProbability() {
 		initGrid();
@@ -307,11 +322,8 @@ public class AURWorldGraph extends AbstractModule {
 
 		build();
                 
-                
-                
 		this.sightPolygonAllocator = new SightPolygonAllocator(worldInfo, scenarioInfo); // added by arman (2018)
 		this.sightPolygonAllocator.calc(); // added by arman (2018)
-                
 	}
 
 	public ArrayList<AURAreaGraph> getUnseens(Collection<EntityID> list) {
@@ -344,13 +356,6 @@ public class AURWorldGraph extends AbstractModule {
 	public AbstractModule calc() {
 		return this;
 	}
-
-	public int agentOrder = -1;
-
-
-
-	public final double colorCoe[][] = { { 1.0, 0.9, 0.8, 0.7 }, { 0.7, 1.0, 0.9, 0.8 }, { 0.8, 0.7, 1.0, 0.9 },
-			{ 0.9, 0.8, 0.7, 1.0 } };
 
 	public int getAgentColor() {
 		if(agentColor != -1) {
@@ -430,14 +435,9 @@ public class AURWorldGraph extends AbstractModule {
 		addWalls();
 
                 
-                this.fireSimulator = new AURFireSimulator(this);
+		this.fireSimulator = new AURFireSimulator(this);
                 
 		updateInfo(null);
-
-                /*dijkstra(this.ai.getPosition());
-                NoBlockadeDijkstra(this.ai.getPosition());
-
-                K_Viewer.getInstance().update(this);*/
 
 //		System.out.println("walls: " + walls.size());
 //		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
