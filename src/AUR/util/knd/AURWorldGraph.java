@@ -452,7 +452,7 @@ public class AURWorldGraph extends AbstractModule {
 			}
 			for (Edge edge : ag.area.getEdges()) {
 				if (edge.isPassable() == false) {
-					walls.add(new AURWall(edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY()));
+					walls.add(new AURWall(ag, edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY()));
 				}
 			}
 		}

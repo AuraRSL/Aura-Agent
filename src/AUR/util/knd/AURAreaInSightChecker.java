@@ -58,11 +58,9 @@ public class AURAreaInSightChecker {
 
 	public boolean query(double x, double y) {
 		if (inited == false) {
-			getTargetAreaWalls();
 			getTargetBlockerWalls();
 			inited = true;
 		}
-
 		if (boundRange.contains(x, y) == false) {
 			return false;
 		}
@@ -74,35 +72,13 @@ public class AURAreaInSightChecker {
 		return b;
 	}
 
-	private void getTargetAreaWalls() {
-		targetAreaWalls.clear();
-		for (Edge edge : targetAg.area.getEdges()) {
-			if (edge.isPassable() == false) {
-				targetAreaWalls.add(new AURWall(edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY()));
-			}
-		}
-	}
-
 	private void getTargetBlockerWalls() {
 		targetAroundAreaWalls.clear();
 		for (AURWall wall : wsg.walls) {
-			if (wall.inBoundOrIntersectWith(targetBound)) {
+			if (wall.owner != targetAg && wall.inBoundOrIntersectWith(targetBound)) {
 				targetAroundAreaWalls.add(wall);
 			}
 		}
-		ArrayList<AURWall> dels = new ArrayList<>();
-		AURWall iWall;
-		AURWall jWall;
-		for (int i = 0; i < targetAroundAreaWalls.size(); i++) {
-			iWall = targetAroundAreaWalls.get(i);
-			for (int j = 0; j < targetAreaWalls.size(); j++) {
-				jWall = targetAreaWalls.get(j);
-				if (iWall.equals(jWall)) {
-					dels.add(iWall);
-				}
-			}
-		}
-		targetAroundAreaWalls.removeAll(dels);
 	}
 
 	public void draw(Graphics2D g) {

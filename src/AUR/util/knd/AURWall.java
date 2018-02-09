@@ -15,9 +15,12 @@ public class AURWall {
 	public double x1 = 0;
 	public double y1 = 0;
 
+	public AURAreaGraph owner = null;
+	
 	public boolean vis = false;
 	
-	public AURWall(double x0, double y0, double x1, double y1) {
+	public AURWall(AURAreaGraph owner, double x0, double y0, double x1, double y1) {
+		this.owner = owner;
 		this.x0 = x0;
 		this.y0 = y0;
 		this.x1 = x1;
@@ -40,7 +43,11 @@ public class AURWall {
 		if (obj == null || obj instanceof AURWall == false) {
 			return false;
 		}
+		
 		AURWall w = (AURWall) obj;
+		if(this.owner != w.owner) {
+			return false;
+		}
 		if(AURGeoUtil.equals(this.x0, this.y0, w.x0, w.y0) && AURGeoUtil.equals(this.x1, this.y1, w.x1, w.y1)) {
 			return true;
 		}

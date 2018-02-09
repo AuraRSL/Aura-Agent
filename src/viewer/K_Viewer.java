@@ -50,7 +50,7 @@ public class K_Viewer extends JFrame {
         addLayer(K_LayerWorldGraph.class, false);
         addLayer(K_AreaVertices.class, false);
         addLayer(K_AreaExtinguishableRange.class, false);
-        addLayer(K_ClosestPath.class, false);
+        addLayer(K_ClosestPath.class, true);
         addLayer(CivilianLayer.class, true);
         addLayer(SightPolygonLayer.class, false);
         addLayer(K_AreaPropery.class, true);
@@ -59,6 +59,7 @@ public class K_Viewer extends JFrame {
         addLayer(K_AreaGrid.class, false);
         addLayer(K_AreaPassableSegments.class, false);
         addLayer(K_AreaGraph.class, false);
+        addLayer(K_PerceptibleArea.class, true);
     }
     
     
@@ -107,9 +108,7 @@ public class K_Viewer extends JFrame {
     
     ArrayList<AURWorldGraph> wsgs = new ArrayList<AURWorldGraph>();
     DefaultListModel<String> model = new DefaultListModel();
-    
-    //JList list = new JList(model);
-    
+	
     JComboBox list = new JComboBox();
     
     int lastUpdateTimeSelected = -2;
@@ -118,12 +117,9 @@ public class K_Viewer extends JFrame {
         if(wsgs.contains(wsg) == false) {
             wsgs.add(wsg);
             list.addItem(wsg.ai.me().getURN().replace("urn:rescuecore2.standard:entity:", "") + ": " + wsg.ai.getID().getValue());
-            //model.addElement();
         }
         
         if(selected == null) {
-            //list.
-//            list.setSelectedIndex(0);
             selected = wsg;
         }
         if(selected == wsg && lastUpdateTimeSelected != wsg.ai.getTime()) {
@@ -305,58 +301,47 @@ public class K_Viewer extends JFrame {
 		
         @Override
         public void paint(Graphics g) {
-            
-            //System.err.println("paint");
-            //super.paint(g);
-            //list.repaint();
             if(selected == null) {
                 return;
             }
-            //synchronized(selected) {
         	Graphics2D g2 = (Graphics2D) g;
-                //g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g.setColor(new Color(170, 170, 170));
         	g.fillRect(0, 0, getWidth(), getHeight());
+			
+			for(JCheckBox chb : layersCheckBox) {
+				if(chb.isSelected()) {
+					K_ViewerLayerFactory.getInstance().getLayer(chb.getText()).paint(g2, kst, selected, selected_ag);
+				}
+			}
 
+			if(agent.isSelected() == true) {
+				int agentX = (int) (selected.ai.getX());
+				int agentY = (int) (selected.ai.getY());
+				Color color = getAgentColor();
+				g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 50));
+				g2.setStroke(new BasicStroke(1));
+				g.drawLine(-100000, kst.yToScreen(agentY - 0), w + 100000, kst.yToScreen(agentY - 0));
+				g.drawLine(kst.xToScreen(agentX - 0), -100000, kst.xToScreen(agentX - 0), h + 100000);
 
-                for(JCheckBox chb : layersCheckBox) {
-                    if(chb.isSelected()) {
-                        K_ViewerLayerFactory.getInstance().getLayer(chb.getText()).paint(g2, kst, selected, selected_ag);
-                    }
-                }
+				g.setColor(color);
+				g.fillOval(kst.xToScreen(agentX - 500), kst.yToScreen(agentY + 500), (int) (1000 * kst.zoom), (int) (1000 * kst.zoom));
+			}
 
-                if(agent.isSelected() == true) {
-                    int agentX = (int) (selected.ai.getX());
-                    int agentY = (int) (selected.ai.getY());
-					Color color = getAgentColor();
-                    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 50));
-					g2.setStroke(new BasicStroke(1));
-                    g.drawLine(-100000, kst.yToScreen(agentY - 0), w + 100000, kst.yToScreen(agentY - 0));
-                    g.drawLine(kst.xToScreen(agentX - 0), -100000, kst.xToScreen(agentX - 0), h + 100000);
-					
-                    g.setColor(color);
-                    g.fillOval(kst.xToScreen(agentX - 500), kst.yToScreen(agentY + 500), (int) (1000 * kst.zoom), (int) (1000 * kst.zoom));
-                }
-                
-                if(arr.size() > 0) {
-                    for(double[][] arr_ : arr) {
-                        for(int i = 1; i < arr_.length; i++) {
-                            /*if(arr_[0][0] != 748390 && true) {
-                                continue;
-                            }*/
-                            double d = arr_[i][2];
-                            g.setColor(new Color(255, 255, 255, (int) (Math.pow(d, 0.3) * 255)));
-                            g.drawLine(kst.xToScreen(arr_[0][0]),
-                                kst.yToScreen(arr_[0][1]),
-                                kst.xToScreen(arr_[i][0]),
-                                kst.yToScreen(arr_[i][1])
-                            );
-                        }
-                    }
-                }
-            //}
+			if(arr.size() > 0) {
+				for(double[][] arr_ : arr) {
+					for(int i = 1; i < arr_.length; i++) {
+						double d = arr_[i][2];
+						g.setColor(new Color(255, 255, 255, (int) (Math.pow(d, 0.3) * 255)));
+						g.drawLine(kst.xToScreen(arr_[0][0]),
+							kst.yToScreen(arr_[0][1]),
+							kst.xToScreen(arr_[i][0]),
+							kst.yToScreen(arr_[i][1])
+						);
+					}
+				}
+			}
+			
             super.paintComponents(g);
-            //list.repaint();
             updateStringData();
         } 
     }

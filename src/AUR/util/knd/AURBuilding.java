@@ -1,8 +1,10 @@
 package AUR.util.knd;
 
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import rescuecore2.standard.entities.Edge;
 
 /**
  *
@@ -10,15 +12,15 @@ import java.util.ArrayList;
  */
 
 public class AURBuilding {
-    
+	
+    private Polygon perceptibleArea = null;
     private int estimatedTemperature = 0;
     private double estimatedEnergy = 0;
     
-    private AURAreaGraph ag = null;
-    private AURWorldGraph wsg = null;
+    public AURAreaGraph ag = null;
+    public AURWorldGraph wsg = null;
     
     private ArrayList<AURBuilding> connectedBuildings = null;
-    
     private ArrayList<int[]> airCells = null;
 
     public AURBuilding(AURWorldGraph wsg, AURAreaGraph ag) {
@@ -29,7 +31,14 @@ public class AURBuilding {
     public void init() {
         // ..
     }
-    
+
+	public Polygon getPerceptibleArea() {
+		if(this.perceptibleArea == null) {
+			this.perceptibleArea = AURPerceptibleArea.getPerceptibleArea(this);
+		}
+		return this.perceptibleArea;
+	}
+	
     private void findAirCells() {
         airCells = new ArrayList<>();
         Polygon buildingPolygon = (Polygon) this.ag.area.getShape();
@@ -58,7 +67,7 @@ public class AURBuilding {
         }
         
     }
-    
+
     public ArrayList<int[]> getAirCells() {
         if(airCells == null) {
             findAirCells();
