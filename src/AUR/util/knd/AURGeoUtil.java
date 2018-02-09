@@ -86,25 +86,17 @@ public class AURGeoUtil {
 		);
 	}
 
-	public static boolean getIntersection(double x0, double y0, double x1, double y1, double x2, double y2, double x3, double y3, double[] intersection) {
-		double l1nx = y0 - y1;
-		double l1ny = x1 - x0;
-		double l2dx = x3 - x2;
-		double l2dy = y3 - y2;
-		double numer = (x0 - x2) * l1nx + (y0 - y2) * l1ny;
-		double denom = l1nx * l2dx + l1ny * l2dy;
-		if(Math.abs(denom) < EPS) {
-			// TODO
-			return false;
-		}
-		double t = numer / denom;
-		if(t < 0 - EPS || t > 1 + EPS) {
-			return false;
-		}
-		intersection[0] = t * l2dx + x2;
-		intersection[1] = t * l2dy + y2;
-		return true;
-    }
+	private static boolean equals(double a, double b, double limit) {
+		return Math.abs(a - b) < limit;
+	}
+
+	private static boolean equals(double a, double b) {
+		return equals(a, b, 1.0e-5);
+	}
+
+	private static double min(double a, double b, double c, double d) {
+		return Math.min(Math.min(a, b), Math.min(c, d));
+	}
 
 	public static boolean equals(Edge e1, Edge e2) {
 		if (true&& e1.getStartX() == e2.getStartX()
@@ -121,7 +113,110 @@ public class AURGeoUtil {
 		}
 		return false;
 	}
-	
+
+	private static double max(double a, double b, double c, double d) {
+		return Math.max(Math.max(a, b), Math.max(c, d));
+	}
+
+	public static boolean getIntersection(double x0, double y0, double x1, double y1, double x2, double y2,
+			double x3, double y3, double[] intersection) {
+		// TODO: Make limit depend on input domain
+		final double LIMIT = 1e-5;
+		final double INFINITY = 1e10;
+
+		double x, y;
+
+		//
+		// Convert the lines to the form y = ax + b
+		//
+
+		// Slope of the two lines
+		double a0 = equals(x0, x1, LIMIT) ? INFINITY : (y0 - y1) / (x0 - x1);
+		double a1 = equals(x2, x3, LIMIT) ? INFINITY : (y2 - y3) / (x2 - x3);
+
+		double b0 = y0 - a0 * x0;
+		double b1 = y2 - a1 * x2;
+
+		// Check if lines are parallel
+		if (equals(a0, a1)) {
+			if (!equals(b0, b1))
+				return false; // Parallell non-overlapping
+
+			else {
+				if (equals(x0, x1)) {
+					if (Math.min(y0, y1) < Math.max(y2, y3) || Math.max(y0, y1) > Math.min(y2, y3)) {
+						double twoMiddle = y0 + y1 + y2 + y3 - min(y0, y1, y2, y3) - max(y0, y1, y2, y3);
+						y = (twoMiddle) / 2.0;
+						x = (y - b0) / a0;
+					} else
+						return false; // Parallell non-overlapping
+				} else {
+					if (Math.min(x0, x1) < Math.max(x2, x3) || Math.max(x0, x1) > Math.min(x2, x3)) {
+						double twoMiddle = x0 + x1 + x2 + x3 - min(x0, x1, x2, x3) - max(x0, x1, x2, x3);
+						x = (twoMiddle) / 2.0;
+						y = a0 * x + b0;
+					} else
+						return false;
+				}
+
+				intersection[0] = x;
+				intersection[1] = y;
+				return false;
+			}
+		}
+
+		// Find correct intersection point
+		if (equals(a0, INFINITY)) {
+			x = x0;
+			y = a1 * x + b1;
+		} else if (equals(a1, INFINITY)) {
+			x = x2;
+			y = a0 * x + b0;
+		} else {
+			x = -(b0 - b1) / (a0 - a1);
+			y = a0 * x + b0;
+		}
+
+		intersection[0] = x;
+		intersection[1] = y;
+
+		// Then check if intersection is within line segments
+		double distanceFrom1;
+		if (equals(x0, x1)) {
+			if (y0 < y1)
+				distanceFrom1 = y < y0 ? length(x, y, x0, y0) : y > y1 ? length(x, y, x1, y1) : 0.0;
+			else
+				distanceFrom1 = y < y1 ? length(x, y, x1, y1) : y > y0 ? length(x, y, x0, y0) : 0.0;
+		} else {
+			if (x0 < x1)
+				distanceFrom1 = x < x0 ? length(x, y, x0, y0) : x > x1 ? length(x, y, x1, y1) : 0.0;
+			else
+				distanceFrom1 = x < x1 ? length(x, y, x1, y1) : x > x0 ? length(x, y, x0, y0) : 0.0;
+		}
+
+		double distanceFrom2;
+		if (equals(x2, x3)) {
+			if (y2 < y3)
+				distanceFrom2 = y < y2 ? length(x, y, x2, y2) : y > y3 ? length(x, y, x3, y3) : 0.0;
+			else
+				distanceFrom2 = y < y3 ? length(x, y, x3, y3) : y > y2 ? length(x, y, x2, y2) : 0.0;
+		} else {
+			if (x2 < x3)
+				distanceFrom2 = x < x2 ? length(x, y, x2, y2) : x > x3 ? length(x, y, x3, y3) : 0.0;
+			else
+				distanceFrom2 = x < x3 ? length(x, y, x3, y3) : x > x2 ? length(x, y, x2, y2) : 0.0;
+		}
+
+		return equals(distanceFrom1, 0.0) && equals(distanceFrom2, 0.0) ? true : false;
+	}
+
+	public static double length(double x0, double y0, double x1, double y1) {
+		double dx = x1 - x0;
+		double dy = y1 - y0;
+
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+
 	public static boolean equals(double Ax, double Ay, double Bx, double By) {
 		return _equalsFast(Ax, Ay, Bx, By);
 	}
