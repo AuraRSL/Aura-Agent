@@ -6,12 +6,18 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import AUR.util.FibonacciHeap.Entry;
+import static AUR.util.knd.AURAreaGrid.TYPE;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntityConstants.Fieryness;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
+import viewer.K_ScreenTransform;
 
 /**
  *
@@ -413,4 +419,20 @@ public class AURAreaGraph {
 		}
 		return (wsg.ai.getTime() - updateTime) > forgetTime;
 	}
+	
+	public void paint(Graphics2D g2, K_ScreenTransform kst) {
+
+
+		
+//		int a = 500;
+//		for(AURBorder border : borders) {
+//			for(AURNode node : border.nodes) {
+//				g2.draw(kst.getTransformedRectangle(node.x - a, node.y - a, a * 2, a * 2));
+//			}
+//		}
+		
+		
+
+	}
+	
 }

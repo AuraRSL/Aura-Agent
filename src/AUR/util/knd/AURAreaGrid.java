@@ -13,9 +13,14 @@ import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
 import viewer.K_ScreenTransform;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
+
 public class AURAreaGrid {
 
-	public final double gridSize = 450;
+	public final static double gridSize = 450;
 	private final int defaultSizeM = 351;
 	private final int defaultSizeN = 503;
 	private int currentSizeM = defaultSizeM;
@@ -292,13 +297,13 @@ public class AURAreaGrid {
 		boundsX1 = bounds.maxX;
 		boundsY1 = bounds.maxY;
 
-		int boundJ0 = (int) (Math.floor((boundsX0 - 0 + gridSize / 2) / gridSize)) - 3;
-		int boundI0 = (int) (Math.floor((boundsY0 - 0 + gridSize / 2) / gridSize)) - 3;
-		int boundJ1 = (int) (Math.ceil((boundsX1 - 0 + gridSize / 2) / gridSize)) + 3;
-		int boundI1 = (int) (Math.ceil((boundsY1 - 0 + gridSize / 2) / gridSize)) + 3;
+		int boundJ0 = (int) (Math.floor((boundsX0 - 0 + gridSize / 2) / gridSize)) - 0;
+		int boundI0 = (int) (Math.floor((boundsY0 - 0 + gridSize / 2) / gridSize)) - 0;
+		int boundJ1 = (int) (Math.ceil((boundsX1 - 0 + gridSize / 2) / gridSize)) + 0;
+		int boundI1 = (int) (Math.ceil((boundsY1 - 0 + gridSize / 2) / gridSize)) + 0;
 
-		gridM = boundI1 - boundI0 + 1;
-		gridN = boundJ1 - boundJ0 + 1;
+		gridM = boundI1 - boundI0 + 0;
+		gridN = boundJ1 - boundJ0 + 0;
 		checkGridArraySize(gridM, gridN);
 
 		double oX = boundJ0 * gridSize;
@@ -671,7 +676,7 @@ public class AURAreaGrid {
 		setCenter_temp[1] = (Aj + Bj) / 2;
 		markCell(setCenter_temp, type);
 	}
-
+	
 	public void markEdgeOpenCenters(AURBorder border, double x0, double y0, double x1, double y1) {
 		double dx = x1 - x0;
 		double dy = y1 - y0;
@@ -847,4 +852,5 @@ public class AURAreaGrid {
 		}
 
 	}
+	
 }

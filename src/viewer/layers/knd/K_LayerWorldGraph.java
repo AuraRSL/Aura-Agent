@@ -24,18 +24,18 @@ public class K_LayerWorldGraph extends K_ViewerLayer {
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
         
-        g2.setColor(Color.blue);
-        g2.setStroke(new BasicStroke(1));
+        g2.setColor(Color.BLUE);
+//        g2.setStroke(new BasicStroke(2));
         
         wsg.dijkstra(wsg.ai.getPosition());
         
         
         for(AURAreaGraph ag : wsg.areas.values()) {
             for(AURBorder border : ag.borders) {
-                g2.drawLine(
-                    kst.xToScreen(border.Ax), kst.yToScreen(border.Ay),
-                    kst.xToScreen(border.Bx), kst.yToScreen(border.By)
-                );
+//                g2.drawLine(
+//                    kst.xToScreen(border.Ax), kst.yToScreen(border.Ay),
+//                    kst.xToScreen(border.Bx), kst.yToScreen(border.By)
+//                );
                 
                 for(AURNode node : border.nodes) {
                     g2.fillOval(kst.xToScreen(node.x) - 3, kst.yToScreen(node.y) - 3, 6, 6);
@@ -43,7 +43,7 @@ public class K_LayerWorldGraph extends K_ViewerLayer {
                 
             }
         }
-        
+		
         g2.setStroke(new BasicStroke(1));
         g2.setColor(Color.green);
         

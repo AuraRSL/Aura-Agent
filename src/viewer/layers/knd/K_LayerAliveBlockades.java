@@ -20,18 +20,21 @@ public class K_LayerAliveBlockades extends K_ViewerLayer {
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
         
         g2.setColor(Color.black);
-        
+        g2.setStroke(new BasicStroke(3));
         for(AURAreaGraph ag : wsg.areas.values()) {
 
             synchronized(ag.areaBlockadePolygons) {
                 for(Polygon p : ag.areaBlockadePolygons) {
                     Polygon polygon = kst.getTransformedPolygon(p);
+					
+                    g2.draw(polygon);
                     g2.fillPolygon(polygon);
                 }
             }
-
-
         }
+		
+		
+		g2.setStroke(new BasicStroke(1));
     }
     
 }

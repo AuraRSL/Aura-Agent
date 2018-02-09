@@ -2,6 +2,7 @@ package viewer;
 
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -49,13 +50,15 @@ public class K_Viewer extends JFrame {
         addLayer(K_LayerWorldGraph.class, false);
         addLayer(K_AreaVertices.class, false);
         addLayer(K_AreaExtinguishableRange.class, false);
-        addLayer(K_ClosestPath.class, true);
+        addLayer(K_ClosestPath.class, false);
         addLayer(CivilianLayer.class, true);
         addLayer(SightPolygonLayer.class, false);
         addLayer(K_AreaPropery.class, true);
         addLayer(K_AirCells.class, false);
         addLayer(K_BuildingAirCells.class, false);
-        addLayer(K_AreaGrid.class, true);
+        addLayer(K_AreaGrid.class, false);
+        addLayer(K_AreaPassableSegments.class, false);
+        addLayer(K_AreaGraph.class, false);
     }
     
     
@@ -282,6 +285,24 @@ public class K_Viewer extends JFrame {
             });
         }
 
+		public Color getAgentColor() {
+			if(selected == null) {
+				return null;
+			}
+			switch(selected.ai.me().getStandardURN()) {
+				case AMBULANCE_TEAM: {
+					return Color.WHITE;
+				}
+				case POLICE_FORCE: {
+					return Color.BLUE;
+				}
+				case FIRE_BRIGADE: {
+					return Color.RED;
+				}
+			}
+			return Color.BLACK;
+		}
+		
         @Override
         public void paint(Graphics g) {
             
@@ -294,7 +315,7 @@ public class K_Viewer extends JFrame {
             //synchronized(selected) {
         	Graphics2D g2 = (Graphics2D) g;
                 //g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g.setColor(new Color(170, 170, 170));
+			g.setColor(new Color(170, 170, 170));
         	g.fillRect(0, 0, getWidth(), getHeight());
 
 
@@ -307,12 +328,14 @@ public class K_Viewer extends JFrame {
                 if(agent.isSelected() == true) {
                     int agentX = (int) (selected.ai.getX());
                     int agentY = (int) (selected.ai.getY());
-                    g.setColor(Color.white);
-                    g.fillOval(kst.xToScreen(agentX - 500), kst.yToScreen(agentY + 500), (int) (1000 * kst.zoom), (int) (1000 * kst.zoom));
-
-                    g.setColor(new Color(255, 255, 255, 100));
+					Color color = getAgentColor();
+                    g.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 50));
+					g2.setStroke(new BasicStroke(1));
                     g.drawLine(-100000, kst.yToScreen(agentY - 0), w + 100000, kst.yToScreen(agentY - 0));
                     g.drawLine(kst.xToScreen(agentX - 0), -100000, kst.xToScreen(agentX - 0), h + 100000);
+					
+                    g.setColor(color);
+                    g.fillOval(kst.xToScreen(agentX - 500), kst.yToScreen(agentY + 500), (int) (1000 * kst.zoom), (int) (1000 * kst.zoom));
                 }
                 
                 if(arr.size() > 0) {
