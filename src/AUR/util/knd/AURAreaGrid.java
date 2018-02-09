@@ -4,11 +4,14 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
+import viewer.K_ScreenTransform;
 
 public class AURAreaGrid {
 
@@ -805,64 +808,43 @@ public class AURAreaGrid {
 		return true;
 	}
 
-	public void draw(Graphics2D g) {
+	public void paint(Graphics2D g2, K_ScreenTransform kst) {
 
-		// g.drawLine(0, 0, mx, my);
-		g.setColor(new Color(100, 100, 100, 100));
-		// g.fill(areaPolygon.getBounds());
+		g2.setColor(new Color(100, 100, 100, 100));
 
-		g.fillPolygon(areaPolygon);
-		for (Polygon p : blockaePolygons) {
-			g.setColor(new Color(250, 100, 100, 100));
-			g.fillPolygon(p);
-		}
-		int r = (int) gridSize / 2;
-
+		int r = 0;
+		Color borderColor = new Color(0, 0, 0, 20);
+		
 		for (int i = 0; i < gridM; i++) {
 			for (int j = 0; j < gridN; j++) {
 				r = (int) gridSize / 2;
-				if (gridIntInfo[i][j][TYPE] == CELL_BLOCK) {
-					g.setColor(new Color(40, 40, 40, 150));
-					g.fillOval((int) (gridPoints[i][j][0] - r), (int) (gridPoints[i][j][1] - r), r * 2, r * 2);
-				} else if (gridIntInfo[i][j][TYPE] == CELL_AREA_EDGE) {
-					g.setColor(new Color(0, 0, 255, 50));
-					g.fillOval((int) (gridPoints[i][j][0] - r), (int) (gridPoints[i][j][1] - r), r * 2, r * 2);
-				} else if (gridIntInfo[i][j][TYPE] == CELL_NODE) {
-					g.setColor(new Color(0, 255, 0, 200));
-					// r = 7;
-					g.fillOval((int) (gridPoints[i][j][0] - r), (int) (gridPoints[i][j][1] - r), r * 2, r * 2);
-				} else if (gridIntInfo[i][j][TYPE] == CELL_OUT) {
-					// g.setColor(new Color(40, 40, 40, 50));
-					// r = 7;
-					// g.fillOval((int) (gridPoints[i][j][0] - r), (int)
-					// (gridPoints[i][j][1] - r), r * 2, r * 2);
-				} else {
-					// g.setColor(new Color(250, 250, 250, 150));
-					// g.drawOval((int) (gridPoints[i][j][0] - r), (int)
-					// (gridPoints[i][j][1] - r), r * 2, r * 2);
+				
+				Rectangle2D rect = kst.getTransformedRectangle(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, r * 2, r * 2);
+				Color color = new Color(0, 0, 0, 10);
+				
+				switch(gridIntInfo[i][j][TYPE]) {
+					case CELL_BLOCK: {
+						color = new Color(40, 40, 40, 150);
+						break;
+					}
+					case CELL_AREA_EDGE: {
+						color = new Color(0, 0, 255, 50);
+						break;
+					}
+					case CELL_NODE: {
+						color = new Color(0, 255, 0, 200);
+						break;
+					}
 				}
+				
+				g2.setColor(borderColor);
+				g2.drawOval((int) rect.getMinX(), (int) rect.getMinY(), (int) rect.getWidth(), (int) rect.getHeight());
+				
+				g2.setColor(color);
+				g2.fillOval((int) rect.getMinX(), (int) rect.getMinY(), (int) rect.getWidth(), (int) rect.getHeight());
 
 			}
 		}
 
-		g.setColor(new Color(5, 150, 5, 255));
-		g.setStroke(new BasicStroke(40));
-		double x0;
-		double y0;
-		double x1;
-		double y1;
-		for (int i = 0; i < edgePointsSize; i++) {
-			for (int j = i; j < edgePointsSize; j++) {
-				if (graph[i][j] < INF) {
-					x0 = gridPoints[edgePoint[i][0]][edgePoint[i][1]][0];
-					y0 = gridPoints[edgePoint[i][0]][edgePoint[i][1]][1];
-					x1 = gridPoints[edgePoint[j][0]][edgePoint[j][1]][0];
-					y1 = gridPoints[edgePoint[j][0]][edgePoint[j][1]][1];
-
-					// g.drawLine((int) (x0 + Math.random() * 0), (int) (y0 +
-					// Math.random() * 0), (int) x1, (int) y1);
-				}
-			}
-		}
 	}
 }

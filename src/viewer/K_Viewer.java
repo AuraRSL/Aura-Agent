@@ -31,7 +31,7 @@ import viewer.layers.knd.*;
 
 /**
  *
- * @author Alireza Kandeh - 2017
+ * @author Alireza Kandeh - 2017 & 2018
  */
 
 public class K_Viewer extends JFrame {
@@ -55,6 +55,7 @@ public class K_Viewer extends JFrame {
         addLayer(K_AreaPropery.class, true);
         addLayer(K_AirCells.class, false);
         addLayer(K_BuildingAirCells.class, false);
+        addLayer(K_AreaGrid.class, true);
     }
     
     

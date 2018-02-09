@@ -35,7 +35,7 @@ public class K_ScreenTransform extends ScreenTransform {
         );
     }
     
-    public Rectangle2D getTransformedRectangle(int x0, int y0, int w, int h) {
+    public Rectangle2D getTransformedRectangle(double x0, double y0, double w, double h) {
         return new Rectangle(
             xToScreen(x0),
             yToScreen(y0 + h),
