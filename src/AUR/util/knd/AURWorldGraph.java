@@ -33,7 +33,6 @@ import rescuecore2.worldmodel.EntityID;
  * @author Alireza Kandeh - 2017 & 2018
  */
 
-
 public class AURWorldGraph extends AbstractModule {
 
 	public WorldInfo wi = null;

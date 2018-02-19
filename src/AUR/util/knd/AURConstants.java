@@ -7,6 +7,6 @@ package AUR.util.knd;
 
 public class AURConstants {
     
-    public static final int WORLD_AIR_CELL_SIZE = 5000;
+    public static final int WORLD_AIR_CELL_SIZE = 10000;
     
 }

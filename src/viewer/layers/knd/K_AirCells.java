@@ -17,7 +17,7 @@ public class K_AirCells extends K_ViewerLayer {
 
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
-        g2.setColor(new Color(255, 255, 0, 50));
+        g2.setColor(new Color(200, 200, 0, 100));
         g2.setStroke(new BasicStroke(1));
         wsg.fireSimulator.paintJustCells(g2, kst);
     }

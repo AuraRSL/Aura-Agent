@@ -19,7 +19,7 @@ import rescuecore2.worldmodel.EntityID;
  * @author Alireza Kandeh - 2017
  */
 
-public class K_ClosestPath extends K_ViewerLayer {
+public class K_ShortestPath extends K_ViewerLayer {
 
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
