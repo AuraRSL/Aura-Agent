@@ -3,11 +3,17 @@ package AUR.util.knd;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017
+ */
+
 public class AURNode {
 
 	public double x;
 	public double y;
 	public ArrayList<AUREdge> edges = null;
+	public ArrayList<AUREdgeToSee> toSeeEdges = null;
 	public AURAreaGraph ownerArea1 = null;
 	public AURAreaGraph ownerArea2 = null;
 	public double cost;
@@ -41,4 +47,5 @@ public class AURNode {
 		}
 		return null;
 	}
+	
 }

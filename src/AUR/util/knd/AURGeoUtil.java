@@ -52,7 +52,48 @@ public class AURGeoUtil {
 		);
 		return result;
 	}
-
+	
+	private static double __temp__[] = new double[2];
+	
+	public static boolean intersectsOrContains(Polygon p1, Polygon p2) {
+		
+		if(p1.getBounds2D().intersects(p2.getBounds()) == false) {
+			return false;
+		}
+		
+		for(int i = 0; i < p1.npoints; i++) {
+			for(int j = 0; j < p2.npoints; j++) {
+				boolean b = AURGeoUtil.getIntersection(
+						p1.xpoints[i],
+						p1.ypoints[i],
+						p1.xpoints[(i + 1) % p1.npoints],
+						p1.ypoints[(i + 1) % p1.npoints],
+						p2.xpoints[j],
+						p2.ypoints[j],
+						p2.xpoints[(j + 1) % p2.npoints],
+						p2.ypoints[(j + 1) % p2.npoints],
+						__temp__
+				);
+				if(b) {
+					return true;
+				}
+			}
+		}
+		
+		for(int i = 0; i < p1.npoints; i++) {
+			if(p2.contains(p1.xpoints[i], p1.ypoints[i])) {
+				return true;
+			}
+		}
+		for(int j = 0; j < p2.npoints; j++) {
+			if(p1.contains(p2.xpoints[j], p2.ypoints[j])) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public static double getArea(Polygon p) {
 		double sum = 0;
 		for (int i = 0; i < p.npoints; i++) {
@@ -62,6 +103,14 @@ public class AURGeoUtil {
 			);
 		}
 		return Math.abs(sum / 2);
+	}
+	
+	public static double getPerimeter(Polygon p) {
+		double sum = 0;
+		for (int i = 0; i < p.npoints; i++) {
+			sum += AURGeoUtil.dist(p.xpoints[i], p.ypoints[i], p.xpoints[(i + 1) % p.npoints], p.ypoints[(i + 1) % p.npoints]);
+		}
+		return sum;
 	}
 
 	public static int getOrientation(double Ax1, double Ay1, double Ax2, double Ay2, double Bx1, double By1) {

@@ -64,10 +64,12 @@ public class AURAreaGraph {
 	public int color = 0;
 	private boolean seen = false;
 	private boolean burnt = false;
-        public int clusterIndex = 0;
-
-        private AURBuilding building = null;
-        
+	public int clusterIndex = 0;
+	
+	private AURBuilding building = null;
+	
+	public ArrayList<AURBuilding> perceptibleBuildings;
+	
 	public boolean isNeighbour(AURAreaGraph ag) {
 		for (AURAreaGraph neiAg : neighbours) {
 			if (neiAg.area.getID().equals(ag.area.getID())) {
@@ -198,44 +200,44 @@ public class AURAreaGraph {
 
 		this.areaType = AREA_TYPE_ROAD;
 		switch (areaURN) { // #toDo
-		case REFUGE: {
-			areaType = AREA_TYPE_REFUGE;
-			break;
-		}
-		case GAS_STATION: {
-			areaType = AREA_TYPE_GAS_STATION;
-			break;
-		}
-		case POLICE_OFFICE:
-		case AMBULANCE_CENTRE:
-		case FIRE_STATION:
-		case BUILDING: {
-			areaType = AREA_TYPE_BULDING;
-			break;
-		}
-		case HYDRANT: {
-			areaType = AREA_TYPE_ROAD_HYDRANT;
-			break;
-		}
-		}
-		switch (wsg.ai.me().getStandardURN()) {
-		case POLICE_FORCE: {
-			forgetTime = policeForgetTime;
-			break;
-		}
-		case AMBULANCE_TEAM: {
-			forgetTime = ambulanceForgetTime;
-			break;
-		}
-		case FIRE_BRIGADE: {
-			forgetTime = fireBirgadeForgetTime;
-			break;
-		}
+			case REFUGE: {
+				areaType = AREA_TYPE_REFUGE;
+				break;
+			}
+			case GAS_STATION: {
+				areaType = AREA_TYPE_GAS_STATION;
+				break;
+			}
+			case POLICE_OFFICE:
+			case AMBULANCE_CENTRE:
+			case FIRE_STATION:
+			case BUILDING: {
+				areaType = AREA_TYPE_BULDING;
+				break;
+			}
+			case HYDRANT: {
+				areaType = AREA_TYPE_ROAD_HYDRANT;
+				break;
+			}
+			}
+			switch (wsg.ai.me().getStandardURN()) {
+			case POLICE_FORCE: {
+				forgetTime = policeForgetTime;
+				break;
+			}
+			case AMBULANCE_TEAM: {
+				forgetTime = ambulanceForgetTime;
+				break;
+			}
+			case FIRE_BRIGADE: {
+				forgetTime = fireBirgadeForgetTime;
+				break;
+			}
 		}
                 
-                if(isBuilding()) {
+		if(isBuilding()) {
 			this.building = new AURBuilding(this.wsg, this);
-                }
+		}
 	}
 
 	public AURBuilding getBuilding() {
@@ -408,6 +410,24 @@ public class AURAreaGraph {
 
 			}
 		}
+	}
+	
+	public double getScore() {
+		double perceptScore = 0;
+		int p = 1;
+		if(perceptibleBuildings != null) {
+			perceptScore = (double) Math.pow(perceptibleBuildings.size(), p) / Math.pow(wsg.getMaxPerceptibleBuildings(), p);
+		}
+		
+		double aScore = 1 - (Math.pow(AURGeoUtil.getArea((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadArea(), p));
+		
+		double perimeterScore = 1 - (Math.pow(AURGeoUtil.getPerimeter((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadPerimeter(), p));
+		
+		
+		//pScore = Math.pow(pScore, 0.1);
+		double score = 1.0 * perceptScore * perimeterScore;
+		
+		return score;
 	}
 
 	public boolean longTimeNoSee() {

@@ -482,8 +482,8 @@ public class AURAreaGrid {
 				node.edges.removeAll(delEdges);
 			}
 		}
-		if (blockaePolygons.size() > 0) {
-			for (int i = 0; i < edgePointsSize - 1; i++) {
+		if (blockaePolygons.size() > 0 || true) {
+			for (int i = 0; i < edgePointsSize; i++) {
 				bfs(i);
 			}
 		} else {
@@ -532,11 +532,60 @@ public class AURAreaGrid {
 		que.add(ijToInt(i, j));
 		long heap_top = 0;
 		AUREdge edge = null;
+		
+		ArrayList<AURBuilding> perceptibleAreas = null;
+		ArrayList<AURBuilding> remove = null;
+		if(areaGraph.perceptibleBuildings != null) {
+			perceptibleAreas = new ArrayList<>();
+			perceptibleAreas.addAll(areaGraph.perceptibleBuildings);
+			remove = new ArrayList<AURBuilding>();
+		}
+		
 		while (que.isEmpty() == false) {
 			heap_top = que.poll();
 			intToIj(heap_top, ij);
 			i = ij[0];
 			j = ij[1];
+			
+			
+			
+			
+			
+			
+			
+			
+			if(areaGraph.perceptibleBuildings != null) {
+				for(AURBuilding b : perceptibleAreas) {
+					if(b.getPerceptibleAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
+						double cost = gridIntInfo[i][j][COST] * gridSize;
+						AUREdgeToSee toSeeEdge = new AUREdgeToSee(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
+						//System.out.println("AUR.util.knd.AURAreaGrid.bfs()");
+						if(fromNode.toSeeEdges == null) {
+							fromNode.toSeeEdges = new ArrayList<>();
+						}
+						remove.add(b);
+						fromNode.toSeeEdges.add(toSeeEdge);
+					}
+				}
+				perceptibleAreas.removeAll(remove);
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			if (gridIntInfo[i][j][0] == CELL_NODE && (gridIntInfo[i][j][EDGE_POINT_ID] != from)) {
 				int cell_id = gridIntInfo[i][j][EDGE_POINT_ID];
 				if ((graph[from][cell_id] >= INF)) {
@@ -788,9 +837,7 @@ public class AURAreaGrid {
 				}
 				last_valid = cur_valid;
 				last_x = x0 + g * m;
-				;
 				last_y = y0 + g;
-				;
 				if (i == -1) {
 					break;
 				}

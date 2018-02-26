@@ -19,6 +19,7 @@ import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import AUR.util.ambo.sightArea.SightPolygonAllocator;
+import java.awt.Polygon;
 import viewer.K_Viewer;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
@@ -232,6 +233,47 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		return result;
 	}
+	
+	
+	
+	public ActionMove getMoveActionToSee___New(EntityID from, EntityID target) {
+		if (target == null) {
+			return null;
+		}
+		ActionMove result = null;
+		Collection<EntityID> targets = new ArrayList<>();
+		AURAreaGraph fromAg = getAreaGraph(from);
+		AURAreaGraph targetAg = getAreaGraph(target);
+		if(targetAg.isBuilding() == false) {
+			return null;
+		}
+		targets.add(target);
+		double destX = -1;
+		double destY = -1;
+		
+		dijkstra(from);
+		
+		AUREdgeToSee ets = targetAg.getBuilding().ets;
+		if(ets == null) {
+			return null;
+		}
+		ArrayList<EntityID> path = new ArrayList<>();
+		
+		
+		path.add(ets.ownerAg.area.getID());
+		AURNode node = ets.fromNode;
+		while (node.pre != startNullNode) {
+			path.add(node.getPreAreaGraph().area.getID());
+			node = node.pre;
+		}
+		path.add(from);
+		java.util.Collections.reverse(path);
+		
+		
+		
+		return new ActionMove(path, (int) ets.standX, (int) ets.standY);
+		
+	}
 
 	public ActionMove getNoBlockadeMoveAction(EntityID from, EntityID target) {
 		if (target == null) {
@@ -321,8 +363,8 @@ public class AURWorldGraph extends AbstractModule {
 
 		build();
                 
-		this.sightPolygonAllocator = new SightPolygonAllocator(worldInfo, scenarioInfo); // added by arman (2018)
-		this.sightPolygonAllocator.calc(); // added by arman (2018)
+//		this.sightPolygonAllocator = new SightPolygonAllocator(worldInfo, scenarioInfo); // added by arman (2018)
+//		this.sightPolygonAllocator.calc(); // added by arman (2018)
 	}
 
 	public ArrayList<AURAreaGraph> getUnseens(Collection<EntityID> list) {
@@ -378,7 +420,7 @@ public class AURWorldGraph extends AbstractModule {
 	private int agentColor = -1;
 
 	public void build() {
-//		long t = System.currentTimeMillis();
+		long t = System.currentTimeMillis();
 		areas.clear();
 		AURAreaGraph ag;
 		Area area;
@@ -432,16 +474,51 @@ public class AURWorldGraph extends AbstractModule {
 		setNeighbours();
 		addBorders();
 		addWalls();
+		addPerceptibleBuildings();
+		
+//		for(AURAreaGraph ag_ : areas.values()) {
+//			if(ag_.isBuilding()) {
+//				ag_.getBuilding().init();
+//			}
+//		}
 
-                
+
+		int count = 0;
+		for(AURAreaGraph ag_ : areas.values()) {
+			if(ag_.isBuilding()) {
+				count++;
+			}
+		}
+		
+		
+		System.out.println("buildings: " + count);
+		
 		this.fireSimulator = new AURFireSimulator(this);
                 
 		updateInfo(null);
 
 //		System.out.println("walls: " + walls.size());
-//		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
+		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
 	}
 
+	public void addPerceptibleBuildings() {
+		for(AURAreaGraph ag : areas.values()) {
+			if(ag.isBuilding()) {
+				ArrayList<AURAreaGraph> arr = ag.getBuilding().getPerceptibleAreas();
+				if(arr.size() == 0) {
+					continue;
+				}
+				
+				for(AURAreaGraph ag_ : arr) {
+					if(ag_.perceptibleBuildings == null) {
+						ag_.perceptibleBuildings = new ArrayList<>();
+					}
+					ag_.perceptibleBuildings.add(ag.getBuilding());
+				}
+			}
+		}
+	}
+	
 	public int maxAgentOrder = 0;
 
 	public void addWalls() {
@@ -596,6 +673,9 @@ public class AURWorldGraph extends AbstractModule {
 
 	public void initForDijkstra() {
 		for (AURAreaGraph ag : areas.values()) {
+			if(ag.isBuilding()) {
+				ag.getBuilding().ets = null;
+			}
 			ag.vis = false;
 			ag.lastDijkstraCost = AURGeoUtil.INF;
 			ag.lastDijkstraEntranceNode = null;
@@ -636,7 +716,7 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		return result;
 	}
-
+	
 	public ArrayList<EntityID> getPathToClosest(EntityID fromID, Collection<EntityID> targets) {
 		ArrayList<EntityID> result = new ArrayList<>();
 		dijkstra(fromID);
@@ -692,8 +772,26 @@ public class AURWorldGraph extends AbstractModule {
 		AURAreaGraph ag;
 		AURNode toNode = null;
 		while (que.isEmpty() == false) {
+			
 			qNode = que.dequeueMin().getValue();
 			qNode.pQueEntry = null;
+			if(qNode.toSeeEdges != null) {
+				for(AUREdgeToSee ets : qNode.toSeeEdges) {
+					if(ets.toSeeAreaGraph.getBuilding().ets == null) {
+						ets.cost = ets.cost + qNode.cost;
+						ets.toSeeAreaGraph.getBuilding().ets = ets;
+					} else {
+						double oldCost = ets.toSeeAreaGraph.getBuilding().ets.cost;
+						double newCost = ets.cost + qNode.cost;
+						if(newCost < oldCost) {
+							ets.cost = newCost;
+							ets.toSeeAreaGraph.getBuilding().ets = ets;
+						}
+					}
+				}
+			}
+
+			
 			ag = qNode.ownerArea1;
 			if (ag.lastDijkstraCost > qNode.cost) {
 				ag.lastDijkstraCost = qNode.cost;
@@ -728,6 +826,52 @@ public class AURWorldGraph extends AbstractModule {
 	private int lastSetChangeSetIfBurnt = -1;
 	public LinkedList<AURAreaGraph> gasStations = new LinkedList<>();
 
+	public int maxPerceptibleBuildings = -1;
+	
+	public int getMaxPerceptibleBuildings() {
+		if(maxPerceptibleBuildings < 0) {
+			maxPerceptibleBuildings = 0;
+			for(AURAreaGraph ag : areas.values()) {
+				if(ag.isBuilding() == false) {
+					if(ag.perceptibleBuildings == null) {
+						continue;
+					}
+					maxPerceptibleBuildings = Math.max(maxPerceptibleBuildings, ag.perceptibleBuildings.size());
+				}
+			}
+		}
+		return maxPerceptibleBuildings;
+	}
+	
+	public double maxRoadArea = -1;
+	
+	public double getMaxRoadArea() {
+		if(maxRoadArea < 0) {
+			maxRoadArea = 0;
+			for(AURAreaGraph ag : areas.values()) {
+				if(ag.isBuilding() == false) {
+					maxRoadArea = Math.max(maxRoadArea, AURGeoUtil.getArea((Polygon) ag.area.getShape()));
+				}
+			}
+		}
+		return maxRoadArea;
+	}
+	
+	public double maxRoadPerimeter = -1;
+	
+	public double getMaxRoadPerimeter() {
+		if(maxRoadPerimeter < 0) {
+			maxRoadPerimeter = 0;
+			for(AURAreaGraph ag : areas.values()) {
+				if(ag.isBuilding() == false) {
+					maxRoadPerimeter = Math.max(maxRoadPerimeter, AURGeoUtil.getPerimeter((Polygon) ag.area.getShape()));
+				}
+			}
+		}
+		return maxRoadArea;
+	}
+	
+	
 	public ArrayList<EntityID> getNoBlockadePathToClosest(EntityID fromID, Collection<EntityID> targets) {
 		ArrayList<EntityID> result = new ArrayList<>();
 		if (targets.contains(fromID)) {

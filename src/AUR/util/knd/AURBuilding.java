@@ -1,10 +1,9 @@
 package AUR.util.knd;
 
 import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import rescuecore2.standard.entities.Edge;
+
 
 /**
  *
@@ -13,94 +12,118 @@ import rescuecore2.standard.entities.Edge;
 
 public class AURBuilding {
 	
-    private Polygon perceptibleArea = null;
-    private int estimatedTemperature = 0;
-    private double estimatedEnergy = 0;
-    
-    public AURAreaGraph ag = null;
-    public AURWorldGraph wsg = null;
-    
-    private ArrayList<AURBuilding> connectedBuildings = null;
-    private ArrayList<int[]> airCells = null;
+	private Polygon perceptibleArea = null;
+	private int estimatedTemperature = 0;
+	private double estimatedEnergy = 0;
 
-    public AURBuilding(AURWorldGraph wsg, AURAreaGraph ag) {
-        this.wsg = wsg;
-        this.ag = ag;
-    }
-    
-    public void init() {
-        // ..
-    }
+	public AURAreaGraph ag = null;
+	public AURWorldGraph wsg = null;
 
-	public Polygon getPerceptibleArea() {
+	private ArrayList<AURBuilding> connectedBuildings = null;
+	private ArrayList<int[]> airCells = null;
+	
+	public AUREdgeToSee ets = null;
+
+	public AURBuilding(AURWorldGraph wsg, AURAreaGraph ag) {
+	    this.wsg = wsg;
+	    this.ag = ag;
+	}
+
+	public ArrayList<AURAreaGraph> getPerceptibleAreas() {
+		ArrayList<AURAreaGraph> result = new ArrayList<>();
+		Polygon perceptibleAreaPolygon = getPerceptibleAreaPolygon();
+		for(AURAreaGraph ag : wsg.areas.values()) {
+			if(ag.isBuilding() == true) {
+				continue;
+			}
+			if(AURGeoUtil.intersectsOrContains(perceptibleAreaPolygon, (Polygon) ag.area.getShape())) {
+				result.add(ag);
+			}
+		}
+		return result;
+	}
+	
+	public void init() {
+
+	}
+
+	public Polygon getPerceptibleAreaPolygon() {
 		if(this.perceptibleArea == null) {
 			this.perceptibleArea = AURPerceptibleArea.getPerceptibleArea(this);
 		}
 		return this.perceptibleArea;
 	}
 	
-    private void findAirCells() {
-        airCells = new ArrayList<>();
-        Polygon buildingPolygon = (Polygon) this.ag.area.getShape();
-        Rectangle2D buildingBounds = buildingPolygon.getBounds();
-        
-        int ij[] = wsg.fireSimulator.getCell_ij(buildingBounds.getMinX(), buildingBounds.getMinY());
-        
-        int i0 = ij[0];
-        int j0 = ij[1];
-        
-        ij = wsg.fireSimulator.getCell_ij(buildingBounds.getMaxX(), buildingBounds.getMaxY());
-        
-        int i1 = ij[0];
-        int j1 = ij[1];
-        
-        for(int i = i0; i <= i1; i++) {
-            for(int j = j0; j <= j1; j++) {
-                int xy[] = this.wsg.fireSimulator.getCell_xy(i, j);
-                if(buildingPolygon.intersects(xy[0], xy[1], this.wsg.fireSimulator.getCellSize(), this.wsg.fireSimulator.getCellSize())) {
-                    int[] cell = new int[] {i, j, 0};
-                    AURGeoUtil.setAirCellPercent(wsg.fireSimulator, cell, wsg.fireSimulator.getCellSize(), buildingPolygon);
-                    airCells.add(cell);
-                }
-                
-            }
-        }
-        
-    }
+	public ArrayList<double[]> connections = null;
+	
+	public ArrayList<double[]> getConnections() {
+		connections = new ArrayList<>();
+		
+		return connections;
+	}
+	
+	private void findAirCells() {
+		airCells = new ArrayList<>();
+		Polygon buildingPolygon = (Polygon) this.ag.area.getShape();
+		Rectangle2D buildingBounds = buildingPolygon.getBounds();
 
-    public ArrayList<int[]> getAirCells() {
-        if(airCells == null) {
-            findAirCells();
-        }
-        return airCells;
-    }
-    
-    public double getEstimatedEnergy() {
-        return this.estimatedEnergy;
-    }
+		int ij[] = wsg.fireSimulator.getCell_ij(buildingBounds.getMinX(), buildingBounds.getMinY());
 
-    public void setEstimatedEnergy(double estimatedEnergy) {
-        this.estimatedEnergy = estimatedEnergy;
-    }
+		int i0 = ij[0];
+		int j0 = ij[1];
 
-    public int getEstimatedTemperature() {
-        return estimatedTemperature;
-    }
+		ij = wsg.fireSimulator.getCell_ij(buildingBounds.getMaxX(), buildingBounds.getMaxY());
 
-    public void setEstimatedTemperature(int estimatedTemperature) {
-        this.estimatedTemperature = estimatedTemperature;
-    }
-    
-    private void calcConnectedBuildings() {
-        connectedBuildings = new ArrayList<>();
-        // ..
-    }
-    
-    public ArrayList<AURBuilding> getConnectedBuildings() {
-        if(connectedBuildings == null) {
-            calcConnectedBuildings();
-        }
-        return connectedBuildings;
-    }
+		int i1 = ij[0];
+		int j1 = ij[1];
+
+		for(int i = i0; i <= i1; i++) {
+			for(int j = j0; j <= j1; j++) {
+				int xy[] = this.wsg.fireSimulator.getCell_xy(i, j);
+				if(buildingPolygon.intersects(xy[0], xy[1], this.wsg.fireSimulator.getCellSize(), this.wsg.fireSimulator.getCellSize())) {
+					int[] cell = new int[] {i, j, 0};
+					AURGeoUtil.setAirCellPercent(wsg.fireSimulator, cell, wsg.fireSimulator.getCellSize(), buildingPolygon);
+					airCells.add(cell);
+				}
+
+			}
+		}
+
+	}
+
+	public ArrayList<int[]> getAirCells() {
+		if(airCells == null) {
+			findAirCells();
+		}
+		return airCells;
+	}
+
+	public double getEstimatedEnergy() {
+		return this.estimatedEnergy;
+	}
+
+	public void setEstimatedEnergy(double estimatedEnergy) {
+		this.estimatedEnergy = estimatedEnergy;
+	}
+
+	public int getEstimatedTemperature() {
+		return estimatedTemperature;
+	}
+
+	public void setEstimatedTemperature(int estimatedTemperature) {
+		this.estimatedTemperature = estimatedTemperature;
+	}
+
+	private void calcConnectedBuildings() {
+		connectedBuildings = new ArrayList<>();
+		// ..
+	}
+
+	public ArrayList<AURBuilding> getConnectedBuildings() {
+		if(connectedBuildings == null) {
+			calcConnectedBuildings();
+		}
+		return connectedBuildings;
+	}
     
 }

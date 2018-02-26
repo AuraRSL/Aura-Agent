@@ -39,28 +39,33 @@ import viewer.layers.knd.*;
 public class K_Viewer extends JFrame {
 
     private void addLayers() {
-        addLayer(K_LayerRoads.class, true);
-        addLayer(K_LayerBuildings.class, true);
-        addLayer(K_LayerBuildingsClusterColor.class, false);
-        addLayer(K_LayerAreaCenters.class, false);
-        addLayer(k_LayerReachableAreas.class, false);
-        addLayer(K_LayerTravelCost.class, false);
-        addLayer(K_LayerAliveBlockades.class, true);
-        addLayer(K_LayerAllBlockades.class, true);
-        addLayer(K_LayerWalls.class, true);
-        addLayer(K_LayerWorldGraph.class, false);
-        addLayer(K_AreaVertices.class, false);
-        addLayer(K_AreaExtinguishableRange.class, false);
-        addLayer(K_ShortestPath.class, true);
-        addLayer(CivilianLayer.class, true);
-        addLayer(SightPolygonLayer.class, false);
-        addLayer(K_AreaPropery.class, true);
-        addLayer(K_AirCells.class, false);
-        addLayer(K_BuildingAirCells.class, false);
-        addLayer(K_AreaGrid.class, false);
-        addLayer(K_AreaPassableSegments.class, false);
-        addLayer(K_AreaGraph.class, false);
-        addLayer(K_PerceptibleArea.class, false);
+	addLayer(K_LayerRoads.class, true);
+	addLayer(K_LayerBuildings.class, true);
+	addLayer(K_LayerBuildingsClusterColor.class, false);
+	addLayer(K_LayerAreaCenters.class, false);
+	addLayer(k_LayerReachableAreas.class, false);
+	addLayer(K_LayerTravelCost.class, false);
+	addLayer(K_LayerAliveBlockades.class, true);
+	addLayer(K_LayerAllBlockades.class, true);
+	addLayer(K_LayerWalls.class, true);
+	addLayer(K_LayerWorldGraph.class, false);
+	addLayer(K_AreaVertices.class, false);
+	addLayer(K_AreaExtinguishableRange.class, false);
+	addLayer(K_ShortestPath.class, false);
+	addLayer(CivilianLayer.class, true);
+	addLayer(SightPolygonLayer.class, false);
+	addLayer(K_AreaPropery.class, true);
+	addLayer(K_AirCells.class, false);
+	addLayer(K_BuildingAirCells.class, false);
+	addLayer(K_AreaGrid.class, false);
+	addLayer(K_AreaPassableSegments.class, false);
+	addLayer(K_AreaGraph.class, false);
+
+	addLayer(K_BuildingPerceptibleAreas.class, true);
+	addLayer(K_PerceptibleAreaPolygon.class, false);
+	addLayer(K_PerceptibleBuildings.class, true);
+	addLayer(K_ShortestPathToCheckFire.class, true);
+	addLayer(K_RoadScore.class, false);
     }
     
     
@@ -309,7 +314,7 @@ public class K_Viewer extends JFrame {
 			
         	Graphics2D g2 = (Graphics2D) g;
 			
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			//g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			
 			g.setColor(new Color(170, 170, 170));
         	g.fillRect(0, 0, getWidth(), getHeight());
