@@ -13,15 +13,17 @@ import viewer.K_ViewerLayer;
  * @author Alireza Kandeh - 2018
  */
 
-public class K_RoadScore extends K_ViewerLayer {
+public class K_MediumAreas extends K_ViewerLayer {
 
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
         for(AURAreaGraph ag : wsg.areas.values()) {
-            if(ag.isBuilding() == false) {
+            if(ag.isSmall == false && ag.isBig == false) {
                 Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
-                g2.setColor(new Color(0, 255, 0, (int) (ag.getScore() * 255)));
+                g2.setColor(Color.BLUE);
                 g2.fillPolygon(polygon);
+                g2.setColor(Color.black);
+                g2.drawPolygon(polygon);
             }
 
         }

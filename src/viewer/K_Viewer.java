@@ -66,6 +66,9 @@ public class K_Viewer extends JFrame {
 	addLayer(K_PerceptibleBuildings.class, true);
 	addLayer(K_ShortestPathToCheckFire.class, true);
 	addLayer(K_RoadScore.class, false);
+	addLayer(K_SmallAreas.class, false);
+	addLayer(K_MediumAreas.class, false);
+	addLayer(K_BigAreas.class, false);
     }
     
     

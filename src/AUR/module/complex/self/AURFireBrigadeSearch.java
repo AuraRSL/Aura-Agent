@@ -66,7 +66,7 @@ public class AURFireBrigadeSearch extends Search {
 		ArrayList<AURAreaGraph> rubs = wsg.getReachableUnburntBuildingIDs();
 		rubs.remove(agentAg);
 		for (AURAreaGraph ag : rubs) {
-			list.add(new AURValuePoint(ag.cx, ag.cy, ag));
+			list.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
 		}
 		int initialClusterIndex = buildingClusterer.getClusterIndex(ai.me());
 		if (rubs.size() > 0) {
@@ -83,7 +83,7 @@ public class AURFireBrigadeSearch extends Search {
 			nrus.remove(agentAg);
 			list.clear();
 			for (AURAreaGraph ag : nrus) {
-				list.add(new AURValuePoint(ag.cx, ag.cy, ag));
+				list.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
 			}
 
 			svs.calcNoBlockade(wsg, list, buildingClusterer.getClusterEntityIDs(initialClusterIndex));
