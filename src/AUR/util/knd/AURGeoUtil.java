@@ -13,7 +13,7 @@ import rescuecore2.standard.entities.Edge;
 
 public class AURGeoUtil {
 
-	public static final int COLINEAR = 0;
+	public static final int COLLINEAR = 0;
 	public static final int CLOCKWISE = 1;
 	public static final int COUNTER_CLOCKWISE = -1;
 
@@ -112,11 +112,35 @@ public class AURGeoUtil {
 		}
 		return sum;
 	}
-
+	
+	public static boolean hitRayAllEdges(Polygon p, double ray[]) {
+		double ip[] = new double[2];
+		boolean result = false;
+		for(int i = 0; i < p.npoints; i++) {
+			boolean b = AURGeoUtil.getIntersection(
+					p.xpoints[i],
+					p.ypoints[i],
+					p.xpoints[(i + 1) % p.npoints],
+					p.ypoints[(i + 1) % p.npoints],
+					ray[0],
+					ray[1],
+					ray[2],
+					ray[3],
+					ip
+			);
+			if(b) {
+				ray[2] = ip[0];
+				ray[3] = ip[1];
+				result = true;
+			}
+		}
+		return result;
+	}
+	
 	public static int getOrientation(double Ax1, double Ay1, double Ax2, double Ay2, double Bx1, double By1) {
 		double v = (Ay2 - Ay1) * (Bx1 - Ax2) - (Ax2 - Ax1) * (By1 - Ay2);
 		if (Math.abs(v) < EPS) {
-			return AURGeoUtil.COLINEAR;
+			return AURGeoUtil.COLLINEAR;
 		}
 		return v > 0 ? AURGeoUtil.CLOCKWISE : AURGeoUtil.COUNTER_CLOCKWISE;
 	}

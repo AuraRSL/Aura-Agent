@@ -2,6 +2,7 @@ package viewer;
 
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
+import viewer.layers.knd.K_CommonWalls;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -69,6 +70,7 @@ public class K_Viewer extends JFrame {
 	addLayer(K_SmallAreas.class, false);
 	addLayer(K_MediumAreas.class, false);
 	addLayer(K_BigAreas.class, false);
+	addLayer(K_CommonWalls.class, false);
     }
     
     

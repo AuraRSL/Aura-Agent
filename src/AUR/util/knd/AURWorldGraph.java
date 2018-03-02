@@ -474,6 +474,7 @@ public class AURWorldGraph extends AbstractModule {
 		setNeighbours();
 		addBorders();
 		addWalls();
+		setCommonWalls();
 		addPerceptibleBuildings();
 		
 //		for(AURAreaGraph ag_ : areas.values()) {
@@ -500,7 +501,17 @@ public class AURWorldGraph extends AbstractModule {
 //		System.out.println("walls: " + walls.size());
 		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
 	}
-
+	
+	public void setCommonWalls() {
+//		long t = System.currentTimeMillis();
+		for(AURAreaGraph ag : areas.values()) {
+			if(ag.isBuilding()) {
+				ag.getBuilding().setCommonWalls();
+			}
+		}
+//		System.out.println("setCommonWalls(): " + (System.currentTimeMillis() - t) + " ms");
+	}
+	
 	public void addPerceptibleBuildings() {
 		for(AURAreaGraph ag : areas.values()) {
 			if(ag.isBuilding()) {

@@ -173,12 +173,14 @@ public class AURAreaGraph {
 	
 	public int ownerAgent = -1;
 
+	public Polygon polygon = null;
+	
 	public AURAreaGraph(Area area, AURWorldGraph wsg, AURAreaGrid instanceAreaGrid) {
 		if (area == null || wsg == null) {
 			return;
 		}
-		Polygon poly = (Polygon) (area.getShape());
-		double area_ = AURGeoUtil.getArea(poly);
+		this.polygon = (Polygon) (area.getShape());
+		double area_ = AURGeoUtil.getArea(this.polygon);
 		if (area_ < 1000 * 1000 * 25) {
 			isSmall = true;
 		}

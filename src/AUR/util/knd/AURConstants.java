@@ -14,4 +14,6 @@ public class AURConstants {
 	public final static int AMBULANCE_FORGET_TIME = 30;
 	public final static int FIREBRIGADE_FORGET_TIME = 30;
 	
+	public final static int AGENT_RADIUS = 500;
+	
 }
