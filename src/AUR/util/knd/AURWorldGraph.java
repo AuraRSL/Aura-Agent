@@ -18,7 +18,6 @@ import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
-import AUR.util.ambo.sightArea.SightPolygonAllocator;
 import java.awt.Polygon;
 import viewer.K_Viewer;
 import rescuecore2.misc.geometry.Point2D;
@@ -55,8 +54,6 @@ public class AURWorldGraph extends AbstractModule {
 	public boolean grid[][] = null;
 	public AURFireSimulator fireSimulator = null;
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
-
-	public SightPolygonAllocator sightPolygonAllocator; // added by arman (2018)
 
 	public int agentOrder = -1;
 	
@@ -362,9 +359,7 @@ public class AURWorldGraph extends AbstractModule {
 		this.si = si;
 
 		build();
-                
-//		this.sightPolygonAllocator = new SightPolygonAllocator(worldInfo, scenarioInfo); // added by arman (2018)
-//		this.sightPolygonAllocator.calc(); // added by arman (2018)
+		
 	}
 
 	public ArrayList<AURAreaGraph> getUnseens(Collection<EntityID> list) {

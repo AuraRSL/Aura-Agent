@@ -54,7 +54,6 @@ public class K_Viewer extends JFrame {
 	addLayer(K_AreaExtinguishableRange.class, false);
 	addLayer(K_ShortestPath.class, false);
 	addLayer(CivilianLayer.class, true);
-	addLayer(SightPolygonLayer.class, false);
 	addLayer(K_AreaPropery.class, true);
 	addLayer(K_AirCells.class, false);
 	addLayer(K_BuildingAirCells.class, false);
