@@ -33,11 +33,6 @@ import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
 
-/**
- *
- * @author Alireza Kandeh - 2017 & 2018
- */
-
 public class AURActionFireFighting extends ExtAction {
 	private PathPlanning pathPlanning;
 
@@ -164,12 +159,12 @@ public class AURActionFireFighting extends ExtAction {
 		wsg.dijkstra(ai.getPositionArea().getID());
 		LinkedList<AURValuePoint> vps = new LinkedList<AURValuePoint>();
 		for (AURAreaGraph ag : list) {
-			vps.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
+			vps.add(new AURValuePoint(ag.cx, ag.cy, ag));
 		}
 
 		for (AURValuePoint vp : vps) {
-			vp.value = (vp.areaGraph.getLastDijkstraCost()) + 1000;
-			if (vp.areaGraph.isRefuge()) {
+			vp.value = (vp.areaGraph.lastDijkstraCost) + 1000;
+			if (vp.areaGraph.areaType == AURAreaGraph.AREA_TYPE_REFUGE) {
 				vp.value *= 1 + ((1 - wsg.colorCoe[wsg.getAgentColor()][vp.areaGraph.color])) / 2;
 			} else {
 				int coe = (Math.abs((vp.areaGraph.ownerAgent - wsg.agentOrder)));
@@ -244,7 +239,7 @@ public class AURActionFireFighting extends ExtAction {
 		wsg.dijkstra(ai.getPosition());
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
+			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt() == false
 					&& ag.lastDijkstraEntranceNode != null) {
 				result.add(ag);
 			}
@@ -272,7 +267,7 @@ public class AURActionFireFighting extends ExtAction {
 			if (ag.isOnFire()) {
 				fcount++;
 			}
-			if (ag.burnt) {
+			if (ag.burnt()) {
 				bcount++;
 			}
 			if (ag.damage()) {

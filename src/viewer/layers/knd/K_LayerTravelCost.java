@@ -24,10 +24,10 @@ public class K_LayerTravelCost extends K_ViewerLayer {
         for(AURAreaGraph ag : wsg.areas.values()) {
             String cost = "inf";
             if(ag.lastDijkstraEntranceNode != null || true) {
-                cost = (int) ag.getLastDijkstraCost() + "";
+                cost = (int) ag.lastDijkstraCost + "";
             }
 
-            g2.drawString(cost, kst.xToScreen(ag.getX()),  kst.yToScreen(ag.getY()));
+            g2.drawString(cost, kst.xToScreen(ag.cx),  kst.yToScreen(ag.cy));
 
         }
         g2.setStroke(new BasicStroke(1));

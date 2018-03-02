@@ -25,8 +25,8 @@ public class K_AreaExtinguishableRange extends K_ViewerLayer {
         g2.setColor(Color.red);
         g2.setStroke(new BasicStroke(2));
         g2.drawOval(
-            kst.xToScreen(selected_ag.getX()) - (int) (1 * r * kst.zoom),
-            kst.yToScreen(selected_ag.getY()) - (int) (1 * r * kst.zoom),
+            kst.xToScreen(selected_ag.cx) - (int) (1 * r * kst.zoom),
+            kst.yToScreen(selected_ag.cy) - (int) (1 * r * kst.zoom),
             (int) (2 * r * kst.zoom),
             (int) (2 * r * kst.zoom)
         );

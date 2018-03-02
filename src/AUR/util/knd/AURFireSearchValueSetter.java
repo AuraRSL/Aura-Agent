@@ -191,7 +191,7 @@ public class AURFireSearchValueSetter {
 	private void add_TravelCost(ArrayList<AURValuePoint> points, double coefficient) {
 		double maxDist = 0;
 		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.getLastDijkstraCost();
+			p.temp_value = p.areaGraph.lastDijkstraCost;
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
@@ -205,7 +205,7 @@ public class AURFireSearchValueSetter {
 	private void add_NoBlockadeTravelCost(ArrayList<AURValuePoint> points, double coefficient) {
 		double maxDist = 0;
 		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.getNoBlockadeLastDijkstraCost();
+			p.temp_value = p.areaGraph.lastNoBlockadeDijkstraCost;
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
@@ -219,7 +219,7 @@ public class AURFireSearchValueSetter {
 	private void add_InitialCluster(ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster,
 			double coefficient) {
 		for (AURValuePoint p : points) {
-			if (true && p.areaGraph.seen == false && p.areaGraph.burnt == false
+			if (true && p.areaGraph.seen() == false && p.areaGraph.burnt() == false
 					&& initialCluster.contains(p.areaGraph.area.getID())) {
 				p.value += (1 * coefficient);
 			}

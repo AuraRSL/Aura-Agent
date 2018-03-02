@@ -20,8 +20,8 @@ public class K_LayerAreaCenters extends K_ViewerLayer {
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
         for(AURAreaGraph ag : wsg.areas.values()) {
             if(true) {
-                double x = ag.getX();
-                double y = ag.getY();
+                double x = ag.cx;
+                double y = ag.cy;
 
                 g2.setColor(Color.BLACK);
                 

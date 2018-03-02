@@ -73,7 +73,7 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		wsg.dijkstra(ai.getPosition());
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
+			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt() == false
 					&& ag.lastDijkstraEntranceNode != null) {
 				result.add(ag);
 			}
@@ -91,7 +91,7 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		ArrayList<AURValuePoint> points = new ArrayList<>();
 		LinkedList<AURAreaGraph> closeFires = getCloseFires();
 		for (AURAreaGraph ag : closeFires) {
-			points.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
+			points.add(new AURValuePoint(ag.cx, ag.cy, ag));
 		}
 
 		if (points.size() > 0) {

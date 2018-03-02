@@ -7,11 +7,6 @@ package AUR.util.knd;
 
 public class AURConstants {
     
-	public static final int WORLD_AIR_CELL_SIZE = 10000;
-	
-	public final static int DEFAULT_FORGET_TIME = 30;
-	public final static int POLICE_FORGET_TIME = 30;
-	public final static int AMBULANCE_FORGET_TIME = 30;
-	public final static int FIREBRIGADE_FORGET_TIME = 30;
-	
+    public static final int WORLD_AIR_CELL_SIZE = 10000;
+    
 }

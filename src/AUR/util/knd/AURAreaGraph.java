@@ -1,9 +1,16 @@
 package AUR.util.knd;
 
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.LinkedList;
+
 import AUR.util.FibonacciHeap.Entry;
+import static AUR.util.knd.AURAreaGrid.TYPE;
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
@@ -17,79 +24,52 @@ import viewer.K_ScreenTransform;
  * @author Alireza Kandeh - 2017 & 2018
  */
 
+
 public class AURAreaGraph {
-	
+
+	public boolean vis = false;
+	public boolean needUpdate = false;
 	public Area area = null;
 	public int areaCostFactor = 1;
 	public ArrayList<AURBorder> borders = new ArrayList<AURBorder>();
 	public ArrayList<AURAreaGraph> neighbours = new ArrayList<AURAreaGraph>();
+	// public ArrayList<EntityID> addedBlockaeds = new ArrayList<>();
+	public ArrayList<Polygon> areaBlockadePolygons = new ArrayList<Polygon>();
 	public AURWorldGraph wsg = null;
 	public AURAreaGrid instanceAreaGrid = null;
+	public double cx = 0;
+	public double cy = 0;
+	public boolean fireChecked = false;
 	public final static int AREA_TYPE_ROAD = 0;
 	public final static int AREA_TYPE_BULDING = 1;
 	public final static int AREA_TYPE_REFUGE = 2;
 	public final static int AREA_TYPE_ROAD_HYDRANT = 3;
 	public final static int AREA_TYPE_GAS_STATION = 4;
+	public boolean onFireProbability = false;
+	public int areaType = AREA_TYPE_ROAD;
 	public int updateTime = -1;
+	public int forgetTime = 30;
+	public final static int policeForgetTime = 30;
+	public final static int ambulanceForgetTime = 30;
+	public final static int fireBirgadeForgetTime = 30;
+	public double lastDijkstraCost = AURGeoUtil.INF;
 	public AURNode lastDijkstraEntranceNode = null;
+	public double lastNoBlockadeDijkstraCost = AURGeoUtil.INF;
 	public AURNode lastNoBlockadeDijkstraEntranceNode = null;
+	double realDistFromAgent = AURGeoUtil.INF;
 	public final static int COLOR_RED = 0;
 	public final static int COLOR_GREEN = 1;
 	public final static int COLOR_BLUE = 2;
 	public final static int COLOR_YELLOW = 3;
 	public int color = 0;
+	private boolean seen = false;
+	private boolean burnt = false;
 	public int clusterIndex = 0;
-	public boolean isSmall;
-	public boolean isBig;
-	public boolean vis;
-	public boolean needUpdate;
-	public boolean onFireProbability;
-	public boolean seen;
-	public boolean burnt;
-	public boolean fireChecked;
-	
-	
-	public int getForgetTime() {
-		switch (wsg.ai.me().getStandardURN()) {
-			case POLICE_FORCE: {
-				return AURConstants.POLICE_FORGET_TIME;
-			}
-			case AMBULANCE_TEAM: {
-				return AURConstants.AMBULANCE_FORGET_TIME;
-			}
-			case FIRE_BRIGADE: {
-				return AURConstants.FIREBRIGADE_FORGET_TIME;
-			}
-		}
-		return AURConstants.DEFAULT_FORGET_TIME;
-	}
 	
 	private AURBuilding building = null;
 	
 	public ArrayList<AURBuilding> perceptibleBuildings;
 	
-	public int getX() {
-		return this.area.getX();
-	}
-	
-	public int getY() {
-		return this.area.getY();
-	}
-	
-	public double getLastDijkstraCost() {
-		if(this.lastDijkstraEntranceNode == null) {
-			return AURGeoUtil.INF;
-		}
-		return this.lastDijkstraEntranceNode.cost;
-	}
-	
-	public double getNoBlockadeLastDijkstraCost() {
-		if(this.lastNoBlockadeDijkstraEntranceNode == null) {
-			return AURGeoUtil.INF;
-		}
-		return this.lastNoBlockadeDijkstraEntranceNode.cost;
-	}
-
 	public boolean isNeighbour(AURAreaGraph ag) {
 		for (AURAreaGraph neiAg : neighbours) {
 			if (neiAg.area.getID().equals(ag.area.getID())) {
@@ -100,7 +80,7 @@ public class AURAreaGraph {
 	}
 
 	public double distFromAgent() {
-		return Math.hypot(this.getX() - wsg.ai.getX(), this.getY() - wsg.ai.getY());
+		return Math.hypot(cx - wsg.ai.getX(), cy - wsg.ai.getY());
 	}
 
 	public boolean isOnFire() {
@@ -118,6 +98,19 @@ public class AURAreaGraph {
 		return false;
 	}
 
+	public boolean seen() {
+		return seen;
+	}
+
+	public void setSeen() {
+		lastSeen = wsg.ai.getTime();
+		seen = true;
+	}
+
+	public boolean burnt() {
+		return burnt;
+	}
+
 	public boolean damage() {
 		if (isBuilding()) {
 			Building b = (Building) area;
@@ -133,6 +126,10 @@ public class AURAreaGraph {
 		return false;
 	}
 
+	public void setBurnt() {
+		burnt = true;
+	}
+
 	public double distFromPointToBorder(double fx, double fy, AURBorder border) {
 		return AURGeoUtil.dist(fx, fy, border.CenterNode.x, border.CenterNode.y);
 	}
@@ -140,16 +137,23 @@ public class AURAreaGraph {
 	public double distFromBorderToBorder(AURBorder b1, AURBorder b2) {
 		return AURGeoUtil.dist(b1.CenterNode.x, b1.CenterNode.y, b2.CenterNode.x, b2.CenterNode.y);
 	}
+
+	public AURAreaGraph(double cx, double cy) {
+		this.cx = cx;
+		this.cy = cy;
+	}
+
+	public boolean isSmall = false;
 	
 	public int countUnburntsInGrid() {
 		int result = 0;
 
-		int i = (int) ((this.getX() - wsg.gridDy) / wsg.worldGridSize);
-		int j = (int) ((this.getY() - wsg.gridDx) / wsg.worldGridSize);
+		int i = (int) ((this.cy - wsg.gridDy) / wsg.worldGridSize);
+		int j = (int) ((this.cx - wsg.gridDx) / wsg.worldGridSize);
 		if (wsg.areaGraphsGrid[i][j] != null) {
 
 			for(AURAreaGraph ag : wsg.areaGraphsGrid[i][j]) {
-				if(ag.isBuilding() && ag.burnt == false && ag.isOnFire()) {
+				if(ag.isBuilding() && ag.burnt() == false && ag.isOnFire()) {
 					result++;
 				}
 			}
@@ -170,7 +174,8 @@ public class AURAreaGraph {
 		return AURFireSimulator.getWaterNeeded(this, 1000, 0);
 
 	}
-	
+
+	public boolean isBig = false;
 	public int ownerAgent = -1;
 
 	public AURAreaGraph(Area area, AURWorldGraph wsg, AURAreaGrid instanceAreaGrid) {
@@ -188,39 +193,61 @@ public class AURAreaGraph {
 		this.area = area;
 		this.vis = false;
 		this.wsg = wsg;
+		this.cx = this.area.getX();
+		this.cy = this.area.getY();
 		this.instanceAreaGrid = instanceAreaGrid;
+		StandardEntityURN areaURN = this.area.getStandardURN();
 
+		this.areaType = AREA_TYPE_ROAD;
+		switch (areaURN) { // #toDo
+			case REFUGE: {
+				areaType = AREA_TYPE_REFUGE;
+				break;
+			}
+			case GAS_STATION: {
+				areaType = AREA_TYPE_GAS_STATION;
+				break;
+			}
+			case POLICE_OFFICE:
+			case AMBULANCE_CENTRE:
+			case FIRE_STATION:
+			case BUILDING: {
+				areaType = AREA_TYPE_BULDING;
+				break;
+			}
+			case HYDRANT: {
+				areaType = AREA_TYPE_ROAD_HYDRANT;
+				break;
+			}
+			}
+			switch (wsg.ai.me().getStandardURN()) {
+			case POLICE_FORCE: {
+				forgetTime = policeForgetTime;
+				break;
+			}
+			case AMBULANCE_TEAM: {
+				forgetTime = ambulanceForgetTime;
+				break;
+			}
+			case FIRE_BRIGADE: {
+				forgetTime = fireBirgadeForgetTime;
+				break;
+			}
+		}
+                
 		if(isBuilding()) {
 			this.building = new AURBuilding(this.wsg, this);
 		}
 	}
-	public final AURBuilding getBuilding() {
+
+	public AURBuilding getBuilding() {
                 return this.building;
 	}
         
-	public final boolean isGasStation() {
-		StandardEntityURN urn = this.area.getStandardURN();
-		return (urn.equals(StandardEntityURN.GAS_STATION));
-	}
-	
-	public final boolean isRoad() {
-		StandardEntityURN urn = this.area.getStandardURN();
-		return (urn.equals(StandardEntityURN.ROAD) || urn.equals(StandardEntityURN.HYDRANT));
-	}
-	
-	public final boolean isHydrant() {
-		StandardEntityURN urn = this.area.getStandardURN();
-		return (urn.equals(StandardEntityURN.HYDRANT));
-	}
-	
-	public final boolean isRefuge() {
-		StandardEntityURN urn = this.area.getStandardURN();
-		return (urn.equals(StandardEntityURN.REFUGE));
-	}
-	
-	public final boolean isBuilding() {
-		StandardEntityURN urn = this.area.getStandardURN();
-		return (urn.equals(StandardEntityURN.BUILDING) || urn.equals(StandardEntityURN.GAS_STATION) || urn.equals(StandardEntityURN.REFUGE));
+        
+
+	public boolean isBuilding() {
+		return (areaType == AREA_TYPE_BULDING || areaType == AREA_TYPE_GAS_STATION || areaType == AREA_TYPE_REFUGE);
 	}
 
 	public ArrayList<AURNode> getReachabeEdgeNodes(double x, double y) {
@@ -232,7 +259,7 @@ public class AURAreaGraph {
 			}
 		}
 
-		if (this.hasBlockade() == false) {
+		if (areaBlockadePolygons.size() == 0) {
 			for (AURBorder border : borders) {
 				for (AURNode node : border.nodes) {
 					node.cost = AURGeoUtil.dist(x, y, node.x, node.y);
@@ -263,7 +290,7 @@ public class AURAreaGraph {
 		for (AURAreaGraph ag : wsg.gasStations) {
 			Building b = (Building) (ag.area);
 			if (b.isFierynessDefined() == false || b.getFierynessEnum().equals(Fieryness.UNBURNT)) {
-				dist = AURGeoUtil.dist(ag.getX(), ag.getY(), this.getX(), this.getY());
+				dist = AURGeoUtil.dist(ag.cx, ag.cy, this.cx, this.cy);
 				if (dist < minDist) {
 					minDist = dist;
 				}
@@ -279,23 +306,27 @@ public class AURAreaGraph {
 	}
 
 	public void update(AURWorldGraph wsg) {
+		realDistFromAgent = AURGeoUtil.INF;
+		lastDijkstraCost = AURGeoUtil.INF;
 		lastDijkstraEntranceNode = null;
+		lastNoBlockadeDijkstraCost = AURGeoUtil.INF;
 		lastNoBlockadeDijkstraEntranceNode = null;
 		pQueEntry = null;
-		this.needUpdate = false;
+		needUpdate = false;
 		if (wsg.changes.contains(area.getID()) || updateTime < 0) {
 			updateTime = wsg.ai.getTime();
-			this.needUpdate = true;
+			needUpdate = true;
 		}
-		if (this.needUpdate || longTimeNoSee()) {
+		if (needUpdate || longTimeNoSee()) {
 			/*
 			 * if(longTimeNoSee()) { addedBlockaeds.clear(); }
 			 */
 			areaCostFactor = 5;
+			areaBlockadePolygons.clear();
 			for (AURBorder border : borders) {
 				border.reset();
 			}
-			if (this.needUpdate == true) {
+			if (needUpdate) {
 
 				if (isOnFire()) {
 					areaCostFactor = 10;
@@ -319,15 +350,15 @@ public class AURAreaGraph {
 					 * areaBlockadePolygons.add(bPolygon);
 					 * addedBlockaeds.add(b.getID()); } } } else {
 					 */
-//					for (EntityID entId : area.getBlockades()) {
-//						Blockade b = (Blockade) wsg.wi.getEntity(entId);
-//						areaBlockadePolygons.add((Polygon) (b.getShape()));
-//					}
+					for (EntityID entId : area.getBlockades()) {
+						Blockade b = (Blockade) wsg.wi.getEntity(entId);
+						areaBlockadePolygons.add((Polygon) (b.getShape()));
+					}
 					// }
 
 				}
 			}
-			this.needUpdate = true;
+			needUpdate = true;
 		}
 		
 		if(isBuilding()) {
@@ -349,25 +380,6 @@ public class AURAreaGraph {
 		
 	}
 
-	// toDo
-	public ArrayList<Polygon> getBlockades() {
-		ArrayList<Polygon>  result = new ArrayList<>();
-		if(this.area.isBlockadesDefined() == false) {
-			return result;
-		}
-		for (EntityID entId : this.area.getBlockades()) {
-			Blockade b = (Blockade) wsg.wi.getEntity(entId);
-			result.add((Polygon) (b.getShape()));
-		}
-		return result;
-	}
-	
-	public boolean hasBlockade() {
-		if(this.area.isBlockadesDefined() == false) {
-			return false;
-		}
-		return this.area.getBlockades().isEmpty() == false;
-	}
 	
 	public int fireReportTime = -1;
 	public int lastTemperature = 0;
@@ -379,7 +391,7 @@ public class AURAreaGraph {
 	}
 	
 	public void initForReCalc() {
-		this.needUpdate = true;
+		needUpdate = true;
 	}
 
 	public void addBorderCenterEdges() {
@@ -419,23 +431,27 @@ public class AURAreaGraph {
 	}
 
 	public boolean longTimeNoSee() {
-		if (this.needUpdate = true) {
+		if (needUpdate) {
 			return false;
 		}
-		if (this.hasBlockade() == false) {
+		if (areaBlockadePolygons.size() == 0) {
 			return false;
 		}
-		return (wsg.ai.getTime() - updateTime) > getForgetTime();
+		return (wsg.ai.getTime() - updateTime) > forgetTime;
 	}
 	
 	public void paint(Graphics2D g2, K_ScreenTransform kst) {
 
+
+		
 //		int a = 500;
 //		for(AURBorder border : borders) {
 //			for(AURNode node : border.nodes) {
 //				g2.draw(kst.getTransformedRectangle(node.x - a, node.y - a, a * 2, a * 2));
 //			}
 //		}
+		
+		
 
 	}
 	
