@@ -52,8 +52,8 @@ public class AURBuildingClusterer extends StaticClustering {
             public ClusterItem(AURAreaGraph ag, int clusterIndex) {
                     this.ag = ag;
                     this.clusterIndex = clusterIndex;
-                    this.point[0] = this.ag.cx;
-                    this.point[1] = this.ag.cy;
+                    this.point[0] = this.ag.getX();
+                    this.point[1] = this.ag.getY();
             }
 
     }

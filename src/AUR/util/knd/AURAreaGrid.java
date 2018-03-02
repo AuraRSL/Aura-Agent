@@ -333,7 +333,7 @@ public class AURAreaGrid {
 	}
 
 	public void addAreaBlockades(AURAreaGraph ag) {
-		addBlockades(ag.areaBlockadePolygons);
+		addBlockades(ag.getBlockades());
 	}
 
 	public void init(AURAreaGraph areaGraph) {
@@ -355,10 +355,10 @@ public class AURAreaGrid {
 			markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
 		}
 
-		addBlockades(areaGraph.areaBlockadePolygons);
+		addBlockades(areaGraph.getBlockades());
 
 		for (AURAreaGraph ag : areaGraph.neighbours) {
-			addBlockades(ag.areaBlockadePolygons);
+			addBlockades(ag.getBlockades());
 		}
 	}
 
