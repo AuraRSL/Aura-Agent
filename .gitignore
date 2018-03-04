@@ -15,3 +15,5 @@ logs/
 nbproject/
 build.xml
 manifest.mf
+library
+data
