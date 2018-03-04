@@ -1,0 +1,17 @@
+.DS_Store
+.idea/
+Agent.iml
+AgentGit.iml
+LICENSE
+build/
+compile.sh
+launch.sh
+precompute.sh
+src/.DS_Store
+src/adf/.DS_Store
+start.sh
+test-results/
+logs/
+nbproject/
+build.xml
+manifest.mf
