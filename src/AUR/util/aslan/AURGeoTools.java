@@ -1,0 +1,176 @@
+package AUR.util.aslan;
+
+import AUR.util.knd.AURGeoUtil;
+import java.awt.Polygon;
+import rescuecore2.misc.geometry.Line2D;
+import rescuecore2.misc.geometry.Point2D;
+import rescuecore2.misc.geometry.Vector2D;
+import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Edge;
+
+/**
+ *
+ * @author Amir Aslan Aslani - 2017 & 2018
+ */
+public class AURGeoTools {
+
+        public static Point2D getClosestPointOnSegment(Point2D ss, Point2D se, Point2D p) {
+                return getClosestPointOnSegment(ss.getX(), ss.getY(), se.getX(), se.getY(), p.getX(), p.getY());
+        }
+
+        public static Point2D getClosestPointOnSegment(Line2D l, Point2D p) {
+                return getClosestPointOnSegment(l.getOrigin(), l.getEndPoint(), p);
+        }
+
+        public static Point2D getClosestPointOnSegment(double sx1, double sy1, double sx2, double sy2, double px, double py) {
+                double xDelta = sx2 - sx1;
+                double yDelta = sy2 - sy1;
+
+                if ((xDelta == 0) && (yDelta == 0)) {
+                        throw new IllegalArgumentException("Segment start equals segment end");
+                }
+
+                double u = ((px - sx1) * xDelta + (py - sy1) * yDelta) / (xDelta * xDelta + yDelta * yDelta);
+
+                final Point2D closestPoint;
+                if (u < 0) {
+                        closestPoint = new Point2D(sx1, sy1);
+                } else if (u > 1) {
+                        closestPoint = new Point2D(sx2, sy2);
+                } else {
+                        closestPoint = new Point2D((int) Math.round(sx1 + u * xDelta), (int) Math.round(sy1 + u * yDelta));
+                }
+
+                return closestPoint;
+        }
+
+        public static double getPointToLineDistance(Point2D A, Point2D B, Point2D P) {
+                Point2D mid = new Point2D((A.getX() + B.getX()) / 2, (A.getY() + B.getY()) / 2);
+                return mid.minus(P).getLength();
+        }
+
+        public static double getPointToLineDistance(Line2D l, Point2D p) {
+                return getPointToLineDistance(l.getOrigin(), l.getEndPoint(), p);
+        }
+
+        public static Point2D getEdgeMid(Edge e) {
+                return new Point2D(
+                        (e.getEndX() + e.getStartX()) / 2.0,
+                        (e.getEndY() + e.getStartY()) / 2.0
+                );
+        }
+
+        public static Vector2D getUnitPerpendicularVector(Vector2D v) {
+                Vector2D v2 = new Vector2D(-v.getY(), v.getX());
+                return v2.normalised();
+        }
+
+        public static int[][] getLinesOfPolygon(Polygon p) {
+                int[][] lines = new int[p.npoints][4];
+
+                for (int i = 0; i < p.npoints; i++) {
+                        lines[i][0] = p.xpoints[i];
+                        lines[i][1] = p.ypoints[i];
+                        lines[i][2] = p.xpoints[(i + 1) % p.npoints];
+                        lines[i][3] = p.ypoints[(i + 1) % p.npoints];
+                        
+                }
+                return lines;
+        }
+
+        public static boolean getIntersection(Polygon p, Line2D l) {
+                int[][] lines = getLinesOfPolygon(p);
+                double r[] = new double[2];
+                for (int[] line : lines) {
+                        if (AURGeoUtil.getIntersection(
+                                l.getOrigin().getX(),
+                                l.getOrigin().getY(),
+                                l.getEndPoint().getX(),
+                                l.getEndPoint().getY(),
+                                line[0],
+                                line[1],
+                                line[2],
+                                line[3],
+                                r
+                        )) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+        
+        public static boolean intersect(Polygon polygon, Polygon another) {
+                if(polygon.npoints != 0 && another.npoints != 0){
+                        int[] apexes0 = new int[2 * another.npoints];
+                        int[] apexes1 = new int[2 * polygon.npoints];
+                        for (int i = 0; i < polygon.npoints; i++) {
+                                apexes1[i * 2] = polygon.xpoints[i];
+                                apexes1[i * 2 + 1] = polygon.ypoints[i];
+                        }
+                        for (int i = 0; i < another.npoints; i++) {
+                                apexes1[i * 2] = another.xpoints[i];
+                                apexes1[i * 2 + 1] = another.ypoints[i];
+                        }
+
+                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
+                                for (int j = 0; j < (apexes1.length - 2); j += 2) {
+                                        if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
+                                                apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
+                                                return true;
+                                        }
+                                }
+                        }
+                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
+                                if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
+                                        apexes1[apexes1.length - 2], apexes1[apexes1.length - 1], apexes1[0], apexes1[1])) {
+                                        return true;
+                                }
+                        }
+                        for (int j = 0; j < (apexes1.length - 2); j += 2) {
+                                if (java.awt.geom.Line2D.linesIntersect(apexes0[apexes0.length - 2], apexes0[apexes0.length - 1],
+                                        apexes0[0], apexes0[1], apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
+                                        return true;
+                                }
+                        }
+                }
+                return false;
+        }
+        
+        public static boolean intersect(Polygon polygon, Area area) {
+                for(Edge e : area.getEdges())
+                        if(
+                                (! e.isPassable()) &&
+                                (
+                                        AURGeoTools.getIntersection(polygon, e.getLine()) || 
+                                        polygon.contains(e.getStartX(),e.getStartY()) ||
+                                        polygon.contains(e.getEndX(),e.getEndY())
+                                )
+                        )
+                                return true;
+                return false;
+        }
+        
+        
+        public static Polygon getClearPolygon(Point2D p1, Point2D p2, double width) {
+                Vector2D v = p2.minus(p1);
+                Vector2D vp = AURGeoTools.getUnitPerpendicularVector(v);
+                Polygon p = new Polygon();
+                p.addPoint(
+                        (int) (p1.getX() + vp.getX() * width / 2),
+                        (int) (p1.getY() + vp.getY() * width / 2)
+                );
+                p.addPoint(
+                        (int) (p1.getX() - vp.getX() * width / 2),
+                        (int) (p1.getY() - vp.getY() * width / 2)
+                );
+                p.addPoint(
+                        (int) (p2.getX() - vp.getX() * width / 2),
+                        (int) (p2.getY() - vp.getY() * width / 2)
+                );
+                p.addPoint(
+                        (int) (p2.getX() + vp.getX() * width / 2),
+                        (int) (p2.getY() + vp.getY() * width / 2)
+                );
+                return p;
+        }
+}
