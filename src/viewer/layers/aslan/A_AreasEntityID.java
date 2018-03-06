@@ -14,7 +14,7 @@ import viewer.K_ViewerLayer;
  * @author Amir Aslan Aslani - 2017
  */
 
-public class AreasEntityID extends K_ViewerLayer {
+public class A_AreasEntityID extends K_ViewerLayer {
 
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {

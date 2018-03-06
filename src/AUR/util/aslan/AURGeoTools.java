@@ -13,6 +13,7 @@ import rescuecore2.standard.entities.Edge;
  * @author Amir Aslan Aslani - 2017 & 2018
  */
 public class AURGeoTools {
+        public static final double FIVE_DEGREES_RADIAN = 0.0872665;
 
         public static Point2D getClosestPointOnSegment(Point2D ss, Point2D se, Point2D p) {
                 return getClosestPointOnSegment(ss.getX(), ss.getY(), se.getX(), se.getY(), p.getX(), p.getY());
@@ -172,5 +173,32 @@ public class AURGeoTools {
                         (int) (p2.getY() + vp.getY() * width / 2)
                 );
                 return p;
+        }
+        
+        public static Polygon getCircle(int center[], int radius){
+                Polygon circle = new Polygon();
+                double currentAngle = 0;
+                while(currentAngle < 2 * Math.PI){
+                        double normal[] = getNormalVectorWithRadian(currentAngle);
+                        circle.addPoint(
+                                (int)(center[0] + normal[0] * radius),
+                                (int)(center[1] + normal[1] * radius)
+                        );
+                        currentAngle += AURGeoTools.FIVE_DEGREES_RADIAN;
+                }
+                return circle;
+        }
+        
+        public static double[] getNormalVectorWithRadian(double rad){
+                return new double[]{
+                        Math.sin(rad),
+                        Math.cos(rad)
+                };
+        }
+        
+        public static double[] getNormalVectorWithDegree(int deg){
+                return getNormalVectorWithRadian(
+                        Math.toRadians(deg)
+                );
         }
 }

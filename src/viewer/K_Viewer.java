@@ -30,6 +30,7 @@ import javax.swing.JTextArea;
 import javax.swing.text.StyleConstants;
 import viewer.fromMisc.PanZoomListener;
 import viewer.layers.AmboLayers.*;
+import viewer.layers.aslan.*;
 import viewer.layers.knd.*;
 
 /**
@@ -70,6 +71,10 @@ public class K_Viewer extends JFrame {
 	addLayer(K_MediumAreas.class, false);
 	addLayer(K_BigAreas.class, false);
 	addLayer(K_CommonWalls.class, false);
+        
+	addLayer(A_AreasEntityID.class, false);
+	addLayer(A_BlockadesEntityID.class, false);
+	addLayer(A_PoliceClearAreaAndAgentsInThat.class, false);
     }
     
     

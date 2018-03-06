@@ -30,7 +30,6 @@ import adf.agent.precompute.PrecomputeData;
 import adf.component.extaction.ExtAction;
 import adf.component.module.algorithm.PathPlanning;
 import java.awt.Rectangle;
-import java.util.HashSet;
 import java.util.Stack;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.Pair;
@@ -48,6 +47,7 @@ import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
+
 /**
  *
  * @author Amir Aslan Aslani - 2017 & 2018
@@ -77,6 +77,8 @@ public class AURActionExtClear extends ExtAction {
         private PathPlanning pathPlanning;
         
         private AURClearWatcher cw = null;
+        
+        private int[] agentPosition;
 
 //        private boolean isThereDecidedCleaningLine = false;
 //        private Pair<Point2D, EntityID> decidedCleaningLineTarget = null;
@@ -172,6 +174,7 @@ public class AURActionExtClear extends ExtAction {
 
         @Override
         public ExtAction calc() {
+                this.agentPosition = new int[]{(int) agentInfo.getX(),(int) agentInfo.getY()};
                 this.cw.updateAgentInformations();
                 
                 this.result = null;
@@ -232,19 +235,37 @@ public class AURActionExtClear extends ExtAction {
 //                            return this;
 //            }
 
-                /*
+                /**
+                 * if there is agent that blocked in police clear area, then rescue that.
+                 */
+                int[] blockedAgentInClearArea = getBlockedAgentInClearArea();
+                if(blockedAgentInClearArea != null){
+                        System.out.println("Get Rescue Agent That Blocked...");
+                        this.result = this.cw.getAction(
+                                getRescueBlockedAgentAction(blockedAgentInClearArea)
+                        );
+                        if(this.result != null)
+                                return this;
+                        System.out.println("Failed!");
+                }
+                
+                /**
                  * if agent is standing on the target
                  */
                 if (agentPosition.equals(this.target)) {
                         System.out.println("getAreaClearAction <- beacause of reach to target :)");
-                        this.result = this.getAreaClearAction(policeForce, targetStandardEntity);
-                        return this;
+                        this.result = this.cw.getAction(
+                                this.getAreaClearAction(policeForce, targetStandardEntity)
+                        );
+                        if(this.result != null)
+                                return this;
                 }
+                
                 /**
                  * Improved road clearing if agent is standind on the area then
                  * open road to target
                  */
-                System.out.println("Target: " + target);
+                System.out.println("Get improved road clearing...");
                 this.result = improvedRoadClearing(policeForce, target);
                 return this;
         }
@@ -425,8 +446,8 @@ public class AURActionExtClear extends ExtAction {
                 double midY = (edge.getStartY() + edge.getEndY()) / 2;
 
                 /*
-             * if agent standing on the neighbor position
-             * and there is a blockade ahead
+                 * if agent standing on the neighbor position
+                 * and there is a blockade ahead
                  */
                 if (position instanceof Area) {
                         Area road = (Area) position;
@@ -1362,9 +1383,9 @@ public class AURActionExtClear extends ExtAction {
                 ArrayList<Integer> nodes = dijkstra.getPathTo(1);
                 ArrayList<Pair<Point2D, EntityID>> result = new ArrayList<>();
                 
-                System.out.println("GP Graph: " + nodes);
+//                System.out.println("GP Graph: " + nodes);
                 for(int i = 1;i < nodes.size() - 1;i ++){
-                        System.out.println(points.get(i));
+//                        System.out.println(points.get(i));
                         result.add(
                                 new Pair(
                                         points.get(nodes.get(i)),
@@ -1396,5 +1417,48 @@ public class AURActionExtClear extends ExtAction {
                                 ((Area) worldInfo.getEntity(a2)).getEdgeTo(a3)
                         )
                 );
+        }
+
+        private Action getRescueBlockedAgentAction(int[] blockedAgentsPosition) {
+                Vector2D v = new Vector2D(
+                        (int) (blockedAgentsPosition[0] - agentPosition[0]), 
+                        (int) (blockedAgentsPosition[1] - agentPosition[1])
+                );
+                v = v.normalised().scale(v.getLength() + agentSize);
+                return new ActionClear(
+                        (int)(agentPosition[0] + v.getX()),
+                        (int)(agentPosition[1] + v.getY())
+                );
+        }
+
+        private int[] getBlockedAgentInClearArea() {
+                int distToRescueBlockedAgents = this.clearDistance - (int) this.agentSize;
+                
+                System.out.println("DTR: " + distToRescueBlockedAgents);
+                
+                Collection<EntityID> objectIDsInRange = worldInfo.getObjectIDsInRange(agentPosition[0], agentPosition[1], distToRescueBlockedAgents);
+                for(EntityID o : objectIDsInRange){
+                        StandardEntity se = worldInfo.getEntity(o);
+                        if(se instanceof Human && ! (se instanceof PoliceForce) && ! se.getID().equals(wsg.ai.getID())){
+                                int humanPosition[] = new int[]{((Human)se).getX(), ((Human)se).getY()};
+                                if(AURGeoUtil.dist(humanPosition[0], humanPosition[1], agentPosition[0], agentPosition[1]) < distToRescueBlockedAgents){
+                                        
+                                        System.out.println("Dist OK: " + AURGeoUtil.dist(humanPosition[0], humanPosition[1], agentPosition[0], agentPosition[1]));
+                                        
+                                        Rectangle humanPositionBounds = ((Area) worldInfo.getEntity(((Human) se).getPosition())).getShape().getBounds();
+                                        if(worldInfo.getEntity(((Human)se).getPosition()) instanceof Road &&
+                                           ((Road) worldInfo.getEntity(((Human)se).getPosition())).isBlockadesDefined()){
+                                                for(EntityID b : (((Road) worldInfo.getEntity(((Human)se).getPosition())).getBlockades())){
+                                                        Blockade blockade = (Blockade) worldInfo.getEntity(b);
+                                                        if(blockade.getShape().contains(humanPosition[0], humanPosition[1])){
+                                                                this.cw.setBlockadeList(Lists.newArrayList(blockade));
+                                                                return humanPosition;
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+                return null;
         }
 }
