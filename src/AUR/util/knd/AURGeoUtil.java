@@ -2,6 +2,7 @@ package AUR.util.knd;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.standard.entities.Building;
@@ -52,6 +53,33 @@ public class AURGeoUtil {
 			(int) (rect.getHeight() + 2 * off)
 		);
 		return result;
+	}
+	
+	public static ArrayList<double[]> getRandomPointsOnSegmentLine(double Ax, double Ay, double Bx, double By, double rate) {
+		ArrayList<double[]> result = new ArrayList<>();
+		double dx = Bx - Ax;
+		double dy = By - Ay;
+		double l = Math.hypot(dx, dy);
+		double n = (int) (rate * l);
+		if(l <= 1e-5) {
+			for(int i = 0; i < n; i++) {
+				result.add(new double[]{Ax, By});
+			}
+			return result;
+		}
+		dx /= l;
+		dy /= l;
+		for(int i = 0; i < n; i++) {
+			double rand = Math.random();
+			result.add(new double[] {Ax + dx * l * rand, Ay + dy * l * rand});
+		}
+		return result;
+	}
+	
+	public static void getRandomUnitVector(double result[]) {
+		double r = Math.random() * Math.PI * 2;
+		result[0] = Math.cos(r);
+		result[1] = Math.sin(r);
 	}
 	
 	private static double __temp__[] = new double[2];

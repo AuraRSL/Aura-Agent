@@ -53,5 +53,14 @@ public class K_ScreenTransform extends ScreenTransform {
 			this.yToScreen(y1)
 		);
 	}
+	
+	public void fillTransformedOvalFixedRadius(Graphics2D g2, double x0, double y0, double r) {
+		g2.fillOval(
+			(int) (this.xToScreen(x0) - r),
+			(int) (this.yToScreen(y0) - r),
+			(int) (2 * r),
+			(int) (2 * r)
+		);
+	}
     
 }

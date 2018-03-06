@@ -1,7 +1,6 @@
 package AUR.util.knd;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
+import adf.agent.precompute.PrecomputeData;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import rescuecore2.standard.entities.Building;
@@ -23,16 +22,40 @@ public class AURFireSimulator {
         return cells;
     }
     
+    public boolean isPrecomputedConnections = false;
+    
     public int getCellSize() {
         return AURConstants.WORLD_AIR_CELL_SIZE;
     }
     
+    public void precompute(PrecomputeData pd) {
+        for(AURAreaGraph ag : wsg.areas.values()) {
+            if(ag.isBuilding()) {
+                ag.getBuilding().precomputeRadiation(pd);
+            }
+        }
+        pd.setBoolean("radiation", true);
+    }
+    
+    public void resume(PrecomputeData pd) {
+        Boolean b = pd.getBoolean("radiation");
+        if(b == null || b == false) {
+		    
+            return;
+        }
+        this.isPrecomputedConnections = true;
+        for(AURAreaGraph ag : wsg.areas.values()) {
+            if(ag.isBuilding()) {
+                ag.getBuilding().resumeRadiation(pd);
+            }
+        }    
+    }
+
     public AURFireSimulator(AURWorldGraph wsg) {
         this.wsg = wsg;
         this.worldBounds = wsg.wi.getBounds();
         int rows = (int) Math.ceil(worldBounds.getHeight() / AURConstants.WORLD_AIR_CELL_SIZE);
         int cols = (int) Math.ceil(worldBounds.getWidth() / AURConstants.WORLD_AIR_CELL_SIZE);
-        
         this.worldBounds.setRect(
             worldBounds.getMinX(),
             worldBounds.getMinY(),

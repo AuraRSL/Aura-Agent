@@ -3,6 +3,7 @@ package AUR.util.knd;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
+import adf.agent.precompute.PrecomputeData;
 import java.awt.Graphics2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
@@ -196,6 +197,7 @@ public class AURAreaGraph {
 			this.building = new AURBuilding(this.wsg, this);
 		}
 	}
+	
 	public final AURBuilding getBuilding() {
                 return this.building;
 	}
