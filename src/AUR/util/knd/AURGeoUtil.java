@@ -4,6 +4,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 
 import rescuecore2.misc.geometry.Line2D;
+import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
 
 /**
@@ -94,6 +95,38 @@ public class AURGeoUtil {
 		return false;
 	}
 	
+	
+	public static boolean intersectsOrContains(Polygon p, double[] segmentLine) {
+		
+		for(int i = 0; i < p.npoints; i++) {
+			boolean b = AURGeoUtil.getIntersection(
+					p.xpoints[i],
+					p.ypoints[i],
+					p.xpoints[(i + 1) % p.npoints],
+					p.ypoints[(i + 1) % p.npoints],
+					segmentLine[0],
+					segmentLine[1],
+					segmentLine[2],
+					segmentLine[3],
+					__temp__
+			);
+			if(b) {
+				return true;
+			}
+		}
+
+		if(p.contains(segmentLine[0], segmentLine[1])) {
+			return true;
+		}
+		
+		if(p.contains(segmentLine[2], segmentLine[3])) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	
 	public static double getArea(Polygon p) {
 		double sum = 0;
 		for (int i = 0; i < p.npoints; i++) {
@@ -122,6 +155,33 @@ public class AURGeoUtil {
 					p.ypoints[i],
 					p.xpoints[(i + 1) % p.npoints],
 					p.ypoints[(i + 1) % p.npoints],
+					ray[0],
+					ray[1],
+					ray[2],
+					ray[3],
+					ip
+			);
+			if(b) {
+				ray[2] = ip[0];
+				ray[3] = ip[1];
+				result = true;
+			}
+		}
+		return result;
+	}
+	
+	public static boolean hitRayWalls(Building building, double ray[]) {
+		double ip[] = new double[2];
+		boolean result = false;
+		for(Edge edge : building.getEdges()) {
+			if(edge.isPassable() == true) {
+				continue;
+			}
+			boolean b = AURGeoUtil.getIntersection(
+					edge.getStartX(),
+					edge.getStartY(),
+					edge.getEndX(),
+					edge.getEndY(),
 					ray[0],
 					ray[1],
 					ray[2],
