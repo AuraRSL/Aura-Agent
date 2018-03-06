@@ -174,6 +174,9 @@ public class AURActionExtClear extends ExtAction {
 
         @Override
         public ExtAction calc() {
+                System.out.println("----------------------------------------");
+                System.out.println("Agent ID: " + agentInfo.getID());
+                
                 this.agentPosition = new int[]{(int) agentInfo.getX(),(int) agentInfo.getY()};
                 this.cw.updateAgentInformations();
                 
@@ -1115,6 +1118,7 @@ public class AURActionExtClear extends ExtAction {
 
         // Improved Road Clearing Methodes
         private Action improvedRoadClearing(PoliceForce policeForce, EntityID target) {
+                System.out.println("From: " + agentInfo.getPosition());
                 System.out.println("Target: " + target);
                 ArrayList<EntityID> path = this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target));
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
@@ -1248,8 +1252,9 @@ public class AURActionExtClear extends ExtAction {
                         decidedCleaningLineTarget.first().getY()
                 );
                 
+                int clearVectorLen = Math.min(distanceToTarget + (int)(AURConstants.AGENT_RADIUS * 3), this.clearDistance);
                 
-                Vector2D clearVector = vectorToTarget.scale(this.clearDistance * 98 / 100);
+                Vector2D clearVector = vectorToTarget.scale(clearVectorLen * 98 / 100);
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
                 Polygon clearPolygon = getClearPolygon(policePoint, clearPoint);
                 
@@ -1273,7 +1278,7 @@ public class AURActionExtClear extends ExtAction {
                 if(blockadeFlag){ // Then Clear
                         this.cw.setBlockadeList(blockadesThatInClearPolygon);
                         return this.cw.getAction(
-                                new ActionClear(agentInfo, vectorToTarget.scale(this.clearDistance))
+                                new ActionClear(agentInfo, vectorToTarget.scale(clearVectorLen))
                         );
                 }
                 else{ // Then Move
@@ -1319,7 +1324,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 for(Area area : areasList){
 //                        System.out.println("Load blockades of " + area.getID());
-                        if(area instanceof Road){
+                        if(area instanceof Road && ((Road)area).isBlockadesDefined()){
                                 for (EntityID bid : area.getBlockades()) {
                                         Blockade btmp = (Blockade) worldInfo.getEntity(bid);
                                         blocksList.add(btmp);
