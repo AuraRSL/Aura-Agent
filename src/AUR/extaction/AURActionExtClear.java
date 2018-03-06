@@ -48,6 +48,10 @@ import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
+/**
+ *
+ * @author Amir Aslan Aslani - 2017 & 2018
+ */
 
 public class AURActionExtClear extends ExtAction {
         

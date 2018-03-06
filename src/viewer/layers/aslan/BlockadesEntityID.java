@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package viewer.layers.aslan;
 
 import AUR.util.knd.AURAreaGraph;
@@ -17,7 +12,7 @@ import viewer.K_ViewerLayer;
 
 /**
  *
- * @author mrse
+ * @author Amir Aslan Aslani - Feb 2018
  */
 public class BlockadesEntityID extends K_ViewerLayer {
 
