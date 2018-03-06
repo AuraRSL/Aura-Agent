@@ -84,7 +84,7 @@ public class AURClearWatcher {
                 Action newAction = getNewAction(action);
                 
                 if(this.lastAction == CLEAR_FROM_WATCHER)
-                        ;
+                        System.out.println(" -> CLEAR_FROM_WATCHER");
                 else if(action instanceof ActionClear){
                         System.out.println(" -> CLEAR");
                         this.lastAction = this.CLEAR;
@@ -102,12 +102,14 @@ public class AURClearWatcher {
                 if(isMoveLessThanAllowedValue() &&
                    this.lastAction != CLEAR_FROM_WATCHER &&
                    currentBlockadeList.size() > 0 &&
-                   this.lastAction != this.NULL &&
-                   isBlockadeListsEqual(lastBlockadeList,currentBlockadeList)
+                   this.lastAction != this.NULL 
                 ){
-                        this.lastAction = CLEAR_FROM_WATCHER;
-                        System.out.println(" -> CLEAR_FROM_WATCHER");
-                        return new ActionClear(currentBlockadeList.get(0));
+                        System.out.println("Checking blockades...");
+                        if(isBlockadeListsEqual(lastBlockadeList,currentBlockadeList)){
+                                System.out.println("blockades ok...");
+                                this.lastAction = CLEAR_FROM_WATCHER;
+                                return new ActionClear(currentBlockadeList.get(0));
+                        }
                 }
                 this.lastAction = this.NULL;
                 return result;
