@@ -70,6 +70,7 @@ public class K_Viewer extends JFrame {
 	addLayer(K_MediumAreas.class, false);
 	addLayer(K_BigAreas.class, false);
 	addLayer(K_CommonWalls.class, false);
+	addLayer(K_AgentsLayer.class, true);
     }
     
     
