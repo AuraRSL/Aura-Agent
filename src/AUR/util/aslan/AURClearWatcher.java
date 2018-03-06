@@ -39,6 +39,9 @@ public class AURClearWatcher {
         public AURClearWatcher(AgentInfo ai) {
                 this.ai = ai;
                 this.lastAction = this.NULL;
+                
+                this.lastBlockadeList = new ArrayList<>();
+                this.currentBlockadeList = new ArrayList<>();
         }
         
         public void updateAgentInformations() {
@@ -101,6 +104,7 @@ public class AURClearWatcher {
                 Action result = action;
                 if(isMoveLessThanAllowedValue() &&
                    this.lastAction != CLEAR_FROM_WATCHER &&
+                   currentBlockadeList != null &&
                    currentBlockadeList.size() > 0 &&
                    this.lastAction != this.NULL 
                 ){
