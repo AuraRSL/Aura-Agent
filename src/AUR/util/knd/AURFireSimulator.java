@@ -31,7 +31,7 @@ public class AURFireSimulator {
     public void precompute(PrecomputeData pd) {
         for(AURAreaGraph ag : wsg.areas.values()) {
             if(ag.isBuilding()) {
-                ag.getBuilding().precomputeRadiation(pd);
+                ag.getBuilding().fireSimBuilding.precomputeRadiation(pd);
             }
         }
         pd.setBoolean("radiation", true);
@@ -46,7 +46,7 @@ public class AURFireSimulator {
         this.isPrecomputedConnections = true;
         for(AURAreaGraph ag : wsg.areas.values()) {
             if(ag.isBuilding()) {
-                ag.getBuilding().resumeRadiation(pd);
+                ag.getBuilding().fireSimBuilding.resumeRadiation(pd);
             }
         }    
     }

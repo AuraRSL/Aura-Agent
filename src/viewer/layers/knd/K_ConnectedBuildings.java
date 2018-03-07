@@ -1,7 +1,7 @@
 package viewer.layers.knd;
 
 import AUR.util.knd.AURAreaGraph;
-import AUR.util.knd.AURBuilding;
+import AUR.util.knd.AURBuildingConnection;
 import AUR.util.knd.AURWorldGraph;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -32,14 +32,14 @@ public class K_ConnectedBuildings extends K_ViewerLayer {
 			return;
 		}
 		
-		if(selected_ag.getBuilding().connections== null) {
+		if(selected_ag.getBuilding().fireSimBuilding.connections == null) {
 			return;
 		}
 		
 		g2.setColor(Color.red);
 		g2.setStroke(new BasicStroke(3));
 		
-		for(AURBuilding.Connection c : selected_ag.getBuilding().connections) {
+		for(AURBuildingConnection c : selected_ag.getBuilding().fireSimBuilding.connections) {
 			AURAreaGraph toAg = wsg.getAreaGraph(new EntityID(c.toID));
 			double w = c.weight;
 			w = Math.pow(w, 0.5);

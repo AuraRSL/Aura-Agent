@@ -27,7 +27,7 @@ public class K_BuildingAirCells extends K_ViewerLayer {
         }
         
         
-        for(int cell[] : selected_ag.getBuilding().getAirCells()) {
+        for(int cell[] : selected_ag.getBuilding().fireSimBuilding.getAirCells()) {
             int xy[] = wsg.fireSimulator.getCell_xy(cell[0], cell[1]);
             
             g2.setColor(new Color(255, 255, 0, 10 + cell[2] * 2));
