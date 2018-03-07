@@ -1179,7 +1179,18 @@ public class AURActionExtClear extends ExtAction {
                 Point2D policeForcePoint = new Point2D(agentInfo.getX(), agentInfo.getY());
                 result.add(new Pair(policeForcePoint,agentInfo.getPosition()));
                 
-                if(path.size() > 1 && ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(1))){
+                if(path.size() > 1 &&
+                   (
+                        (
+                                ! agentInfo.getPosition().equals(path.get(1)) &&
+                                ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(1))
+                        ) ||
+                        (
+                                agentInfo.getPosition().equals(path.get(1)) &&
+                                ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(2))
+                        )
+                   )
+                ){
                         System.out.println("Area Guid Point For First Area Added...");
                         result.addAll( getAreaGuidPoints(policeForcePoint,agentInfo.getPosition(),path.get(1)));
                 }
