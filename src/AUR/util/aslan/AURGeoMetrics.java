@@ -44,4 +44,25 @@ public class AURGeoMetrics {
         public static Point2D getPoint2DFromPoint(double p[]){
                 return new Point2D(p[0], p[1]);
         }
+        
+        public static double[] getPointFromPoint2D(Point2D p){
+                return new double[]{
+                        p.getX(),
+                        p.getY()
+                };
+        }
+        
+        public static double[] getPointsMinus(double[] p1, double[] p2){
+                return new double[]{
+                        p1[0] - p2[0],
+                        p1[1] - p2[1]
+                };
+        }
+        
+        public static double[] getPointsPlus(double[] p1, double[] p2){
+                return new double[]{
+                        p1[0] + p2[0],
+                        p1[1] + p2[1]
+                };
+        }
 }

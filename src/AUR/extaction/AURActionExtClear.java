@@ -1192,7 +1192,11 @@ public class AURActionExtClear extends ExtAction {
                    )
                 ){
                         System.out.println("Area Guid Point For First Area Added...");
-                        result.addAll( getAreaGuidPoints(policeForcePoint,agentInfo.getPosition(),path.get(1)));
+                        ArrayList<Pair<Point2D, EntityID>> areaGuidPoints = getAreaGuidPoints(policeForcePoint,agentInfo.getPosition(),path.get(1));
+                        if(areaGuidPoints == null){
+                                // Clear Area
+                        }
+                        result.addAll( areaGuidPoints );
                 }
                 
                 for (int i = 1; i < path.size(); i++) {
@@ -1201,9 +1205,54 @@ public class AURActionExtClear extends ExtAction {
                         Pair<Point2D, EntityID> pair = new Pair<>(AURGeoTools.getEdgeMid(a1.getEdgeTo(a2)), path.get(i));
                         result.add(pair);
                         if (i < (path.size() - 1) && ! isPassable(path.get(i - 1), path.get(i), path.get(i + 1)))  {
+                                System.out.println("[ * ] " + path.get(i));
                                 ArrayList<Pair<Point2D, EntityID>> areaGuidPoints = getAreaGuidPoints(path.get(i - 1), path.get(i), path.get(i + 1));
-                                System.out.println("EID: " + path.get(i) + " | " + areaGuidPoints);
-                                result.addAll( areaGuidPoints );
+                                if(areaGuidPoints == null){
+                                        Point2D p1 = result.get( result.size() - 1 ).first(),
+                                                p2 = result.get( result.size() - 2 ).first();
+                                        
+                                        double p11[] = AURGeoMetrics.getPointFromPoint2D(p1),
+                                               p22[] = AURGeoMetrics.getPointFromPoint2D(p2);
+                                        
+                                        double plus[] = AURGeoMetrics.getPointsPlus(
+                                                AURGeoMetrics.getVectorScaled(
+                                                        AURGeoMetrics.getVectorNormal(
+                                                                AURGeoMetrics.getPointsMinus(
+                                                                        p11,
+                                                                        p22
+                                                                )
+                                                        ),
+                                                        AURConstants.AGENT_RADIUS
+                                                ),
+                                                p11
+                                        );
+                                        
+                                        result.add(
+                                                new Pair(
+                                                        new Point2D(
+                                                                plus[0],
+                                                                plus[1]
+                                                        ),
+                                                        path.get(i)
+                                                )
+                                        );
+                                        
+                                        wsg.guidPointsAdded.get(
+                                                agentInfo.getID()).add(
+                                                        new Pair(
+                                                                new Point2D(
+                                                                        plus[0],
+                                                                        plus[1]
+                                                                ),
+                                                                path.get(i)
+                                                        )
+                                        );
+                                        System.out.println("EID: " + path.get(i) + " | " + new Pair(plus,path.get(i)));
+                                }
+                                else{
+                                        System.out.println("EID: " + path.get(i) + " | " + areaGuidPoints);
+                                        result.addAll( areaGuidPoints );
+                                }
                         }
                 }
                 
@@ -1219,18 +1268,20 @@ public class AURActionExtClear extends ExtAction {
         
         private boolean isPassable(EntityID a1, EntityID a2, EntityID a3){
                 Area a = (Area) worldInfo.getEntity(a2);
-                Point2D p1 = AURGeoTools.getEdgeMid(a.getEdgeTo(a1)),
-                        p2 = AURGeoTools.getEdgeMid(a.getEdgeTo(a3));
-                Polygon clearPolygon = getClearPolygon(p1, p2);
-                return ! AURGeoTools.intersect(clearPolygon, a);
+                Point2D p1 = AURGeoTools.getEdgeMid(a.getEdgeTo(a1));
+                return isPassable(p1,a2,a3);
         }
         
         private boolean isPassable(Point2D a1, EntityID a2, EntityID a3){
                 Area a = (Area) worldInfo.getEntity(a2);
+                ArrayList<Area> areas = new ArrayList<>();
+                areas.add(a);
+                for(EntityID eid : a.getNeighbours())
+                        areas.add((Area) worldInfo.getEntity(eid));
                 Point2D p1 = a1,
                         p2 = AURGeoTools.getEdgeMid(a.getEdgeTo(a3));
                 Polygon clearPolygon = getClearPolygon(p1, p2);
-                return ! AURGeoTools.intersect(clearPolygon, a);
+                return ! AURGeoTools.intersect(clearPolygon, areas);
         }
         
         private boolean hasRoadIntersect(Point2D policeForce, ArrayList<Pair<Point2D, EntityID>> path, int to) {
@@ -1374,6 +1425,12 @@ public class AURActionExtClear extends ExtAction {
                 ArrayList<Point2D> points = new ArrayList<>();
                 
                 Area a = (Area) worldInfo.getEntity(a2);
+                
+                ArrayList areas = new ArrayList<>();
+                areas.add(a);
+                for(EntityID eid : a.getNeighbours())
+                        areas.add(worldInfo.getEntity(eid));
+                
                 points.add(p1);
                 points.add(p2);
                 
@@ -1403,7 +1460,7 @@ public class AURActionExtClear extends ExtAction {
                                         i != j &&
                                         ! AURGeoTools.intersect(
                                                 getClearPolygon(points.get(i), points.get(j)),
-                                                a
+                                                areas
                                         )
                                 ){
                                         matrix[i][j] = matrix[j][i] = (int) AURGeoUtil.dist(points.get(i).getX(), points.get(i).getY(), points.get(j).getX(), points.get(j).getY());
@@ -1415,6 +1472,10 @@ public class AURActionExtClear extends ExtAction {
                 
                 AURDijkstra dijkstra = new AURDijkstra();
                 dijkstra.dijkstra(matrix, 0, points.size());
+                
+                if(dijkstra.getDistanceTo(1) == Integer.MAX_VALUE)
+                        return null;
+                
                 ArrayList<Integer> nodes = dijkstra.getPathTo(1);
                 ArrayList<Pair<Point2D, EntityID>> result = new ArrayList<>();
                 

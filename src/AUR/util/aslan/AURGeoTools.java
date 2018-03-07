@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURGeoUtil;
 import java.awt.Polygon;
+import java.util.Collection;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.misc.geometry.Vector2D;
@@ -151,6 +152,14 @@ public class AURGeoTools {
                 return false;
         }
         
+        public static boolean intersect(Polygon polygon, Collection<Area> areas) {
+                for(Area area : areas)
+                        if( intersect ( polygon, area ) ) {
+                                return true;
+                        }
+                                
+                return false;
+        }
         
         public static Polygon getClearPolygon(Point2D p1, Point2D p2, double width) {
                 Vector2D v = p2.minus(p1);
