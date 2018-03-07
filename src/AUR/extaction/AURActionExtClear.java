@@ -2,6 +2,7 @@ package AUR.extaction;
 
 import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURDijkstra;
+import AUR.util.aslan.AURGeoMetrics;
 import AUR.util.aslan.AURGeoTools;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
@@ -1258,25 +1259,13 @@ public class AURActionExtClear extends ExtAction {
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
                 Polygon clearPolygon = getClearPolygon(policePoint, clearPoint);
                 
-                Pair<ArrayList<Area>, ArrayList<Blockade> > areasAndBlockadesOfClearPolygon = getAreasAndBlockadesInBound(clearPolygon.getBounds(),(Area) worldInfo.getEntity(agentInfo.getPosition()));
                 
 //                this.wsg.policeSelectedAreasToCkeckBlockades.put(agentInfo.getID(), areasAndBlockadesOfClearPolygon.first());
 //                this.wsg.policeClearPolygon.put(agentInfo.getID(), clearPolygon);
-                
-                ArrayList<Blockade> blockadesThatInClearPolygon = new ArrayList<>();
-                
-                boolean blockadeFlag = false;
-                for(Blockade blockade : areasAndBlockadesOfClearPolygon.second()){
-//                        System.out.println("Blockade " + blockade.getID() + " Checking...");
-                        if(intersect(blockade, clearPolygon)){
-//                                System.out.println("Blockade " + blockade.getID() + " is blocked.");
-                                blockadeFlag = true;
-                                blockadesThatInClearPolygon.add(blockade);
-                        }
-                }
-                
-                if(blockadeFlag){ // Then Clear
-                        this.cw.setBlockadeList(blockadesThatInClearPolygon);
+                Pair<Boolean, ArrayList<Blockade>> blockadesList = isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon,(Area) worldInfo.getEntity(agentInfo.getPosition()));
+
+                if(blockadesList.first()){ // Then Clear
+                        this.cw.setBlockadeList(blockadesList.second());
                         return this.cw.getAction(
                                 new ActionClear(agentInfo, vectorToTarget.scale(clearVectorLen))
                         );
@@ -1285,8 +1274,17 @@ public class AURActionExtClear extends ExtAction {
                         Vector2D moveVector;
                         if(distanceToTarget < this.clearDistance - agentSize)
                                 moveVector = vectorToTarget.scale(distanceToTarget);
-                        else
+                        else{
                                 moveVector = vectorToTarget.scale(this.clearDistance - agentSize);
+                                for(double to = moveVector.getLength() + 500;to < distanceToTarget;to += 500){ // deghate mohasebe toole masire ghabele tey kardan
+                                        if(thereIsNoBlockade(to,vectorToTarget)){
+                                                moveVector = vectorToTarget.scale(to - agentSize - 10);
+                                        }
+                                        else
+                                                break;
+                                }
+                        }
+                        
                         
                         return this.cw.getAction(
                                 new ActionMove(
@@ -1296,6 +1294,27 @@ public class AURActionExtClear extends ExtAction {
                                 )
                         );
                 }
+        }
+        
+        private Pair<Boolean, ArrayList<Blockade> > isThereBlockadesInBlockadesListInIntersectWithClearPolygon(Polygon clearPolygon, Area startBFS){
+                Pair<ArrayList<Area>, ArrayList<Blockade> > areasAndBlockadesOfClearPolygon = getAreasAndBlockadesInBound(clearPolygon.getBounds(),(Area) startBFS);
+                
+                ArrayList<Blockade> blockadesThatInClearPolygon = new ArrayList<>();
+                
+                Boolean blockadeFlag = false;
+                for(Blockade blockade : areasAndBlockadesOfClearPolygon.second()){
+//                        System.out.println("Blockade " + blockade.getID() + " Checking...");
+                        if(intersect(blockade, clearPolygon)){
+//                                System.out.println("Blockade " + blockade.getID() + " is blocked.");
+                                blockadeFlag = true;
+                                blockadesThatInClearPolygon.add(blockade);
+                        }
+                }
+                
+                return new Pair(
+                        blockadeFlag,
+                        blockadesThatInClearPolygon
+                );
         }
         
         private Pair<ArrayList<Area>, ArrayList<Blockade>> getAreasAndBlockadesInBound(Rectangle bound, Area start){
@@ -1465,5 +1484,17 @@ public class AURActionExtClear extends ExtAction {
                         }
                 }
                 return null;
+        }
+
+        private boolean thereIsNoBlockade(double to, Vector2D vectorToTarget) {
+                double[] v = AURGeoMetrics.getVectorFromVector2D(vectorToTarget);
+                double[] fP = new double[]{agentPosition[0],agentPosition[1]},
+                         tP = AURGeoMetrics.getVectorScaled(v, to);
+                tP[0] += agentPosition[0];
+                tP[1] += agentPosition[1];
+                fP[0] += agentPosition[0];
+                fP[1] += agentPosition[1];
+                Polygon cp = getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
+                return isThereBlockadesInBlockadesListInIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
         }
 }
