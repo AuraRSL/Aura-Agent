@@ -29,9 +29,35 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			AURFireSimBuilding b = selected_ag.getBuilding().fireSimBuilding;
 			result += "Estimated Temperature:\t" + b.getEstimatedTemperature();
 			result += "\n";
+			
 			result += "Estimated Energy:\t" + b.getEstimatedEnergy();
 			result += "\n";
+			
 			result += "Estimated Fieryness:\t" + b.getEstimatedFieryness();
+			result += "\n";
+
+			result += "ThermoCapacity:\t" + b.getThermoCapacity();
+			result += "\n";
+			
+			result += "Capacity:\t\t" + b.getCapacity();
+			result += "\n";
+			
+			result += "InitialFuel:\t\t" + b.getInitialFuel();
+			result += "\n";
+			
+			result += "Fuel:\t\t" + b.getFuel();
+			result += "\n";
+			
+			result += "Perimeter:\t\t" + b.getPerimeter();
+			result += "\n";
+			
+			result += "GroundArea:\t\t" + b.getGroundArea();
+			result += "\n";
+			
+			result += "Volume:\t\t" + b.getVolume();
+			result += "\n";
+			
+			result += "TotalWallArea:\t" + b.getTotalWallArea();
 			result += "\n";
 		}
 		return result;

@@ -31,11 +31,25 @@ public class AURFireSimBuilding {
 	public ArrayList<AURBuildingConnection> connections = null;
 	public AURBuilding building = null;
 	private short vis_ = 0;
-
+	public int floors = 1;
+	
+	public double fuel = 0;
+	
+	public boolean prevBurned = false;
+	public boolean wasEverWatered = false;
+	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
 		this.wsg = building.wsg;
 		this.ag = building.ag;
+		
+		Building b = building.building;
+		this.floors = 1;
+		if(b.isFloorsDefined()) {
+			this.floors = b.getFloors();
+		}
+		
+		this.fuel = getInitialFuel();
 	}
 	
 	public void precomputeRadiation(PrecomputeData pd) {
@@ -53,7 +67,7 @@ public class AURFireSimBuilding {
 	public ArrayList<AURBuildingConnection> calcConnectionsAndPaint(Graphics2D g2, K_ScreenTransform kst) {
 		
 		boolean paint = g2 != null && kst != null;
-		double maxDist = AURConstants.MAX_RADIATION_DISTANCE;
+		double maxDist = AURConstants.FireSim.MAX_RADIATION_DISTANCE;
 		
 		Polygon bp = this.ag.polygon;
 		Rectangle bounds = bp.getBounds();
@@ -94,7 +108,7 @@ public class AURFireSimBuilding {
 				edge.getStartY(),
 				edge.getEndX(),
 				edge.getEndY(),
-				AURConstants.RADIATION_RAY_RATE
+				AURConstants.FireSim.RADIATION_RAY_RATE
 			);
 			
 			rays += randomOrigins.size();
@@ -194,7 +208,69 @@ public class AURFireSimBuilding {
 
 			}
 		}
+	}
+	
+	public double getFuel() {
+		return (double) this.fuel;
+	}
 
+	public double getInitialFuel() {
+		return (double) getThermoCapacity() * getVolume();
+	}
+	
+	public double getFuelDensity() {
+		switch (building.building.getBuildingCodeEnum()) {
+			case STEEL: {
+				return AURConstants.FireSim.STEEL_ENERGY;
+			}
+			case WOOD: {
+				return AURConstants.FireSim.WOODEN_ENERGY;
+			}
+			case CONCRETE: {
+				return AURConstants.FireSim.CONCRETE_ENERGY;
+			}
+			default: {
+				return AURConstants.FireSim.CONCRETE_ENERGY;
+			}
+		}
+	}
+	
+	public double getThermoCapacity() {
+		switch (building.building.getBuildingCodeEnum()) {
+			case STEEL: {
+				return AURConstants.FireSim.STEEL_CAPACITY;
+			}
+			case WOOD: {
+				return AURConstants.FireSim.WOODEN_CAPACITY;
+			}
+			case CONCRETE: {
+				return AURConstants.FireSim.CONCRETE_CAPACITY;
+			}
+			default: {
+				return AURConstants.FireSim.CONCRETE_CAPACITY;
+			}
+		}
+	}
+	
+	public double getCapacity() {
+		return getThermoCapacity() * getVolume();
+	}
+	
+	public double getPerimeter() {
+		return ((double) this.ag.perimeter / 1000d);
+	}
+	
+	public double getGroundArea() {
+		return ((double) this.ag.goundArea / 1000000d);
+	}
+	
+	public double getTotalWallArea() {
+		// according to the old fire simulator
+		return ((double) this.ag.perimeter * AURConstants.FireSim.FLOOR_HEIGHT) / 1000d;
+	}
+	
+	public double getVolume() {
+		return ((double) this.ag.goundArea / 1000000d) * this.floors * AURConstants.FireSim.FLOOR_HEIGHT;
 	}
 
 	public ArrayList<int[]> getAirCells() {
@@ -227,5 +303,5 @@ public class AURFireSimBuilding {
 		}
 		return ((Building) ag.area).getFieryness();
 	}
-	
+
 }

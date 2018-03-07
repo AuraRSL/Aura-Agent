@@ -25,7 +25,7 @@ public class AURFireSimulator {
     public boolean isPrecomputedConnections = false;
     
     public int getCellSize() {
-        return AURConstants.WORLD_AIR_CELL_SIZE;
+        return AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
     }
     
     public void precompute(PrecomputeData pd) {
@@ -54,13 +54,13 @@ public class AURFireSimulator {
     public AURFireSimulator(AURWorldGraph wsg) {
         this.wsg = wsg;
         this.worldBounds = wsg.wi.getBounds();
-        int rows = (int) Math.ceil(worldBounds.getHeight() / AURConstants.WORLD_AIR_CELL_SIZE);
-        int cols = (int) Math.ceil(worldBounds.getWidth() / AURConstants.WORLD_AIR_CELL_SIZE);
+        int rows = (int) Math.ceil(worldBounds.getHeight() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
+        int cols = (int) Math.ceil(worldBounds.getWidth() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
         this.worldBounds.setRect(
             worldBounds.getMinX(),
             worldBounds.getMinY(),
-            cols * AURConstants.WORLD_AIR_CELL_SIZE,
-            rows * AURConstants.WORLD_AIR_CELL_SIZE
+            cols * AURConstants.FireSim.WORLD_AIR_CELL_SIZE,
+            rows * AURConstants.FireSim.WORLD_AIR_CELL_SIZE
         );
         
         cells = new float[rows][cols][2];
@@ -74,8 +74,8 @@ public class AURFireSimulator {
         x -= worldBounds.getMinX();
         y -= worldBounds.getMinY();
         
-        res[0] = (int) Math.floor(y / AURConstants.WORLD_AIR_CELL_SIZE);
-        res[1] = (int) Math.floor(x / AURConstants.WORLD_AIR_CELL_SIZE);
+        res[0] = (int) Math.floor(y / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
+        res[1] = (int) Math.floor(x / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
         
         return res;
     }
@@ -88,7 +88,7 @@ public class AURFireSimulator {
     }
     
     public void paintJustCells(Graphics2D g2, K_ScreenTransform kst) {
-        int a = AURConstants.WORLD_AIR_CELL_SIZE;
+        int a = AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
         int mx = (int) (worldBounds.getMinX());
         int my = (int) (worldBounds.getMinY());
         for(int i = 0; i < cells.length; i++) {

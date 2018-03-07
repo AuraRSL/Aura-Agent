@@ -77,8 +77,7 @@ public class K_Viewer extends JFrame {
 	addLayer(K_FireSimBuildingInfo.class, true);
 	addLayer(K_AgentsLayer.class, true);
 	addLayer(K_ConnectedBuildings.class, false);
-	
-	
+
     }
     
     

@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 
@@ -22,10 +23,13 @@ public class AURBuilding {
 	public AUREdgeToSee ets = null;
 	public boolean commonWall[] = null;
 	public AURFireSimBuilding fireSimBuilding = null;
+	public Building building = null;
+	
 	
 	public AURBuilding(AURWorldGraph wsg, AURAreaGraph ag) {
 		this.wsg = wsg;
 		this.ag = ag;
+		this.building = (Building) ag.area;
 		this.fireSimBuilding = new AURFireSimBuilding(this);
 
 		commonWall = new boolean[ag.polygon.npoints];

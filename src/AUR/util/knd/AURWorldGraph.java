@@ -204,7 +204,7 @@ public class AURWorldGraph extends AbstractModule {
 			path.remove(path.size() - 1);
 			if (path.size() >= 2) {
 				AURAreaGraph ag = getAreaGraph(path.get(path.size() - 1));
-				if (ag.isSmall) {
+				if (ag.isSmall()) {
 					path.remove(path.size() - 1);
 				}
 			}

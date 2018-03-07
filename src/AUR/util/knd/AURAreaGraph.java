@@ -40,15 +40,16 @@ public class AURAreaGraph {
 	public final static int COLOR_YELLOW = 3;
 	public int color = 0;
 	public int clusterIndex = 0;
-	public boolean isSmall;
-	public boolean isBig;
 	public boolean vis;
 	public boolean needUpdate;
 	public boolean onFireProbability;
 	public boolean seen;
 	public boolean burnt;
 	public boolean fireChecked;
-	
+	public int ownerAgent = -1;
+	public Polygon polygon = null;
+	public double goundArea = 0;
+	public double perimeter = 0;
 	
 	public int getForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
@@ -158,8 +159,7 @@ public class AURAreaGraph {
 		
 		return result;
 	}
-	
-	
+		
 	public int getWaterNeeded() {
 		if (isBuilding() == false) {
 			return 0;
@@ -172,22 +172,21 @@ public class AURAreaGraph {
 
 	}
 	
-	public int ownerAgent = -1;
-
-	public Polygon polygon = null;
+	public boolean isSmall() {
+		return this.goundArea < 1000 * 1000 * 25;
+	}
+	
+	public boolean isBig() {
+		return this.goundArea > (wsg.worldGridSize * wsg.worldGridSize * 4) / 6;
+	} 
 	
 	public AURAreaGraph(Area area, AURWorldGraph wsg, AURAreaGrid instanceAreaGrid) {
 		if (area == null || wsg == null) {
 			return;
 		}
 		this.polygon = (Polygon) (area.getShape());
-		double area_ = AURGeoUtil.getArea(this.polygon);
-		if (area_ < 1000 * 1000 * 25) {
-			isSmall = true;
-		}
-		if (area_ > (wsg.worldGridSize * wsg.worldGridSize * 4) / 6) {
-			isBig = true;
-		}
+		this.goundArea = AURGeoUtil.getArea(this.polygon);
+		this.perimeter = AURGeoUtil.getPerimeter(this.polygon);
 		this.area = area;
 		this.vis = false;
 		this.wsg = wsg;

@@ -195,7 +195,7 @@ public class AURActionFireFighting extends ExtAction {
 					//System.out.println(vp.value);
 				}
 				
-				if(vp.areaGraph.isSmall) {
+				if(vp.areaGraph.isSmall()) {
 					vp.value *= (1e6);
 				}
 				
