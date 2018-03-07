@@ -71,8 +71,10 @@ public class K_Viewer extends JFrame {
 	addLayer(K_BigAreas.class, false);
 	addLayer(K_CommonWalls.class, false);
 	addLayer(K_BuildingSightAreaPolygon.class, false);
+	addLayer(K_BuildingCodes.class, true);	
 	addLayer(K_AgentsLayer.class, true);
-	addLayer(K_ConnectedBuildings.class, true);	
+	addLayer(K_ConnectedBuildings.class, true);
+	
 	
     }
     
