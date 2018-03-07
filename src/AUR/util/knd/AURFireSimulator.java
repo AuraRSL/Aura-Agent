@@ -15,10 +15,10 @@ import viewer.K_ScreenTransform;
 public class AURFireSimulator {
 
     private AURWorldGraph wsg = null;
-    private float cells[][] = null;
+    private float cells[][][] = null;
     private Rectangle2D worldBounds = null;
     
-    public float[][] getCells() {
+    public float[][][] getCells() {
         return cells;
     }
     
@@ -63,7 +63,7 @@ public class AURFireSimulator {
             rows * AURConstants.WORLD_AIR_CELL_SIZE
         );
         
-        cells = new float[rows][cols];
+        cells = new float[rows][cols][2];
     }
     
     private int[] res = new int[2];

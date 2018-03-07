@@ -10,6 +10,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Scanner;
+import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
@@ -29,6 +30,7 @@ public class AURFireSimBuilding {
 	public AURAreaGraph ag = null;
 	public ArrayList<AURBuildingConnection> connections = null;
 	public AURBuilding building = null;
+	private short vis_ = 0;
 
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
@@ -47,8 +49,6 @@ public class AURFireSimBuilding {
 		}
 		return result;
 	}
-	
-	private short vis_ = 0;
 	
 	public ArrayList<AURBuildingConnection> calcConnectionsAndPaint(Graphics2D g2, K_ScreenTransform kst) {
 		
@@ -218,6 +218,14 @@ public class AURFireSimBuilding {
 
 	public void setEstimatedTemperature(int estimatedTemperature) {
 		this.estimatedTemperature = estimatedTemperature;
+	}
+	
+	public int getEstimatedFieryness() {
+		Building b = ((Building) ag.area);
+		if(b.isFierynessDefined() == false) {
+			return 0;
+		}
+		return ((Building) ag.area).getFieryness();
 	}
 	
 }

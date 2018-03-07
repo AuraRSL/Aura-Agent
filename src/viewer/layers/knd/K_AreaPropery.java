@@ -2,8 +2,6 @@ package viewer.layers.knd;
 
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import rescuecore2.standard.entities.Building;
 import viewer.K_ScreenTransform;
@@ -60,6 +58,4 @@ public class K_AreaPropery extends K_ViewerLayer {
         return result;
     }
     
-    
-
 }

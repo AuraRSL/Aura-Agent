@@ -18,9 +18,9 @@ import viewer.K_ViewerLayer;
 public class K_BuildingCodes extends K_ViewerLayer {
 
 	private final static Color colors[] = new Color[] {
-		new Color(240, 240, 240, 200), // steel
-		new Color(168, 101, 9, 200), // wood
-		new Color(190, 190, 190, 200) // concrete
+		new Color(240, 240, 240, 200),	// steel
+		new Color(168, 101, 9, 200),	// wood
+		new Color(190, 190, 190, 200)	// concrete
 	};
 	
 	@Override
