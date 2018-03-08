@@ -5,7 +5,6 @@ import AUR.util.knd.AURWorldGraph;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 
@@ -21,7 +20,7 @@ public class K_AreaExtinguishableRange extends K_ViewerLayer {
         if(selected_ag == null) {
             return;
         }
-        double r = selected_ag.wsg.si.getFireExtinguishMaxDistance();
+        double r = wsg.si.getFireExtinguishMaxDistance();
         g2.setColor(Color.red);
         g2.setStroke(new BasicStroke(2));
         g2.drawOval(

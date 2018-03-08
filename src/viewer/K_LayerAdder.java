@@ -13,6 +13,7 @@ public class K_LayerAdder {
 	public static void addTo(K_Viewer viewer) {
 		
 		viewer.addLayer(K_AreaPropery.class, true);
+		viewer.addLayer(K_FireScenarioInfo.class, true);
 		viewer.addLayer(K_LayerRoads.class, true);
 		viewer.addLayer(K_LayerBuildings.class, true);
 		viewer.addLayer(K_LayerBuildingsClusterColor.class, false);
@@ -27,6 +28,7 @@ public class K_LayerAdder {
 		viewer.addLayer(K_ShortestPath.class, false);
 		viewer.addLayer(K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(K_AreaVertices.class, false);
+		viewer.addLayer(K_AgentExtinguishRange.class, false);
 		viewer.addLayer(K_AreaExtinguishableRange.class, false);
 		viewer.addLayer(CivilianLayer.class, true);
 		viewer.addLayer(K_AirCells.class, false);
