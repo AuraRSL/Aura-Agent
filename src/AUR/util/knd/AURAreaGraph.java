@@ -164,12 +164,7 @@ public class AURAreaGraph {
 		if (isBuilding() == false) {
 			return 0;
 		}
-		Building b = (Building) area;
-		if (b.isTemperatureDefined()) {
-			return AURFireSimulator.getWaterNeeded(this, b.getTemperature() * 1.0, 10);
-		}
-		return AURFireSimulator.getWaterNeeded(this, 1000, 0);
-
+		return getBuilding().fireSimBuilding.getWaterNeeded();
 	}
 	
 	public boolean isSmall() {
@@ -349,7 +344,9 @@ public class AURAreaGraph {
 			}
 			lastTemperature = temp;
 		}
-		
+		if(this.isBuilding() == true) {
+			this.getBuilding().update();
+		}
 	}
 
 	// toDo

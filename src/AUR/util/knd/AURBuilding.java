@@ -127,6 +127,10 @@ public class AURBuilding {
 	public void init() {
 
 	}
+	
+	public void update() {
+		this.fireSimBuilding.update();
+	}
 
 	public Polygon getPerceptibleAreaPolygon() {
 		if(this.perceptibleArea == null) {

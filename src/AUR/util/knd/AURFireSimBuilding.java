@@ -252,28 +252,41 @@ public class AURFireSimBuilding {
 		airCells = new ArrayList<>();
 		Polygon buildingPolygon = (Polygon) this.building.ag.area.getShape();
 		Rectangle2D buildingBounds = buildingPolygon.getBounds();
-
-		int ij[] = building.wsg.fireSimulator.getCell_ij(buildingBounds.getMinX(), buildingBounds.getMinY());
-
+		int ij[] = building.wsg.fireSimulator.airCells.getCell_ij(buildingBounds.getMinX(), buildingBounds.getMinY());
 		int i0 = ij[0];
 		int j0 = ij[1];
-
-		ij = building.wsg.fireSimulator.getCell_ij(buildingBounds.getMaxX(), buildingBounds.getMaxY());
-
+		ij = building.wsg.fireSimulator.airCells.getCell_ij(buildingBounds.getMaxX(), buildingBounds.getMaxY());
 		int i1 = ij[0];
 		int j1 = ij[1];
-
 		for(int i = i0; i <= i1; i++) {
 			for(int j = j0; j <= j1; j++) {
-				int xy[] = this.building.wsg.fireSimulator.getCell_xy(i, j);
-				if(buildingPolygon.intersects(xy[0], xy[1], this.building.wsg.fireSimulator.getCellSize(), this.building.wsg.fireSimulator.getCellSize())) {
+				int xy[] = this.building.wsg.fireSimulator.airCells.getCell_xy(i, j);
+				if(buildingPolygon.intersects(xy[0], xy[1], this.building.wsg.fireSimulator.airCells.getCellSize(), this.building.wsg.fireSimulator.airCells.getCellSize())) {
 					int[] cell = new int[] {i, j, 0};
-					AURGeoUtil.setAirCellPercent(building.wsg.fireSimulator, cell, building.wsg.fireSimulator.getCellSize(), buildingPolygon);
+					setAirCellPercent(building.wsg.fireSimulator, cell, building.wsg.fireSimulator.airCells.getCellSize(), buildingPolygon);
 					airCells.add(cell);
 				}
-
 			}
 		}
+	}
+	
+	private void setAirCellPercent(AURFireSimulator fs, int airCell[], int airCellSize, Polygon buildingPolygon) {
+		double dw = (double) airCellSize / 10;
+		double dh = (double) airCellSize / 10;
+		int xy[] = fs.airCells.getCell_xy(airCell[0], airCell[1]);
+		int count = 0;
+		double x = 0;
+		double y = 0;
+		for(int i = 0; i < 10; i++) {
+			for(int j = 0; j < 10; j++) {
+				x = xy[0] + j * dw;
+				y = xy[1] + i * dh;
+				if(buildingPolygon.contains(x, y)) {
+					count++;
+				}
+			}
+		}
+		airCell[2] = count;
 	}
 	
 	public double getRadiationEnergy() {
@@ -495,6 +508,19 @@ public class AURFireSimBuilding {
 			return 7;        // extinguished, severely damaged
 		}
 		return 8;           // completely burnt down
+	}
+	
+	public boolean isOnFire() {
+		int f = getEstimatedFieryness();
+		return f > 0 && f < 4;
+	}
+	
+	public int getWaterNeeded() {
+		if(isOnFire() == true) {
+			return ag.wsg.si.getFireExtinguishMaxSum();
+		} else {
+			return 0;
+		}
 	}
 	
 }

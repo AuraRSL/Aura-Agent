@@ -45,7 +45,7 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			result += "InitialFuel:\t\t" + b.getInitialFuel();
 			result += "\n";
 			
-			result += "EstimatedFuel:\t" + b.getEstimatedFuel();
+			result += "EstimatedFuel:\t\t" + b.getEstimatedFuel();
 			result += "\n";
 			
 			result += "Consume:\t\t" + b.getConsum();
@@ -54,10 +54,13 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			result += "RadiationEnergy:\t" + b.getRadiationEnergy();
 			result += "\n";
 			
+			result += "WaterNeeded:\t\t" + b.getWaterNeeded();
+			result += "\n";
+			
 			result += "WasEverWatered:\t" + b.wasEverWatered();
 			result += "\n";
 			
-			result += "WaterQuantity:\t" + b.getWaterQuantity();
+			result += "WaterQuantity:\t\t" + b.getWaterQuantity();
 			result += "\n";
 			
 			result += "Inflammable:\t\t" + b.inflammable();
@@ -72,7 +75,7 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			result += "Volume:\t\t" + b.getVolume();
 			result += "\n";
 			
-			result += "TotalWallArea:\t" + b.getTotalWallArea();
+			result += "TotalWallArea:\t\t" + b.getTotalWallArea();
 			result += "\n";
 		}
 		return result;

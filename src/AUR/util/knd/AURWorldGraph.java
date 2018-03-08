@@ -661,6 +661,9 @@ public class AURWorldGraph extends AbstractModule {
 				instanceAreaGrid.setEdgePointsAndCreateGraph();
 			}
 		}
+		
+		this.fireSimulator.step();
+		
 		for (EntityID entID : changes) {
 			AURAreaGraph ag = getAreaGraph(entID);
 			if (ag != null) {
@@ -668,7 +671,7 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		calcFireProbability();
-
+		
 		K_Viewer.getInstance().update(this);
 		return this;
 	}

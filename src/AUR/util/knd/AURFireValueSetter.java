@@ -87,7 +87,7 @@ public class AURFireValueSetter {
 		convexHullInstance.calc(points);
 		double max_ = 0;
 		for (AURValuePoint p : points) {
-			p.temp_value = fireSimulatorInstance.getBuildingCapacity(p.areaGraph);
+			p.temp_value = p.areaGraph.getBuilding().fireSimBuilding.getCapacity();
 			if (p.temp_value > max_) {
 				max_ = p.temp_value;
 			}
