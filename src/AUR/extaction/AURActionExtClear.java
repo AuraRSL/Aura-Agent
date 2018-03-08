@@ -1123,6 +1123,9 @@ public class AURActionExtClear extends ExtAction {
                 System.out.println("Target: " + target);
                 ArrayList<EntityID> path = this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target));
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
+                if(pathNodes == null && path.size() > 1){
+                        return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
+                }
                 System.out.println("Road: " + path);
                 System.out.println("Road Nodes: " + pathNodes);
                 
@@ -1194,7 +1197,7 @@ public class AURActionExtClear extends ExtAction {
                         System.out.println("Area Guid Point For First Area Added...");
                         ArrayList<Pair<Point2D, EntityID>> areaGuidPoints = getAreaGuidPoints(policeForcePoint,agentInfo.getPosition(),path.get(1));
                         if(areaGuidPoints == null){
-                                // Clear Area
+                                return null;
                         }
                         result.addAll( areaGuidPoints );
                 }
@@ -1568,5 +1571,27 @@ public class AURActionExtClear extends ExtAction {
                 fP[1] += agentPosition[1];
                 Polygon cp = getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
                 return isThereBlockadesInBlockadesListInIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
+        }
+        
+        private Action getAreaFullClearActionOrIgnoreBlockades(EntityID nextArea){
+                ArrayList<EntityID> pathToNext = wsg.getPathToClosest(
+                        agentInfo.getPosition(),
+                        Lists.newArrayList(nextArea)
+                );
+                if(pathToNext.size() == 2)
+                        return new ActionMove(pathToNext);
+                
+                Area pArea = agentInfo.getPositionArea();
+                if(pArea.isBlockadesDefined()){
+                        for(EntityID beid : pArea.getBlockades()){
+                                return new ActionClear(beid);
+                        }
+                }
+                return new ActionMove(
+                        wsg.getNoBlockadePathToClosest(
+                                agentInfo.getPosition(),
+                                Lists.newArrayList(nextArea)
+                        )
+                );
         }
 }
