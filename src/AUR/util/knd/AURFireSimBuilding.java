@@ -22,8 +22,7 @@ import viewer.K_ScreenTransform;
  */
 
 public class AURFireSimBuilding {
-	
-	private int estimatedTemperature = 0;
+
 	private double estimatedEnergy = 0;
 	private ArrayList<int[]> airCells = null;
 	public AURWorldGraph wsg = null;
@@ -32,11 +31,9 @@ public class AURFireSimBuilding {
 	public AURBuilding building = null;
 	private short vis_ = 0;
 	public int floors = 1;
-	
-	public double fuel = 0;
-	
-	public boolean prevBurned = false;
-	public boolean wasEverWatered = false;
+	private double fuel = 0;
+	private boolean wasEverWatered = false;
+	private double waterQuantity = 0;
 	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
@@ -48,7 +45,7 @@ public class AURFireSimBuilding {
 		if(b.isFloorsDefined()) {
 			this.floors = b.getFloors();
 		}
-		
+		this.estimatedEnergy = 0;
 		this.fuel = getInitialFuel();
 	}
 	
@@ -210,6 +207,67 @@ public class AURFireSimBuilding {
 		}
 	}
 	
+	public boolean inflammable() {
+		StandardEntityURN urn = this.building.building.getStandardURN();
+		switch(urn) {
+			case REFUGE: {
+				return AURConstants.FireSim.REFUGE_INFLAMMABLE;
+			}
+			case AMBULANCE_CENTRE: {
+				return AURConstants.FireSim.AMBULANCE_CENTRE_INFLAMMABLE;
+			}
+			case FIRE_STATION: {
+				return AURConstants.FireSim.FIRE_STATION_INFLAMMABLE;
+			}
+			case POLICE_OFFICE: {
+				return AURConstants.FireSim.POLICE_OFFICE_INFLAMMABLE;
+			}
+			default: {
+				return true;
+			}
+		}
+	}
+	
+	public void setWaterQuantity(double waterQuantity) {
+		if(waterQuantity > 0) {
+			setWasEverWatered(true);
+		}
+		this.waterQuantity = waterQuantity;
+	}
+	
+	public double getWaterQuantity() {
+		return this.waterQuantity;
+	}
+	
+	public void setWasEverWatered(boolean b) {
+		this.wasEverWatered = b;
+	}
+	
+	public boolean wasEverWatered() {
+		return this.wasEverWatered;
+	}
+	
+	public void ignite() {
+		setEstimatedEnergy(getCapacity() * getIgnitionPoint() * 1.5);
+	}
+	
+	public double getIgnitionPoint() {
+		switch (building.building.getBuildingCodeEnum()) {
+			case STEEL: {
+				return AURConstants.FireSim.STEEL_IGNITION;
+			}
+			case WOOD: {
+				return AURConstants.FireSim.WOODEN_IGNITION;
+			}
+			case CONCRETE: {
+				return AURConstants.FireSim.CONCRETE_IGNITION;
+			}
+			default: {
+				return AURConstants.FireSim.CONCRETE_IGNITION;
+			}
+		}
+	}
+	
 	public double getFuel() {
 		return (double) this.fuel;
 	}
@@ -281,27 +339,55 @@ public class AURFireSimBuilding {
 	}
 
 	public double getEstimatedEnergy() {
+		if(this.estimatedEnergy == Double.NaN || this.estimatedEnergy == Double.POSITIVE_INFINITY || this.estimatedEnergy == Double.NEGATIVE_INFINITY) {
+			this.estimatedEnergy = Double.MAX_VALUE  * 0.75d;
+		}
 		return this.estimatedEnergy;
 	}
 
-	public void setEstimatedEnergy(double estimatedEnergy) {
-		this.estimatedEnergy = estimatedEnergy;
+	public void setEstimatedEnergy(double energy) {
+		if(energy == Double.NaN || energy == Double.POSITIVE_INFINITY || energy == Double.NEGATIVE_INFINITY) {
+			energy = Double.MAX_VALUE  * 0.75d;
+		}
+		this.estimatedEnergy = energy;
 	}
 
-	public int getEstimatedTemperature() {
-		return estimatedTemperature;
-	}
-
-	public void setEstimatedTemperature(int estimatedTemperature) {
-		this.estimatedTemperature = estimatedTemperature;
+	public double getEstimatedTemperature() {
+		return (double) this.getEstimatedEnergy() / this.getCapacity();
 	}
 	
 	public int getEstimatedFieryness() {
-		Building b = ((Building) ag.area);
-		if(b.isFierynessDefined() == false) {
+		if (inflammable() == false) {
 			return 0;
 		}
-		return ((Building) ag.area).getFieryness();
+		if (getEstimatedTemperature() >= getIgnitionPoint()) {
+			if (fuel >= getInitialFuel() * 0.66) {
+				return 1;   // burning, slightly damaged
+			}
+			if (fuel >= getInitialFuel() * 0.33) {
+				return 2;   // burning, more damaged
+			}
+			if (fuel > 0) {
+				return 3;    // burning, severly damaged
+			}
+		}
+		if (fuel == getInitialFuel()) {
+			if (wasEverWatered == true) {
+				return 4;   // not burnt, but watered-damaged
+			} else {
+				return 0;   // not burnt, no water damage
+			}
+		}
+		if (fuel >= getInitialFuel() * 0.66) {
+			return 5;        // extinguished, slightly damaged
+		}
+		if (fuel >= getInitialFuel() * 0.33) {
+			return 6;        // extinguished, more damaged
+		}
+		if (fuel > 0) {
+			return 7;        // extinguished, severely damaged
+		}
+		return 8;           // completely burnt down
 	}
-
+	
 }

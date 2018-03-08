@@ -30,6 +30,15 @@ public class AURConstants {
 		public final static double WOODEN_ENERGY = 2400.0;
 		public final static double CONCRETE_ENERGY = 350.0;
 		
+		public final static double STEEL_IGNITION = 47.0;
+		public final static double WOODEN_IGNITION = 47.0;
+		public final static double CONCRETE_IGNITION = 47.0;
+		
+		public final static boolean POLICE_OFFICE_INFLAMMABLE = false;
+		public final static boolean AMBULANCE_CENTRE_INFLAMMABLE = false;
+		public final static boolean FIRE_STATION_INFLAMMABLE = false;
+		public final static boolean REFUGE_INFLAMMABLE = false;
+		
 	}
 	
 }

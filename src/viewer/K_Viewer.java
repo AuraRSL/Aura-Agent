@@ -69,10 +69,10 @@ public class K_Viewer extends JFrame {
 		addLayer(K_AreaGrid.class, false);
 		addLayer(K_AreaPassableSegments.class, false);
 		addLayer(K_AreaGraph.class, false);
-		addLayer(K_BuildingPerceptibleAreas.class, true);
+		addLayer(K_BuildingPerceptibleAreas.class, false);
 		addLayer(K_PerceptibleAreaPolygon.class, false);
-		addLayer(K_PerceptibleBuildings.class, true);
-		addLayer(K_ShortestPathToCheckFire.class, true);
+		addLayer(K_PerceptibleBuildings.class, false);
+		addLayer(K_ShortestPathToCheckFire.class, false);
 		addLayer(K_RoadScore.class, false);
 		addLayer(K_SmallAreas.class, false);
 		addLayer(K_MediumAreas.class, false);
@@ -83,6 +83,7 @@ public class K_Viewer extends JFrame {
 		addLayer(K_RealFieryBuildings.class, true);
 		addLayer(K_EstimatedFieryness.class, true);
 		addLayer(K_FireSimBuildingInfo.class, true);
+		addLayer(K_InflammableBuildings.class, false);
 		addLayer(K_AgentsLayer.class, true);
 		addLayer(K_ConnectedBuildings.class, false);
 	}
