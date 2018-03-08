@@ -14,6 +14,10 @@ public class AURConstants {
 	
 	public final static int AGENT_RADIUS = 500;
 	
+	static class Viewer {
+		public final static boolean LAUNCH = true;
+	}
+	
 	static class FireSim {
 		
 		public final static double RADIATION_COEFFICENT = 0.011;

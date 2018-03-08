@@ -2,7 +2,6 @@ package viewer;
 
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
-import viewer.layers.knd.K_CommonWalls;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -36,8 +35,6 @@ import javax.swing.JTextField;
 import javax.swing.text.StyleConstants;
 import rescuecore2.worldmodel.EntityID;
 import viewer.fromMisc.PanZoomListener;
-import viewer.layers.AmboLayers.*;
-import viewer.layers.knd.*;
 
 /**
  *
@@ -45,48 +42,6 @@ import viewer.layers.knd.*;
  */
 
 public class K_Viewer extends JFrame {
-
-	private void addLayers() {
-		addLayer(K_AreaPropery.class, true);
-		addLayer(K_LayerRoads.class, true);
-		addLayer(K_LayerBuildings.class, true);
-		addLayer(K_LayerBuildingsClusterColor.class, false);
-		addLayer(K_LayerAreaCenters.class, false);
-		addLayer(k_LayerReachableAreas.class, false);
-		addLayer(K_LayerTravelCost.class, false);
-		addLayer(K_LayerAliveBlockades.class, true);
-		addLayer(K_LayerAllBlockades.class, true);
-		addLayer(K_LayerWalls.class, true);
-		addLayer(K_LayerWorldGraph.class, false);
-		addLayer(K_NoBlockadeWorldGraph.class, false);
-		addLayer(K_ShortestPath.class, false);
-		addLayer(K_NoBlockadeShortestPath.class, false);
-		addLayer(K_AreaVertices.class, false);
-		addLayer(K_AreaExtinguishableRange.class, false);
-		addLayer(CivilianLayer.class, true);
-		addLayer(K_AirCells.class, false);
-		addLayer(K_BuildingAirCells.class, false);
-		addLayer(K_AreaGrid.class, false);
-		addLayer(K_AreaPassableSegments.class, false);
-		addLayer(K_AreaGraph.class, false);
-		addLayer(K_BuildingPerceptibleAreas.class, false);
-		addLayer(K_PerceptibleAreaPolygon.class, false);
-		addLayer(K_PerceptibleBuildings.class, false);
-		addLayer(K_ShortestPathToCheckFire.class, false);
-		addLayer(K_RoadScore.class, false);
-		addLayer(K_SmallAreas.class, false);
-		addLayer(K_MediumAreas.class, false);
-		addLayer(K_BigAreas.class, false);
-		addLayer(K_CommonWalls.class, false);
-		addLayer(K_BuildingSightAreaPolygon.class, false);
-		addLayer(K_BuildingCodes.class, false);
-		addLayer(K_RealFieryBuildings.class, true);
-		addLayer(K_EstimatedFieryness.class, true);
-		addLayer(K_FireSimBuildingInfo.class, true);
-		addLayer(K_InflammableBuildings.class, false);
-		addLayer(K_AgentsLayer.class, true);
-		addLayer(K_ConnectedBuildings.class, false);
-	}
 	
 	private static K_Viewer _instance = null;
 	
@@ -155,7 +110,7 @@ public class K_Viewer extends JFrame {
 		}
 	}
 
-	private void addLayer(Class c, boolean de) {
+	public void addLayer(Class c, boolean de) {
 		String packageName = c.getPackage().getName();
 		String className = c.getName().replace(packageName + ".", "");
 		K_ViewerLayerFactory.getInstance().addLayer(className, c);
@@ -171,7 +126,8 @@ public class K_Viewer extends JFrame {
 
 	public K_Viewer() {
 		
-		addLayers();
+		K_LayerAdder.addTo(this);
+		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new FlowLayout(StyleConstants.ALIGN_LEFT));
 

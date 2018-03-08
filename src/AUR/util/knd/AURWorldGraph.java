@@ -672,7 +672,10 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		calcFireProbability();
 		
-		K_Viewer.getInstance().update(this);
+		if(AURConstants.Viewer.LAUNCH == true) {
+			K_Viewer.getInstance().update(this);
+		}
+		
 		return this;
 	}
 
