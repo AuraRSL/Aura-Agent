@@ -1,6 +1,7 @@
 package AUR.util.knd;
 
 import adf.agent.precompute.PrecomputeData;
+import firesimulator.simulator.Simulator;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -36,8 +37,9 @@ public class AURFireSimBuilding {
 	private double estimatedFuel = 0;
 	private boolean wasEverWatered = false;
 	private double waterQuantity = 0;
-	
+//	private boolean ignite = false;
 	private int lastRealFieryness = 0;
+	private double lastRealTemperature = 0;
 	
 	private GaussianGenerator burnRate = new GaussianGenerator(0.15, 0.02, new Random(0));
 	
@@ -53,6 +55,11 @@ public class AURFireSimBuilding {
 		}
 		this.estimatedEnergy = 0;
 		this.estimatedFuel = getInitialFuel();
+//		this.ignite = false;
+
+//		if(Math.random() < 0.3) {
+//			this.ignite();
+//		}
 	}
 	
 	
@@ -64,21 +71,51 @@ public class AURFireSimBuilding {
 			}
 			if(f != this.lastRealFieryness) {
 				onRealFierynessChange(f);
+				this.lastRealFieryness = f;
+			}
+		}
+		if(this.building.building.isTemperatureDefined()) {
+			double t = this.building.building.getTemperature();
+			if(Math.abs(this.lastRealTemperature - t) < 1e-8) {
+				this.lastRealTemperature = t;
+				this.onRealTemperatureChange(t);
 			}
 		}
 		
 	}
 	
 	public void onRealFierynessChange(int newFieryness) {
-//		this.lastRealFieryness = newFieryness;
-//		switch(newFieryness) {
-//			case 0:
-//			case 4: {
-//				setEstimatedFuel(getInitialFuel());
-//			}
-//			case 1:
-//			case 5:
-//		}
+		switch(newFieryness) {
+			case 0:
+			case 1:
+			case 4:
+			case 5: {
+				setEstimatedFuel(getInitialFuel());
+				break;
+			}
+			case 2:
+			case 6: {
+				setEstimatedFuel(getInitialFuel() * 0.66);
+				break;
+			}
+			case 3:
+			case 7: {
+				setEstimatedFuel(getInitialFuel() * 0.33);
+				break;
+			}
+			
+			default: {
+				setEstimatedFuel(0);
+				break;
+			}
+		}
+	}
+	
+	public void onRealTemperatureChange(double newTemperature) {
+		if(newTemperature >= getIgnitionPoint()) {
+			setWaterQuantity(0);
+		}
+		this.setEstimatedEnergy(newTemperature * getCapacity());
 	}
 	
 	public void precomputeRadiation(PrecomputeData pd) {
@@ -239,6 +276,18 @@ public class AURFireSimBuilding {
 		}
 	}
 	
+	public double getRadiationEnergy() {
+		double t = getEstimatedTemperature() + 293; // Assume ambient temperature is 293 Kelvin.
+		double radEn = (t * t * t * t) * getTotalWallArea() * AURConstants.FireSim.RADIATION_COEFFICENT * AURConstants.FireSim.STEFAN_BOLTZMANN_CONSTANT;
+		if (radEn == Double.NaN || radEn == Double.POSITIVE_INFINITY || radEn == Double.NEGATIVE_INFINITY) {
+			radEn = Double.MAX_VALUE * 0.75;
+		}
+		if (radEn > getEstimatedEnergy()) {
+			radEn = getEstimatedEnergy();
+		}
+		return radEn;
+	}
+	
 	public double getConsum() {
 		if (this.estimatedFuel <= 1e-8) {
 			return 0;
@@ -246,8 +295,8 @@ public class AURFireSimBuilding {
 		double tf = (double) (getEstimatedTemperature() / 1000f);
 		double lf = (double) getEstimatedFuel() / getInitialFuel();
 		double f = (double) (tf * lf * burnRate.nextValue());
-		if (f < 0.005f) {
-			f = 0.005f;
+		if (f < 0.005d) {
+			f = 0.005d;
 		}
 		return getInitialFuel() * f;
 	}
@@ -294,7 +343,16 @@ public class AURFireSimBuilding {
 	
 	public void ignite() {
 		setEstimatedEnergy(getCapacity() * getIgnitionPoint() * 1.5);
+//		setIgnite(true);
 	}
+	
+//	public void setIgnite(boolean i) {
+//		this.ignite = i;
+//	}
+//	
+//	public boolean getIgnite() {
+//		return this.ignite;
+//	}
 	
 	public double getIgnitionPoint() {
 		switch (building.building.getBuildingCodeEnum()) {

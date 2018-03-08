@@ -48,6 +48,12 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			result += "EstimatedFuel:\t" + b.getEstimatedFuel();
 			result += "\n";
 			
+			result += "Consume:\t\t" + b.getConsum();
+			result += "\n";
+			
+			result += "RadiationEnergy:\t" + b.getRadiationEnergy();
+			result += "\n";
+			
 			result += "WasEverWatered:\t" + b.wasEverWatered();
 			result += "\n";
 			
