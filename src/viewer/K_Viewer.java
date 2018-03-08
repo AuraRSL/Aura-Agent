@@ -20,6 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -30,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.StyleConstants;
@@ -110,11 +112,27 @@ public class K_Viewer extends JFrame {
 		}
 	}
 
-	public void addLayer(Class c, boolean de) {
+	
+	private HashMap<String, JPanel> layerPanels = new HashMap<>();
+	
+	public void addLayer(String tabName, Class c, boolean de) {
 		String packageName = c.getPackage().getName();
 		String className = c.getName().replace(packageName + ".", "");
 		K_ViewerLayerFactory.getInstance().addLayer(className, c);
-		layersCheckBox.add(new JCheckBox(className, de));
+		
+		JPanel panel = layerPanels.get(tabName);
+		
+		if(panel == null) {
+			panel = new JPanel();
+			BoxLayout bxl = new BoxLayout(panel, BoxLayout.Y_AXIS);
+			panel.setLayout(bxl);
+
+			tabbedPane.addTab(tabName, panel);
+			layerPanels.put(tabName, panel);
+		}
+		JCheckBox chb = new JCheckBox(className, de);
+		panel.add(chb);
+		layersCheckBox.add(chb);
 	}
 
 	ItemListener repaintEvent = new ItemListener() {
@@ -124,6 +142,8 @@ public class K_Viewer extends JFrame {
 		}
 	};
 
+	public JTabbedPane tabbedPane = new JTabbedPane();
+	
 	public K_Viewer() {
 		
 		K_LayerAdder.addTo(this);
@@ -142,12 +162,7 @@ public class K_Viewer extends JFrame {
 			}
 		});
 
-		JPanel panel_layers = new JPanel();
-		BoxLayout bxl = new BoxLayout(panel_layers, BoxLayout.Y_AXIS);
-		panel_layers.setLayout(bxl);
-
 		for (JCheckBox chb : layersCheckBox) {
-			panel_layers.add(chb);
 			chb.addItemListener(repaintEvent);
 		}
 
@@ -155,13 +170,12 @@ public class K_Viewer extends JFrame {
 
 		this.add(new DrawPanel(), BorderLayout.CENTER);
 		
-		JScrollPane layersSP = new JScrollPane(panel_layers, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		JScrollPane layersSP = new JScrollPane(tabbedPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 		this.add(layersSP, BorderLayout.WEST);
-		
-		JScrollBar vertical = layersSP.getVerticalScrollBar();
-		vertical.setValue( vertical.getMaximum() );
 
+		layersSP.setPreferredSize(new Dimension(300, 250));
+		
 		JScrollPane textSP = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		textSP.setPreferredSize(new Dimension(300, 250));
 		this.add(textSP, BorderLayout.EAST);
