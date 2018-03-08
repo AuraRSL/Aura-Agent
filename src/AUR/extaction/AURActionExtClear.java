@@ -1240,16 +1240,16 @@ public class AURActionExtClear extends ExtAction {
                                                 )
                                         );
                                         
-                                        wsg.guidPointsAdded.get(
-                                                agentInfo.getID()).add(
-                                                        new Pair(
-                                                                new Point2D(
-                                                                        plus[0],
-                                                                        plus[1]
-                                                                ),
-                                                                path.get(i)
-                                                        )
-                                        );
+//                                        wsg.guidPointsAdded.get(
+//                                                agentInfo.getID()).add(
+//                                                        new Pair(
+//                                                                new Point2D(
+//                                                                        plus[0],
+//                                                                        plus[1]
+//                                                                ),
+//                                                                path.get(i)
+//                                                        )
+//                                        );
                                         System.out.println("EID: " + path.get(i) + " | " + new Pair(plus,path.get(i)));
                                 }
                                 else{
@@ -1290,12 +1290,36 @@ public class AURActionExtClear extends ExtAction {
         private boolean hasRoadIntersect(Point2D policeForce, ArrayList<Pair<Point2D, EntityID>> path, int to) {
 
                 Polygon clearLine = getClearPolygon(policeForce, path.get(to).first());
+
+                double[] vectorScaled = AURGeoMetrics.getVectorScaled( 
+                        AURGeoMetrics.getVectorNormal( 
+                                AURGeoMetrics.getPointsMinus( 
+                                        AURGeoMetrics.getPointFromPoint2D(policeForce), 
+                                        AURGeoMetrics.getPointFromPoint2D(path.get(to).first()) 
+                                ) 
+                        ), 
+                        agentSize 
+                ); 
+                 
+                Polygon clearLineAgentSpace = getClearPolygon( 
+                        path.get(to).first(), 
+                        new Point2D( 
+                                path.get(to).first().getX() + vectorScaled[0], 
+                                path.get(to).first().getY() + vectorScaled[1] 
+                        ) 
+                ); 
+                
 //                wsg.policeClearArea.put(agentInfo.getID(),clearLine);
                 for (int i = 0; i <= to; i++) {
-                        for (Edge e : ((Area) worldInfo.getEntity(path.get(i).second())).getEdges()) {
-                                if ((!e.isPassable()) && AURGeoTools.getIntersection(clearLine, e.getLine())) {
-//                                        wsg.policeClearLine.put(agentInfo.getID(), e.getLine());
-                                        return true;
+                        for (EntityID aid : ((Area) worldInfo.getEntity(path.get(i).second())).getNeighbours()) {
+                                if (((Area) worldInfo.getEntity(aid)).isEdgesDefined()) {
+                                        for (Edge e : ((Area) worldInfo.getEntity(aid)).getEdges()) {
+                                                if ((!e.isPassable())
+                                                        && ((AURGeoTools.getIntersection(clearLine, e.getLine()))
+                                                        || (AURGeoTools.getIntersection(clearLineAgentSpace, e.getLine())))) {
+                                                        return true;
+                                                }
+                                        }
                                 }
                         }
                 }
