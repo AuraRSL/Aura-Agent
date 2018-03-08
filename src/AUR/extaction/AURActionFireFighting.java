@@ -92,31 +92,43 @@ public class AURActionFireFighting extends ExtAction {
 
 	@Override
 	public ExtAction precompute(PrecomputeData precomputeData) {
+		long t = System.currentTimeMillis();
 		super.precompute(precomputeData);
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
+		
+		this.wsg.fireSimulator.precompute(precomputeData);
+		
 		this.pathPlanning.precompute(precomputeData);
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {
 			this.kernelTime = -1;
 		}
+		System.out.println("pre: " + (System.currentTimeMillis() - t));
 		return this;
 	}
 
 	@Override
 	public ExtAction resume(PrecomputeData precomputeData) {
+		long t = System.currentTimeMillis();
 		super.resume(precomputeData);
+		
 		if (this.getCountResume() >= 2) {
 			return this;
 		}
+		
+		this.wsg.fireSimulator.resume(precomputeData);
+		
 		this.pathPlanning.resume(precomputeData);
+		
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {
 			this.kernelTime = -1;
 		}
+		System.out.println("pre load: " + (System.currentTimeMillis() - t));
 		return this;
 	}
 
@@ -183,7 +195,7 @@ public class AURActionFireFighting extends ExtAction {
 					//System.out.println(vp.value);
 				}
 				
-				if(vp.areaGraph.isSmall) {
+				if(vp.areaGraph.isSmall()) {
 					vp.value *= (1e6);
 				}
 				

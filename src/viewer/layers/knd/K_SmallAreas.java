@@ -18,7 +18,7 @@ public class K_SmallAreas extends K_ViewerLayer {
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
         for(AURAreaGraph ag : wsg.areas.values()) {
-            if(ag.isSmall) {
+            if(ag.isSmall()) {
                 Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
                 g2.setColor(Color.orange);
                 g2.fillPolygon(polygon);

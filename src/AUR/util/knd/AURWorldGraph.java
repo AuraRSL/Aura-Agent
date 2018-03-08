@@ -204,7 +204,7 @@ public class AURWorldGraph extends AbstractModule {
 			path.remove(path.size() - 1);
 			if (path.size() >= 2) {
 				AURAreaGraph ag = getAreaGraph(path.get(path.size() - 1));
-				if (ag.isSmall) {
+				if (ag.isSmall()) {
 					path.remove(path.size() - 1);
 				}
 			}
@@ -685,9 +685,6 @@ public class AURWorldGraph extends AbstractModule {
 			ag.vis = false;
 			ag.lastDijkstraEntranceNode = null;
 			for (AURBorder border : ag.borders) {
-				border.CenterNode.cost = AURGeoUtil.INF;
-				border.CenterNode.pre = null;
-				border.CenterNode.pQueEntry = null;
 				for (AURNode node : border.nodes) {
 					node.cost = AURGeoUtil.INF;
 					node.pre = null;
@@ -763,10 +760,10 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		fromAg.lastDijkstraEntranceNode = startNullNode;
 		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY()); //
-		if (startNodes.size() == 0) {
+		if (startNodes.isEmpty()) {
 			return;
 		}
-		FibonacciHeap<AURNode> que = new FibonacciHeap<AURNode>();
+		FibonacciHeap<AURNode> que = new FibonacciHeap<>();
 		for (AURNode node : startNodes) {
 			node.pre = startNullNode;
 			node.pQueEntry = que.enqueue(node, node.cost);
@@ -895,7 +892,8 @@ public class AURWorldGraph extends AbstractModule {
 		AURNode node = closest.lastNoBlockadeDijkstraEntranceNode;
 		result.add(closest.area.getID());
 		while (node.pre != startNullNode) {
-			result.add(node.getPreAreaGraph().area.getID());
+			AURAreaGraph pag = node.getPreAreaGraph();
+			result.add(pag.area.getID());
 			node = node.pre;
 		}
 		result.add(fromID);
@@ -916,10 +914,10 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		fromAg.lastNoBlockadeDijkstraEntranceNode = startNullNode;
 		ArrayList<AURNode> startNodes = fromAg.getEdgeToAllBorderCenters(ai.getX(), ai.getY());
-		if (startNodes.size() == 0) {
+		if (startNodes.isEmpty()) {
 			return;
 		}
-		FibonacciHeap<AURNode> que = new FibonacciHeap<AURNode>();
+		FibonacciHeap<AURNode> que = new FibonacciHeap<>();
 		for (AURNode node : startNodes) {
 			node.pre = startNullNode;
 			node.pQueEntry = que.enqueue(node, node.cost);

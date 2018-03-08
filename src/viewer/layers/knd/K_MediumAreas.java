@@ -18,7 +18,7 @@ public class K_MediumAreas extends K_ViewerLayer {
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
         for(AURAreaGraph ag : wsg.areas.values()) {
-            if(ag.isSmall == false && ag.isBig == false) {
+            if(ag.isSmall() == false && ag.isBig() == false) {
                 Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
                 g2.setColor(Color.BLUE);
                 g2.fillPolygon(polygon);

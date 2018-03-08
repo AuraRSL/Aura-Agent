@@ -2,8 +2,10 @@ package AUR.util.knd;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 
 import rescuecore2.misc.geometry.Line2D;
+import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
 
 /**
@@ -53,6 +55,33 @@ public class AURGeoUtil {
 		return result;
 	}
 	
+	public static ArrayList<double[]> getRandomPointsOnSegmentLine(double Ax, double Ay, double Bx, double By, double rate) {
+		ArrayList<double[]> result = new ArrayList<>();
+		double dx = Bx - Ax;
+		double dy = By - Ay;
+		double l = Math.hypot(dx, dy);
+		double n = (int) (rate * l);
+		if(l <= 1e-5) {
+			for(int i = 0; i < n; i++) {
+				result.add(new double[]{Ax, By});
+			}
+			return result;
+		}
+		dx /= l;
+		dy /= l;
+		for(int i = 0; i < n; i++) {
+			double rand = Math.random();
+			result.add(new double[] {Ax + dx * l * rand, Ay + dy * l * rand});
+		}
+		return result;
+	}
+	
+	public static void getRandomUnitVector(double result[]) {
+		double r = Math.random() * Math.PI * 2;
+		result[0] = Math.cos(r);
+		result[1] = Math.sin(r);
+	}
+	
 	private static double __temp__[] = new double[2];
 	
 	public static boolean intersectsOrContains(Polygon p1, Polygon p2) {
@@ -94,6 +123,38 @@ public class AURGeoUtil {
 		return false;
 	}
 	
+	
+	public static boolean intersectsOrContains(Polygon p, double[] segmentLine) {
+		
+		for(int i = 0; i < p.npoints; i++) {
+			boolean b = AURGeoUtil.getIntersection(
+					p.xpoints[i],
+					p.ypoints[i],
+					p.xpoints[(i + 1) % p.npoints],
+					p.ypoints[(i + 1) % p.npoints],
+					segmentLine[0],
+					segmentLine[1],
+					segmentLine[2],
+					segmentLine[3],
+					__temp__
+			);
+			if(b) {
+				return true;
+			}
+		}
+
+		if(p.contains(segmentLine[0], segmentLine[1])) {
+			return true;
+		}
+		
+		if(p.contains(segmentLine[2], segmentLine[3])) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	
 	public static double getArea(Polygon p) {
 		double sum = 0;
 		for (int i = 0; i < p.npoints; i++) {
@@ -122,6 +183,33 @@ public class AURGeoUtil {
 					p.ypoints[i],
 					p.xpoints[(i + 1) % p.npoints],
 					p.ypoints[(i + 1) % p.npoints],
+					ray[0],
+					ray[1],
+					ray[2],
+					ray[3],
+					ip
+			);
+			if(b) {
+				ray[2] = ip[0];
+				ray[3] = ip[1];
+				result = true;
+			}
+		}
+		return result;
+	}
+	
+	public static boolean hitRayWalls(Building building, double ray[]) {
+		double ip[] = new double[2];
+		boolean result = false;
+		for(Edge edge : building.getEdges()) {
+			if(edge.isPassable() == true) {
+				continue;
+			}
+			boolean b = AURGeoUtil.getIntersection(
+					edge.getStartX(),
+					edge.getStartY(),
+					edge.getEndX(),
+					edge.getEndY(),
 					ray[0],
 					ray[1],
 					ray[2],

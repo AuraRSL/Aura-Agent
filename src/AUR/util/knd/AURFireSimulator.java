@@ -1,7 +1,6 @@
 package AUR.util.knd;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
+import adf.agent.precompute.PrecomputeData;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import rescuecore2.standard.entities.Building;
@@ -16,31 +15,55 @@ import viewer.K_ScreenTransform;
 public class AURFireSimulator {
 
     private AURWorldGraph wsg = null;
-    private float cells[][] = null;
+    private float cells[][][] = null;
     private Rectangle2D worldBounds = null;
     
-    public float[][] getCells() {
+    public float[][][] getCells() {
         return cells;
     }
     
+    public boolean isPrecomputedConnections = false;
+    
     public int getCellSize() {
-        return AURConstants.WORLD_AIR_CELL_SIZE;
+        return AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
     }
     
+    public void precompute(PrecomputeData pd) {
+        for(AURAreaGraph ag : wsg.areas.values()) {
+            if(ag.isBuilding()) {
+                ag.getBuilding().fireSimBuilding.precomputeRadiation(pd);
+            }
+        }
+        pd.setBoolean("radiation", true);
+    }
+    
+    public void resume(PrecomputeData pd) {
+        Boolean b = pd.getBoolean("radiation");
+        if(b == null || b == false) {
+		    
+            return;
+        }
+        this.isPrecomputedConnections = true;
+        for(AURAreaGraph ag : wsg.areas.values()) {
+            if(ag.isBuilding()) {
+                ag.getBuilding().fireSimBuilding.resumeRadiation(pd);
+            }
+        }    
+    }
+
     public AURFireSimulator(AURWorldGraph wsg) {
         this.wsg = wsg;
         this.worldBounds = wsg.wi.getBounds();
-        int rows = (int) Math.ceil(worldBounds.getHeight() / AURConstants.WORLD_AIR_CELL_SIZE);
-        int cols = (int) Math.ceil(worldBounds.getWidth() / AURConstants.WORLD_AIR_CELL_SIZE);
-        
+        int rows = (int) Math.ceil(worldBounds.getHeight() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
+        int cols = (int) Math.ceil(worldBounds.getWidth() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
         this.worldBounds.setRect(
             worldBounds.getMinX(),
             worldBounds.getMinY(),
-            cols * AURConstants.WORLD_AIR_CELL_SIZE,
-            rows * AURConstants.WORLD_AIR_CELL_SIZE
+            cols * AURConstants.FireSim.WORLD_AIR_CELL_SIZE,
+            rows * AURConstants.FireSim.WORLD_AIR_CELL_SIZE
         );
         
-        cells = new float[rows][cols];
+        cells = new float[rows][cols][2];
     }
     
     private int[] res = new int[2];
@@ -51,8 +74,8 @@ public class AURFireSimulator {
         x -= worldBounds.getMinX();
         y -= worldBounds.getMinY();
         
-        res[0] = (int) Math.floor(y / AURConstants.WORLD_AIR_CELL_SIZE);
-        res[1] = (int) Math.floor(x / AURConstants.WORLD_AIR_CELL_SIZE);
+        res[0] = (int) Math.floor(y / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
+        res[1] = (int) Math.floor(x / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
         
         return res;
     }
@@ -65,7 +88,7 @@ public class AURFireSimulator {
     }
     
     public void paintJustCells(Graphics2D g2, K_ScreenTransform kst) {
-        int a = AURConstants.WORLD_AIR_CELL_SIZE;
+        int a = AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
         int mx = (int) (worldBounds.getMinX());
         int my = (int) (worldBounds.getMinY());
         for(int i = 0; i < cells.length; i++) {
