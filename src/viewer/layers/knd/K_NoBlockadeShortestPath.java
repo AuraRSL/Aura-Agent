@@ -8,29 +8,31 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import rescuecore2.standard.entities.Building;
+import rescuecore2.worldmodel.EntityID;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
-import rescuecore2.worldmodel.EntityID;
 
 /**
  *
- * @author Alireza Kandeh - 2017
+ * @author Alireza Kandeh - 2018
  */
 
-public class K_ShortestPath extends K_ViewerLayer {
+public class K_NoBlockadeShortestPath extends K_ViewerLayer {
 
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
 		if (selected_ag == null) {
 			return;
 		}
+		wsg.NoBlockadeDijkstra(wsg.ai.getPosition());
 		int lastX = 0;
 		int lastY = 0;
 		int X, Y;
-		g2.setColor(Color.orange);
+		g2.setColor(Color.magenta);
 		g2.setStroke(new BasicStroke(3));
 
-		AURNode node = selected_ag.lastDijkstraEntranceNode;
+		AURNode node = selected_ag.lastNoBlockadeDijkstraEntranceNode;
 		if (node == null) {
 			return;
 		}
@@ -63,6 +65,7 @@ public class K_ShortestPath extends K_ViewerLayer {
 
 		g2.setStroke(new BasicStroke(1));
 	}
+	
 	@Override
 	public String getString(AURWorldGraph wsg, AURAreaGraph selected_ag) {
 		if(selected_ag == null) {
@@ -71,7 +74,7 @@ public class K_ShortestPath extends K_ViewerLayer {
 		String result = "";
 		Collection<EntityID> targets = new ArrayList<EntityID>();
 		targets.add(selected_ag.area.getID());
-		ArrayList<EntityID> path = wsg.getPathToClosest(wsg.ai.getPosition(), targets);
+		ArrayList<EntityID> path = wsg.getNoBlockadePathToClosest(wsg.ai.getPosition(), targets);
 		
 		if(path != null) {
 			for(int i = 0; i < path.size(); i++) {
@@ -81,4 +84,5 @@ public class K_ShortestPath extends K_ViewerLayer {
 		}
 		return result;
 	}
+
 }

@@ -49,6 +49,7 @@ import viewer.layers.knd.*;
 public class K_Viewer extends JFrame {
 
 	private void addLayers() {
+		addLayer(K_AreaPropery.class, true);
 		addLayer(K_LayerRoads.class, true);
 		addLayer(K_LayerBuildings.class, true);
 		addLayer(K_LayerBuildingsClusterColor.class, false);
@@ -59,11 +60,12 @@ public class K_Viewer extends JFrame {
 		addLayer(K_LayerAllBlockades.class, true);
 		addLayer(K_LayerWalls.class, true);
 		addLayer(K_LayerWorldGraph.class, false);
+		addLayer(K_NoBlockadeWorldGraph.class, true);
+		addLayer(K_ShortestPath.class, false);
+		addLayer(K_NoBlockadeShortestPath.class, true);
 		addLayer(K_AreaVertices.class, false);
 		addLayer(K_AreaExtinguishableRange.class, false);
-		addLayer(K_ShortestPath.class, false);
 		addLayer(CivilianLayer.class, true);
-		addLayer(K_AreaPropery.class, true);
 		addLayer(K_AirCells.class, false);
 		addLayer(K_BuildingAirCells.class, false);
 		addLayer(K_AreaGrid.class, false);
