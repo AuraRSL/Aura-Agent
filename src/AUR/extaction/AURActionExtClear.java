@@ -1122,6 +1122,21 @@ public class AURActionExtClear extends ExtAction {
                 System.out.println("From: " + agentInfo.getPosition());
                 System.out.println("Target: " + target);
                 ArrayList<EntityID> path = this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target));
+                
+                /**
+                 * Start of Kandeh's path planning bug ignoring
+                 * if kandeh fix this bug this section should remove.
+                 */
+                for(int i = 0;i < path.size() - 1;i ++){
+                        if(path.get(i).equals(path.get(i + 1))){
+                                path.remove(i);
+                                i --;
+                        }
+                }
+                /**
+                 * End of Kandeh's path planning bug ignoring.
+                 */
+                
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
                 if(pathNodes == null && path.size() > 1){
                         return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
