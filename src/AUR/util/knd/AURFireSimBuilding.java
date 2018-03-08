@@ -9,7 +9,9 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 import java.util.Scanner;
+import org.uncommons.maths.random.GaussianGenerator;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.StandardEntity;
@@ -31,9 +33,13 @@ public class AURFireSimBuilding {
 	public AURBuilding building = null;
 	private short vis_ = 0;
 	public int floors = 1;
-	private double fuel = 0;
+	private double estimatedFuel = 0;
 	private boolean wasEverWatered = false;
 	private double waterQuantity = 0;
+	
+	private int lastRealFieryness = 0;
+	
+	private GaussianGenerator burnRate = new GaussianGenerator(0.15, 0.02, new Random(0));
 	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
@@ -46,7 +52,33 @@ public class AURFireSimBuilding {
 			this.floors = b.getFloors();
 		}
 		this.estimatedEnergy = 0;
-		this.fuel = getInitialFuel();
+		this.estimatedFuel = getInitialFuel();
+	}
+	
+	
+	public void update() {
+		if(this.building.building.isFierynessDefined()) {
+			int f = this.building.building.getFieryness();
+			if(f == 4) {
+				this.setWasEverWatered(true);
+			}
+			if(f != this.lastRealFieryness) {
+				onRealFierynessChange(f);
+			}
+		}
+		
+	}
+	
+	public void onRealFierynessChange(int newFieryness) {
+//		this.lastRealFieryness = newFieryness;
+//		switch(newFieryness) {
+//			case 0:
+//			case 4: {
+//				setEstimatedFuel(getInitialFuel());
+//			}
+//			case 1:
+//			case 5:
+//		}
 	}
 	
 	public void precomputeRadiation(PrecomputeData pd) {
@@ -207,6 +239,19 @@ public class AURFireSimBuilding {
 		}
 	}
 	
+	public double getConsum() {
+		if (this.estimatedFuel <= 1e-8) {
+			return 0;
+		}
+		double tf = (double) (getEstimatedTemperature() / 1000f);
+		double lf = (double) getEstimatedFuel() / getInitialFuel();
+		double f = (double) (tf * lf * burnRate.nextValue());
+		if (f < 0.005f) {
+			f = 0.005f;
+		}
+		return getInitialFuel() * f;
+	}
+		
 	public boolean inflammable() {
 		StandardEntityURN urn = this.building.building.getStandardURN();
 		switch(urn) {
@@ -268,8 +313,12 @@ public class AURFireSimBuilding {
 		}
 	}
 	
-	public double getFuel() {
-		return (double) this.fuel;
+	public void setEstimatedFuel(double f) {
+		this.estimatedFuel = f;
+	}
+	
+	public double getEstimatedFuel() {
+		return (double) this.estimatedFuel;
 	}
 
 	public double getInitialFuel() {
@@ -361,30 +410,30 @@ public class AURFireSimBuilding {
 			return 0;
 		}
 		if (getEstimatedTemperature() >= getIgnitionPoint()) {
-			if (fuel >= getInitialFuel() * 0.66) {
+			if (estimatedFuel >= getInitialFuel() * 0.66) {
 				return 1;   // burning, slightly damaged
 			}
-			if (fuel >= getInitialFuel() * 0.33) {
+			if (estimatedFuel >= getInitialFuel() * 0.33) {
 				return 2;   // burning, more damaged
 			}
-			if (fuel > 0) {
+			if (estimatedFuel > 0) {
 				return 3;    // burning, severly damaged
 			}
 		}
-		if (Math.abs(fuel - getInitialFuel()) < 1e-8) {
+		if (Math.abs(estimatedFuel - getInitialFuel()) < 1e-8) {
 			if (wasEverWatered == true) {
 				return 4;   // not burnt, but watered-damaged
 			} else {
 				return 0;   // not burnt, no water damage
 			}
 		}
-		if (fuel >= getInitialFuel() * 0.66) {
+		if (estimatedFuel >= getInitialFuel() * 0.66) {
 			return 5;        // extinguished, slightly damaged
 		}
-		if (fuel >= getInitialFuel() * 0.33) {
+		if (estimatedFuel >= getInitialFuel() * 0.33) {
 			return 6;        // extinguished, more damaged
 		}
-		if (fuel > 0) {
+		if (estimatedFuel > 0) {
 			return 7;        // extinguished, severely damaged
 		}
 		return 8;           // completely burnt down
