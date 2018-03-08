@@ -371,7 +371,7 @@ public class AURFireSimBuilding {
 				return 3;    // burning, severly damaged
 			}
 		}
-		if (fuel == getInitialFuel()) {
+		if (Math.abs(fuel - getInitialFuel()) < 1e-8) {
 			if (wasEverWatered == true) {
 				return 4;   // not burnt, but watered-damaged
 			} else {
