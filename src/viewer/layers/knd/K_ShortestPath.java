@@ -69,7 +69,7 @@ public class K_ShortestPath extends K_ViewerLayer {
 		    return null;
 		}
 		String result = "";
-		Collection<EntityID> targets = new ArrayList<EntityID>();
+		Collection<EntityID> targets = new ArrayList<>();
 		targets.add(selected_ag.area.getID());
 		ArrayList<EntityID> path = wsg.getPathToClosest(wsg.ai.getPosition(), targets);
 		

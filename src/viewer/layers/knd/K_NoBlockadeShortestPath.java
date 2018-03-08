@@ -72,7 +72,7 @@ public class K_NoBlockadeShortestPath extends K_ViewerLayer {
 		    return null;
 		}
 		String result = "";
-		Collection<EntityID> targets = new ArrayList<EntityID>();
+		Collection<EntityID> targets = new ArrayList<>();
 		targets.add(selected_ag.area.getID());
 		ArrayList<EntityID> path = wsg.getNoBlockadePathToClosest(wsg.ai.getPosition(), targets);
 		
