@@ -77,31 +77,17 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                 perpendicularVector = AURGeoMetrics.getVectorNormal(perpendicularVector);
                 vE = AURGeoMetrics.getVectorNormal(vE);
                 
-                double[] pMELeft = AURGeoMetrics.getPointsPlus(
+                int linesNumber = 5;
+                double[][][] lines = new double[linesNumber][2][2];
+                double mids[][] = new double[linesNumber][2];
+                for(int i = 0;i < linesNumber;i ++){
+                        mids[i] = AURGeoMetrics.getPointsPlus(
                                 pME,
-                                AURGeoMetrics.getVectorScaled(vE,1.5 * AURConstants.AGENT_RADIUS)
-                        ),
-                        pMERight = AURGeoMetrics.getPointsPlus(
-                                pME,
-                                AURGeoMetrics.getVectorScaled(vE,- 1.5 * AURConstants.AGENT_RADIUS)
+                                AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.AGENT_RADIUS * (i - linesNumber / 2) / linesNumber)
                         );
-                        
-                double mids[][] = new double[3][2];
-                mids[0] = pMELeft;
-                mids[1] = pME;
-                mids[2] = pMERight;
-                
-                double[][][] lines = new double[3][2][2];
-                
-                lines[0][0] = AURGeoMetrics.getPointsPlus(pMELeft, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
-                lines[0][1] = AURGeoMetrics.getPointsPlus(pMELeft, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
-                
-                lines[1][0] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
-                lines[1][1] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
-                
-                lines[2][0] = AURGeoMetrics.getPointsPlus(pMERight, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
-                lines[2][1] = AURGeoMetrics.getPointsPlus(pMERight, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
-                
+                        lines[i][0] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
+                        lines[i][1] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                }
                 
                 double p1[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000)),
                        p2[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
@@ -174,24 +160,20 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                 }
                 
                 g2.setColor(Color.BLUE);
-                g2.drawLine(
-                        kst.xToScreen(lines[0][0][0]),
-                        kst.yToScreen(lines[0][0][1]),
-                        kst.xToScreen(lines[0][1][0]),
-                        kst.yToScreen(lines[0][1][1])
-                );
-                g2.drawLine(
-                        kst.xToScreen(lines[2][0][0]),
-                        kst.yToScreen(lines[2][0][1]),
-                        kst.xToScreen(lines[2][1][0]),
-                        kst.yToScreen(lines[2][1][1])
-                );
+                for(int i = 0;i < linesNumber;i ++){
+                        g2.drawLine(
+                                kst.xToScreen(lines[i][0][0]),
+                                kst.yToScreen(lines[i][0][1]),
+                                kst.xToScreen(lines[i][1][0]),
+                                kst.yToScreen(lines[i][1][1])
+                        );
+                }
                 
                 double[] result = new double[4];
-                result[0] = lines[1][0][0];
-                result[1] = lines[1][0][1];
-                result[2] = lines[1][1][0];
-                result[3] = lines[1][1][1];
+                result[0] = lines[linesNumber / 2][0][0];
+                result[1] = lines[linesNumber / 2][0][1];
+                result[2] = lines[linesNumber / 2][1][0];
+                result[3] = lines[linesNumber / 2][1][1];
                 return result;
         }
 }
