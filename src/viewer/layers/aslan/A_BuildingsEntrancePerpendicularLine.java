@@ -50,9 +50,8 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                         return;
                 
                 for(Edge e : selected_ag.area.getEdges()){
-                        if(! e.isPassable() || AURGeoUtil.dist(e.getEndX(), e.getEndY(), e.getStartX(), e.getStartY()) < 3 * AURConstants.AGENT_RADIUS)
+                        if(! e.isPassable())
                                 continue;
-                                
                         double[] line = getLine(selected_ag.area, e);
                         
                         g2.setColor(Color.orange);
