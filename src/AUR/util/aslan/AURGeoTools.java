@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURGeoUtil;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.Collection;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
@@ -208,6 +209,15 @@ public class AURGeoTools {
         public static double[] getNormalVectorWithDegree(int deg){
                 return getNormalVectorWithRadian(
                         Math.toRadians(deg)
+                );
+        }
+        
+        public static Rectangle getShapeOfLineSegment(double line[]){
+                return new Rectangle(
+                        (int) Math.min(line[0], line[2]),
+                        (int) Math.min(line[1], line[3]),
+                        (int) Math.abs(line[0] - line[2]),
+                        (int) Math.abs(line[1] - line[3])
                 );
         }
 }

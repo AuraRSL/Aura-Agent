@@ -90,6 +90,7 @@ public class K_Viewer extends JFrame {
 		addLayer(A_AreasEntityID.class, false);
 		addLayer(A_BlockadesEntityID.class, false);
 		addLayer(A_PoliceClearAreaAndAgentsInThat.class, false);
+		addLayer(A_BuildingsEntrancePerpendicularLine.class, false);
 	}
 	
 	private static K_Viewer _instance = null;

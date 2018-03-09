@@ -65,4 +65,11 @@ public class AURGeoMetrics {
                         p1[1] + p2[1]
                 };
         }
+        
+        public static double[] getPerpendicularVector(double v[]) {
+                return new double[]{
+                        - v[1],
+                        v[0]
+                };
+        }
 }
