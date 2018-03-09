@@ -1,13 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package viewer.layers.aslan;
 
 import AUR.util.aslan.AURGeoMetrics;
 import AUR.util.aslan.AURGeoTools;
 import AUR.util.knd.AURAreaGraph;
+import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.info.WorldInfo;
@@ -33,7 +29,7 @@ import viewer.K_ViewerLayer;
 
 /**
  *
- * @author mrse
+ * @author Amir Aslan Aslani - Mar 2018
  */
 public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
 
@@ -69,7 +65,6 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
         }
 
         public double[] getLine(Area a,Edge e){
-                double[] result = new double[4];
                 double[] pME = AURGeoMetrics.getPointFromPoint2D(
                         AURGeoTools.getEdgeMid(e)
                 );
@@ -80,16 +75,38 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                 };
                 double[] perpendicularVector = AURGeoMetrics.getPerpendicularVector(vE);
                 perpendicularVector = AURGeoMetrics.getVectorNormal(perpendicularVector);
+                vE = AURGeoMetrics.getVectorNormal(vE);
                 
-                double[] p1 = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
-                double[] p2 = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                double[] pMELeft = AURGeoMetrics.getPointsPlus(
+                                pME,
+                                AURGeoMetrics.getVectorScaled(vE,1.5 * AURConstants.AGENT_RADIUS)
+                        ),
+                        pMERight = AURGeoMetrics.getPointsPlus(
+                                pME,
+                                AURGeoMetrics.getVectorScaled(vE,- 1.5 * AURConstants.AGENT_RADIUS)
+                        );
+                        
+                double mids[][] = new double[3][2];
+                mids[0] = pMELeft;
+                mids[1] = pME;
+                mids[2] = pMERight;
                 
-                result[0] = p1[0];
-                result[1] = p1[1];
-                result[2] = p2[0];
-                result[3] = p2[1];
+                double[][][] lines = new double[3][2][2];
                 
-                for(EntityID aid : wi.getObjectIDsInRectangle((int) p1[0], (int) p1[1], (int) p2[0], (int) p2[1])){
+                lines[0][0] = AURGeoMetrics.getPointsPlus(pMELeft, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
+                lines[0][1] = AURGeoMetrics.getPointsPlus(pMELeft, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                
+                lines[1][0] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
+                lines[1][1] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                
+                lines[2][0] = AURGeoMetrics.getPointsPlus(pMERight, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
+                lines[2][1] = AURGeoMetrics.getPointsPlus(pMERight, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                
+                
+                double p1[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000)),
+                       p2[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                
+                for(EntityID aid : wi.getObjectIDsInRectangle((int) lines[1][0][0], (int) lines[1][0][1], (int) lines[1][1][0], (int) lines[1][1][1])){
                         if(! (wi.getEntity(aid) instanceof Area))
                                 continue;
                         
@@ -100,46 +117,81 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                         if(edge.isPassable())
                                                 continue;
                                         
-                                        double[] intersect = new double[]{-1,-1};
-                                        AURGeoUtil.getIntersection(
-                                                edge.getLine().getOrigin().getX(),
-                                                edge.getLine().getOrigin().getY(),
-                                                edge.getLine().getEndPoint().getX(),
-                                                edge.getLine().getEndPoint().getY(),
-                                                result[0],
-                                                result[1],
-                                                result[2],
-                                                result[3],
-                                                intersect
-                                        );
-                                        
-                                        boolean linesIntersect = Line2D.linesIntersect(
-                                                edge.getLine().getOrigin().getX(),
-                                                edge.getLine().getOrigin().getY(),
-                                                edge.getLine().getEndPoint().getX(),
-                                                edge.getLine().getEndPoint().getY(),
-                                                result[0],
-                                                result[1],
-                                                result[2],
-                                                result[3]
-                                        );
-                                        
-                                        System.out.println(intersect[0] + " :: " + intersect[1]);
-                                        
-                                        if(intersect[0] != -1 && linesIntersect){
-                                                if(AURGeoUtil.length(intersect[0], intersect[1], p1[0], p1[1]) < AURGeoUtil.length(intersect[0], intersect[1], p2[0], p2[1])){
-                                                        result[0] = intersect[0];
-                                                        result[1] = intersect[1];
-                                                }
-                                                else{
-                                                        result[2] = intersect[0];
-                                                        result[3] = intersect[1];
+                                        for(int i = 0;i < lines.length;i ++){
+                                                double[] intersect = new double[]{-1,-1};
+                                                AURGeoUtil.getIntersection(
+                                                        edge.getLine().getOrigin().getX(),
+                                                        edge.getLine().getOrigin().getY(),
+                                                        edge.getLine().getEndPoint().getX(),
+                                                        edge.getLine().getEndPoint().getY(),
+                                                        lines[i][0][0],
+                                                        lines[i][0][1],
+                                                        lines[i][1][0],
+                                                        lines[i][1][1],
+                                                        intersect
+                                                );
+
+                                                boolean linesIntersect = Line2D.linesIntersect(
+                                                        edge.getLine().getOrigin().getX(),
+                                                        edge.getLine().getOrigin().getY(),
+                                                        edge.getLine().getEndPoint().getX(),
+                                                        edge.getLine().getEndPoint().getY(),
+                                                        lines[i][0][0],
+                                                        lines[i][0][1],
+                                                        lines[i][1][0],
+                                                        lines[i][1][1]
+                                                );
+
+                                                if(intersect[0] != -1 && linesIntersect){
+                                                        if(AURGeoUtil.length(intersect[0], intersect[1], p1[0], p1[1]) < AURGeoUtil.length(intersect[0], intersect[1], p2[0], p2[1])){
+                                                                double hypot = Math.hypot(intersect[0] - mids[i][0],intersect[1] - mids[i][1]);
+                                                                for(int j = 0;j < lines.length;j ++){
+                                                                        lines[j][0] = AURGeoMetrics.getPointsPlus(
+                                                                                mids[j],
+                                                                                AURGeoMetrics.getVectorScaled(
+                                                                                        perpendicularVector,
+                                                                                        hypot
+                                                                                )
+                                                                        );
+                                                                }
+                                                        }
+                                                        else{
+                                                                double hypot = - Math.hypot(intersect[0] - mids[i][0],intersect[1] - mids[i][1]);
+                                                                for(int j = 0;j < lines.length;j ++){
+                                                                        lines[j][1] = AURGeoMetrics.getPointsPlus(
+                                                                                mids[j],
+                                                                                AURGeoMetrics.getVectorScaled(
+                                                                                        perpendicularVector,
+                                                                                        hypot
+                                                                                )
+                                                                        );
+                                                                }
+                                                        }
                                                 }
                                         }
                                 }
                         }
                 }
                 
+                g2.setColor(Color.BLUE);
+                g2.drawLine(
+                        kst.xToScreen(lines[0][0][0]),
+                        kst.yToScreen(lines[0][0][1]),
+                        kst.xToScreen(lines[0][1][0]),
+                        kst.yToScreen(lines[0][1][1])
+                );
+                g2.drawLine(
+                        kst.xToScreen(lines[2][0][0]),
+                        kst.yToScreen(lines[2][0][1]),
+                        kst.xToScreen(lines[2][1][0]),
+                        kst.yToScreen(lines[2][1][1])
+                );
+                
+                double[] result = new double[4];
+                result[0] = lines[1][0][0];
+                result[1] = lines[1][0][1];
+                result[2] = lines[1][1][0];
+                result[3] = lines[1][1][1];
                 return result;
         }
 }
