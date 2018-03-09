@@ -1148,8 +1148,8 @@ public class AURActionExtClear extends ExtAction {
 
                 int index;
                 
-                index = 0;
-                for(int i = 0;i < pathNodes.size(); i ++,index ++){
+                index = 1;
+                for(int i = 1;i < pathNodes.size(); i ++,index ++){
                         if (hasRoadIntersect(new Point2D(policeForce.getX(), policeForce.getY()), pathNodes, index)) {
                                 System.out.println("intersect on " + pathNodes.get(index).second());
                                 break;
