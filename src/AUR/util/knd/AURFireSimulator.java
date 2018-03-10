@@ -1,6 +1,7 @@
 package AUR.util.knd;
 
 import adf.agent.precompute.PrecomputeData;
+import static firesimulator.simulator.Simulator.GAMMA;
 import firesimulator.world.Building;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,7 +49,30 @@ public class AURFireSimulator {
 	}
 	
 	private void cool() {
-		
+		for(AURAreaGraph ag : this.wsg.areas.values()) {
+			if(ag.isBuilding()) {
+				waterCooling(ag.getBuilding().fireSimBuilding);
+			}
+		}
+	}
+	
+	private void waterCooling(AURFireSimBuilding b) {
+		double lWATER_COEFFICIENT = (b.getEstimatedEnergy() > 0 && b.getEstimatedEnergy() < 4 ? AURConstants.FireSim.WATER_COEFFICIENT : AURConstants.FireSim.WATER_COEFFICIENT * AURConstants.FireSim.GAMMA);
+		if (b.getWaterQuantity() > 0) {
+			double dE = b.getEstimatedTemperature() * b.getCapacity();
+			if (dE <= 0) {
+				return;
+			}
+			double effect = b.getWaterQuantity() * lWATER_COEFFICIENT;
+			double consumed = b.getWaterQuantity();
+			if (effect > dE) {
+				double pc = 1 - ((effect - dE) / effect);
+				effect *= pc;
+				consumed *= pc;
+			}
+			b.setWaterQuantity(b.getWaterQuantity() - consumed);
+			b.setEstimatedEnergy(b.getEstimatedEnergy() - effect);
+		}
 	}
 	
 	private void updateGrid() {

@@ -129,7 +129,7 @@ public class AURWorldGraph extends AbstractModule {
 						} else {
 							if (ag.isBuilding() && ag.noSeeTime() == 0) {
 								Building b = (Building) (ag.area);
-								if (b.isTemperatureDefined() && b.getTemperature() > 0) {
+								if (ag.getBuilding().fireSimBuilding.getEstimatedTemperature() > 0) {
 									grid[i][j] = true;
 									break;
 								}

@@ -380,6 +380,10 @@ public class AURFireSimBuilding {
 		}
 	}
 	
+	public void addWater(double waterQuantity) {
+		this.setWaterQuantity(this.getWaterQuantity() + waterQuantity);
+	}
+	
 	public void setWaterQuantity(double waterQuantity) {
 		if(waterQuantity > 0) {
 			setWasEverWatered(true);

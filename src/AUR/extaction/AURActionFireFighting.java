@@ -393,7 +393,9 @@ public class AURActionFireFighting extends ExtAction {
 			AURAreaGraph ag = wsg.getAreaGraph(target);
 			int w = (int) ((double) ag.getWaterNeeded() * 1.0);
 			w = Math.min(w, this.maxExtinguishPower);
-			return new ActionExtinguish(target, Math.min(w, agent.getWater() - 1));
+			w = Math.min(w, agent.getWater() - 1);
+			wsg.getAreaGraph(target).getBuilding().fireSimBuilding.addWater(w);
+			return new ActionExtinguish(target, w);
 		} else {
 			exCount = 0;
 			return this.getMoveAction(pathPlanning, agentPosition, target);

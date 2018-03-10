@@ -33,7 +33,7 @@ public class AURFireSearchValueSetter {
 			p.value = 0;
 		}
 
-		add_Fieryness(this.points, 1.5);
+		//add_Fieryness(this.points, 1.5);
 		add_EstimatedFieryness(this.points, 1.5);
 		
 		add_GasStation(this.points, 0.55);

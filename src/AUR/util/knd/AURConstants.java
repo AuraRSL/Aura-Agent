@@ -22,6 +22,8 @@ public class AURConstants {
 		
 		public final static double RADIATION_COEFFICENT = 0.011;
 		public final static double STEFAN_BOLTZMANN_CONSTANT = 0.000000056704;
+		public final static double GAMMA = 0.2;
+		public final static double WATER_COEFFICIENT = 0.5;
 		
 		public final static int WORLD_AIR_CELL_SIZE = 10000;
 		public final static int MAX_RADIATION_DISTANCE = 200000;
