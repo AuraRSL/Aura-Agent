@@ -153,6 +153,29 @@ public class AURGeoTools {
                 return false;
         }
         
+        public static boolean intersect(double[] line, Area area) {
+                double[] tmp = new double[2];
+                for(Edge e : area.getEdges())
+                        if(
+                                (! e.isPassable()) &&
+                                (
+                                        AURGeoUtil.getIntersection(
+                                                line[0],
+                                                line[1],
+                                                line[2],
+                                                line[3],
+                                                e.getEndX(),
+                                                e.getEndY(),
+                                                e.getStartX(),
+                                                e.getStartY(),
+                                                tmp
+                                        )
+                                )
+                        )
+                                return true;
+                return false;
+        }
+        
         public static boolean intersect(Polygon polygon, Collection<Area> areas) {
                 for(Area area : areas)
                         if( intersect ( polygon, area ) ) {

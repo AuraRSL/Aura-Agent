@@ -30,6 +30,8 @@ public class AURClearWatcher {
         private double xLastPos = 0;
         private double yLastPos = 0;
         
+        public double[] lastMoveVector = new double[2];
+        
         public int lastAction;
         public int lastTime;
         public int currentTime;
@@ -95,6 +97,8 @@ public class AURClearWatcher {
                 else if(action instanceof ActionMove){
                         System.out.println(" -> MOVE");
                         this.lastAction = this.MOVE;
+                        this.lastMoveVector[0] = ((ActionMove)action).getPosX() - ai.getX();
+                        this.lastMoveVector[1] = ((ActionMove)action).getPosY() - ai.getY();
                 }
                 
                 return newAction;

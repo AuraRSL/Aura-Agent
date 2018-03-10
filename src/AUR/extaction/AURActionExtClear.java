@@ -31,7 +31,8 @@ import adf.agent.precompute.PrecomputeData;
 import adf.component.extaction.ExtAction;
 import adf.component.module.algorithm.PathPlanning;
 import java.awt.Rectangle;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.Pair;
 import rescuecore2.misc.geometry.GeometryTools2D;
@@ -78,6 +79,13 @@ public class AURActionExtClear extends ExtAction {
         private PathPlanning pathPlanning;
         
         private AURClearWatcher cw = null;
+        private Point2D lastHomeComing = null;
+        private int lastHomeComingStatus = this.NO_POINT_SELECTED;
+        
+        public final int NO_POINT_SELECTED = 0,
+                         GOING_TO_POINT = 1,
+                         GOING_FROM_POINT_TO_BUILDING = 2,
+                         GOING_FROM_BUILDING_TO_POINT = 3;
         
         private int[] agentPosition;
 
@@ -206,41 +214,10 @@ public class AURActionExtClear extends ExtAction {
                         return this;
                 }
 
-//                if (this.decidedCleaningLineTarget != null && (
-//                        agentPosition.equals(this.decidedCleaningLineTarget.second()) ||
-//                        AURGeoUtil.dist(
-//                                policeForce.getX(),
-//                                policeForce.getY(),
-//                                decidedCleaningLineTarget.first().getX(),
-//                                decidedCleaningLineTarget.first().getY()
-//                        ) < this.agentSize * 2)
-//                ) {
-//                        this.decidedCleaningLineTarget = null;
-//                        this.isThereDecidedCleaningLine = false;
-//                }
-                
-//                if(this.lastActionType == this.ACTION_MOVE && AURGeoUtil.dist(lastPoint.getX(), lastPoint.getY(), policeForce.getX(), policeForce.getY()) < agentSize / 2){
-//                        System.out.println("Rescue!!");
-//                        this.lastActionType = this.ACTION_CLEAR_FOR_RESCUE;
-//                        this.result = new ActionClear(policeForce.getPosition());
-//                        return this;
-//                }
-
-                /*
-                 * agent is standing on anywhere
-                 * and there is another human object, trapped in a blockade
-                 */
-                
-//            if (positionStandardEntity instanceof Road)
-//            {
-//                    this.result = this.getRescueAction(policeForce, (Road) positionStandardEntity,(Area) targetStandardEntity);
-//
-//                    if (this.result != null)
-//                            return this;
-//            }
-
                 /**
                  * if there is agent that blocked in police clear area, then rescue that.
+                 * agent is standing on anywhere
+                 * and there is another human object, trapped in a blockade
                  */
                 int[] blockedAgentInClearArea = getBlockedAgentInClearArea();
                 if(blockedAgentInClearArea != null){
@@ -251,6 +228,32 @@ public class AURActionExtClear extends ExtAction {
                         if(this.result != null)
                                 return this;
                         System.out.println("Failed!");
+                }
+                
+                /**
+                 * Buildings Entrance Perpendicular Line Settings.
+                 */
+                
+                if(lastHomeComing != null && this.lastHomeComingStatus == GOING_TO_POINT && AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())){
+                        lastHomeComingStatus = this.GOING_FROM_POINT_TO_BUILDING;
+                }
+                if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT && AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())){
+                        lastHomeComing = null;
+                        lastHomeComingStatus = this.NO_POINT_SELECTED;
+                }
+                else if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT){
+                        System.out.println("Back to point...");
+                        this.result = this.cw.getAction(
+                                new ActionMove(
+                                        Lists.newArrayList(agentInfo.getPosition()),
+                                        (int) lastHomeComing.getX(),
+                                        (int) lastHomeComing.getY()
+                                )
+                        );
+                        return this;
+                }
+                if(lastHomeComingStatus == GOING_FROM_POINT_TO_BUILDING && worldInfo.getEntity(agentInfo.getPosition()) instanceof Building){
+                        lastHomeComingStatus = this.GOING_FROM_BUILDING_TO_POINT;
                 }
                 
                 /**
@@ -272,85 +275,6 @@ public class AURActionExtClear extends ExtAction {
                 System.out.println("Get improved road clearing...");
                 this.result = improvedRoadClearing(policeForce, target);
                 return this;
-        }
-
-        private Action getRescueAction(PoliceForce police, Road road, Area targetStandardEntity) {
-                if (!road.isBlockadesDefined()) {
-                        return null;
-                }
-
-                double policeX = police.getX();
-                double policeY = police.getY();
-
-                Collection<Blockade> blockades = this.worldInfo.getBlockades(road).stream().filter(Blockade::isApexesDefined)
-                        .collect(Collectors.toSet());
-                Collection<StandardEntity> agents = this.worldInfo.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM,
-                        StandardEntityURN.FIRE_BRIGADE/*, StandardEntityURN.CIVILIAN*/, StandardEntityURN.POLICE_FORCE);
-
-                List<StandardEntity> listSE = new ArrayList<>(agents);
-                if (listSE.contains((StandardEntity) police)) {
-                        for (Blockade blockade : blockades) {
-                                if (!this.isInside(policeX, policeY, blockade.getApexes())) {
-                                        continue;
-                                }
-                                return new ActionClear(blockade.getID());
-                        }
-                }
-                listSE.remove((StandardEntity) police);
-
-                Action moveAction = null;
-                for (StandardEntity entity : listSE) {
-                        Human human = (Human) entity;
-                        if (!human.isPositionDefined() || human.getPosition().getValue() != road.getID().getValue()) {
-                                continue;
-                        }
-
-                        double humanX = human.getX();
-                        double humanY = human.getY();
-
-                        Point2D pointBestCollideWithBlockade = null;
-                        double distanceMin = Double.MAX_VALUE;
-                        for (Blockade blockade : blockades) {
-                                Point2D l2d = this.getPointIntersectLine2D(policeX, policeY, humanX, humanY, blockade);
-                                if (l2d != null) {
-                                        double temp = getDistance(policeX, policeY, l2d.getX(), l2d.getY());
-                                        if (temp < distanceMin) {
-                                                distanceMin = temp;
-                                                pointBestCollideWithBlockade = l2d;
-                                        }
-                                }
-                        }
-
-                        if (pointBestCollideWithBlockade != null) {
-                                double midl2dx = pointBestCollideWithBlockade.getX();
-                                double midl2dy = pointBestCollideWithBlockade.getY();
-
-                                Vector2D vector = this.scaleClear(this.getVector(policeX, policeY, midl2dx, midl2dy));
-                                int clearX = (int) (policeX + vector.getX());
-                                int clearY = (int) (policeY + vector.getY());
-
-                                moveAction = new ActionMove(Lists.newArrayList(road.getID()), (int) midl2dx, (int) midl2dy);
-
-                                if (this.getDistance(policeX, policeY, midl2dx, midl2dy) < this.distanceLimit) {
-                                        if (this.equalsPoint(this.oldClearX, this.oldClearY, clearX, clearY)) {
-                                                if (this.count >= this.forcedMove) {
-                                                        this.count = 0;
-                                                        return new ActionMove(Lists.newArrayList(road.getID()), (int) midl2dx, (int) midl2dy);
-                                                }
-                                                this.count++;
-                                        }
-                                        this.oldClearX = (int) clearX;
-                                        this.oldClearY = (int) clearY;
-                                        return new ActionClear(clearX, clearY);
-                                }
-                        }
-
-                        if (moveAction != null) {
-                                return moveAction;
-                        }
-
-                }
-                return moveAction;
         }
 
         private Point2D getPointClear(double startX, double startY, double endX, double endY) {
@@ -435,287 +359,13 @@ public class AURActionExtClear extends ExtAction {
                 }
                 return null;
         }
-
-        private Action getNeighbourPositionAction(PoliceForce police, Area target) {
-                double agentX = police.getX();
-                double agentY = police.getY();
-                StandardEntity position = Objects.requireNonNull(this.worldInfo.getPosition(police));
-                Edge edge = target.getEdgeTo(position.getID());
-
-                if (edge == null) {
-                        return null;
-                }
-
-                double midX = (edge.getStartX() + edge.getEndX()) / 2;
-                double midY = (edge.getStartY() + edge.getEndY()) / 2;
-
-                /*
-                 * if agent standing on the neighbor position
-                 * and there is a blockade ahead
-                 */
-                if (position instanceof Area) {
-                        Area road = (Area) position;
-                        if (road.isBlockadesDefined() && road.getBlockades().size() > 0) {
-                                Action actionClear = null;
-                                double distance = Double.MAX_VALUE;
-                                Point2D targetPoint2D = null;
-                                for (Blockade blockade : this.worldInfo.getBlockades(road)) {
-
-                                        if (blockade == null || !blockade.isApexesDefined()) {
-                                                continue;
-                                        }
-
-                                        Point2D l2d = this.getPointIntersectLine2D(agentX, agentY, midX, midY, blockade);
-
-                                        if (l2d != null) {
-                                                double temp = GeometryTools2D.getDistance(l2d, new Point2D(agentX, agentY));
-                                                if (temp < distance) {
-                                                        distance = temp;
-                                                        targetPoint2D = l2d;
-                                                }
-                                        }
-                                }
-                                if (targetPoint2D != null) {
-                                        double midl2dx = targetPoint2D.getX();
-                                        double midl2dy = targetPoint2D.getY();
-                                        actionClear = new ActionMove(Lists.newArrayList(position.getID()), (int) midl2dx, (int) midl2dy);
-                                        if (this.getDistance(agentX, agentY, midl2dx, midl2dy) < this.distanceLimit) {
-                                                Vector2D vector = this.scaleClear(this.getVector(agentX, agentY, midl2dx, midl2dy));
-                                                int clearX = (int) (agentX + vector.getX());
-                                                int clearY = (int) (agentY + vector.getY());
-
-                                                actionClear = new ActionClear(clearX, clearY);
-                                                if (this.equalsPoint(this.oldClearX, this.oldClearY, clearX, clearY)) {
-                                                        if (this.count >= this.forcedMove) {
-                                                                this.count = 0;
-                                                                return new ActionMove(Lists.newArrayList(road.getID()), (int) midl2dx, (int) midl2dy);
-                                                        }
-                                                        this.count++;
-                                                }
-                                                this.oldClearX = clearX;
-                                                this.oldClearY = clearY;
-                                        }
-                                }
-                                if (actionClear != null) {
-                                        return actionClear;
-                                }
-                        }
-                }
-                if (target.isBlockadesDefined() && target.getBlockades().size() > 0) {
-                        Action actionMove = new ActionMove(Lists.newArrayList(position.getID(), target.getID()), target.getX(), target.getY());
-
-                        double midXEdge = (edge.getStartX() + edge.getEndX()) / 2;
-                        double midYEdge = (edge.getStartY() + edge.getEndY()) / 2;
-
-                        double tX = target.getX();
-                        double tY = target.getY();
-
-                        Vector2D vectorDirection = getVector(midXEdge, midYEdge, tX, tY).normalised().scale(this.agentSize);
-                        double targetX = midXEdge + vectorDirection.getX();
-                        double targetY = midYEdge + vectorDirection.getY();
-
-                        double distance = Double.MAX_VALUE;
-                        Point2D targetPoint2D = null;
-                        for (Blockade blockade : this.worldInfo.getBlockades(target)) {
-                                Point2D l2d = this.getPointIntersectLine2D(midXEdge, midYEdge, targetX, targetY, blockade);
-
-                                if (l2d != null) {
-                                        double temp = GeometryTools2D.getDistance(l2d, new Point2D(agentX, agentY));
-                                        if (temp < distance) {
-                                                distance = temp;
-                                                targetPoint2D = l2d;
-                                        }
-                                }
-                        }
-                        if (targetPoint2D != null) {
-                                double midl2dx = targetPoint2D.getX();
-                                double midl2dy = targetPoint2D.getY();
-
-                                Vector2D vector = this.scaleClear(this.getVector(agentX, agentY, midl2dx, midl2dy));
-                                int clearX = (int) (agentX + vector.getX());
-                                int clearY = (int) (agentY + vector.getY());
-
-                                actionMove = new ActionMove(Lists.newArrayList(position.getID(), target.getID()), (int) midl2dx, (int) midl2dy);
-
-                                if (this.getDistance(agentX, agentY, midl2dx, midl2dy) < this.distanceLimit) {
-                                        if (this.equalsPoint(this.oldClearX, this.oldClearY, clearX, clearY)) {
-                                                if (this.count >= this.forcedMove) {
-                                                        this.count = 0;
-                                                        return new ActionMove(Lists.newArrayList(position.getID(), target.getID()));
-                                                }
-                                                this.count++;
-                                        }
-                                        this.oldClearX = (int) clearX;
-                                        this.oldClearY = (int) clearY;
-                                        return new ActionClear(clearX, clearY);
-                                }
-                        }
-                        return actionMove;
-                }
-                return new ActionMove(Lists.newArrayList(position.getID(), target.getID()));
-        }
-
-        private Action getNeighbourPositionAction(PoliceForce police, Area target, List<EntityID> path) {
-                double agentX = police.getX();
-                double agentY = police.getY();
-
-                StandardEntity position = Objects.requireNonNull(this.worldInfo.getPosition(police));
-
-                Edge edge = target.getEdgeTo(position.getID());
-                if (edge == null) {
-                        return null;
-                }
-
-                if (position instanceof Area) {
-                        Area road = (Area) position;
-                        if (road.isBlockadesDefined() && road.getBlockades().size() > 0) {
-                                double midX = (edge.getStartX() + edge.getEndX()) / 2;
-                                double midY = (edge.getStartY() + edge.getEndY()) / 2;
-                                Action actionClear = null;
-                                double distance = Double.MAX_VALUE;
-                                Point2D targetPoint2D = null;
-                                for (Blockade blockade : this.worldInfo.getBlockades(road)) {
-                                        if (blockade == null || !blockade.isApexesDefined()) {
-                                                continue;
-                                        }
-                                        Point2D l2d = this.getPointIntersectLine2D(agentX, agentY, midX, midY, blockade);
-
-                                        if (l2d != null) {
-                                                double temp = GeometryTools2D.getDistance(l2d, new Point2D(agentX, agentY));
-                                                if (temp < distance) {
-                                                        distance = temp;
-                                                        targetPoint2D = l2d;
-                                                }
-                                        }
-                                }
-                                if (targetPoint2D != null) {
-                                        double midl2dx = targetPoint2D.getX();
-                                        double midl2dy = targetPoint2D.getY();
-                                        actionClear = new ActionMove(Lists.newArrayList(position.getID()), (int) midl2dx, (int) midl2dy);
-                                        if (this.getDistance(agentX, agentY, midl2dx, midl2dy) < this.distanceLimit) {
-                                                Vector2D vector = this.scaleClear(this.getVector(agentX, agentY, midl2dx, midl2dy));
-                                                int clearX = (int) (agentX + vector.getX());
-                                                int clearY = (int) (agentY + vector.getY());
-
-                                                actionClear = new ActionClear(clearX, clearY);
-                                                if (this.equalsPoint(this.oldClearX, this.oldClearY, clearX, clearY)) {
-                                                        if (this.count >= this.forcedMove) {
-                                                                this.count = 0;
-                                                                return new ActionMove(Lists.newArrayList(road.getID()), (int) midl2dx, (int) midl2dy);
-                                                        }
-                                                        this.count++;
-                                                }
-                                                this.oldClearX = clearX;
-                                                this.oldClearY = clearY;
-                                        }
-                                }
-                                if (actionClear != null) {
-                                        return actionClear;
-                                }
-                        }
-                }
-                if (target instanceof Area) {
-                        Area road = (Area) target;
-                        if (!road.isBlockadesDefined() || road.getBlockades().isEmpty()) {
-                                return new ActionMove(Lists.newArrayList(position.getID(), target.getID()));
-                        }
-                        Blockade clearBlockade = null;
-                        Double minPointDistance = Double.MAX_VALUE;
-                        int clearX = 0;
-                        int clearY = 0;
-
-                        Edge e = null;
-                        int indexNeighborPos = path.indexOf(target.getID());
-                        int indexNeighborsNeighbor = indexNeighborPos + 1;
-
-                        StandardEntity standardEntityNeighborPos = worldInfo.getEntity(path.get(indexNeighborPos));
-
-                        e = ((Area) standardEntityNeighborPos).getEdgeTo(path.get(indexNeighborsNeighbor));
-                        /*
-                    for (int i = 0; i < path.size(); i++)
-                    {
-                            if (path.get(i).equals(target.getID()))
-                            {
-                                    StandardEntity se = worldInfo.getEntity(path.get(i));
-                                    e = ((Area) se).getEdgeTo(path.get(++i));
-                            }
-                    }
-                         */
-                        if (e == null) {
-                                EntityID leid = ((Area) standardEntityNeighborPos).getNeighbours().get(0);
-                                if (position.getID().equals(leid)) {
-                                        leid = ((Area) standardEntityNeighborPos).getNeighbours().get(1);
-                                }
-                                e = ((Area) standardEntityNeighborPos).getEdgeTo(leid);
-                        }
-                        double midXx = (e.getStartX() + e.getEndX()) / 2;
-                        double midYy = (e.getStartY() + e.getEndY()) / 2;
-
-                        double midX = (edge.getStartX() + edge.getEndX()) / 2;
-                        double midY = (edge.getStartY() + edge.getEndY()) / 2;
-
-                        Vector2D vectorDirection = getVector(midX, midY, midXx, midYy).normalised().scale(this.agentSize);
-                        double targetX = midX + vectorDirection.getX();
-                        double targetY = midY + vectorDirection.getY();
-
-                        for (EntityID id : road.getBlockades()) {
-                                Blockade blockade = (Blockade) this.worldInfo.getEntity(id);
-                                Point2D l2d = this.getPointIntersectLine2D(midX, midY, targetX, targetY, blockade);
-                                if (l2d != null) {
-
-                                        double midl2dx = l2d.getX();
-                                        double midl2dy = l2d.getY();
-
-                                        double distance = this.getDistance(agentX, agentY, midl2dx, midl2dy);
-                                        if (distance < minPointDistance) {
-                                                clearBlockade = blockade;
-                                                minPointDistance = distance;
-                                                clearX = (int) midl2dx;
-                                                clearY = (int) midl2dy;
-                                        }
-                                }
-                        }
-
-                        if (clearBlockade != null && minPointDistance < this.distanceLimit) {
-                                Vector2D vector = this.scaleClear(this.getVector(agentX, agentY, clearX, clearY));
-                                clearX = (int) (agentX + vector.getX());
-                                clearY = (int) (agentY + vector.getY());
-                                if (this.equalsPoint(this.oldClearX, this.oldClearY, clearX, clearY)) {
-                                        if (this.count >= this.forcedMove) {
-                                                this.count = 0;
-                                                return new ActionMove(Lists.newArrayList(road.getID()), clearX, clearY);
-                                        }
-                                        this.count++;
-                                }
-                                this.oldClearX = clearX;
-                                this.oldClearY = clearY;
-                                return new ActionClear(clearX, clearY, clearBlockade);
-                        }
-                }
-
-                return new ActionMove(Lists.newArrayList(position.getID(), target.getID()));
-        }
-
+        
         private boolean equalsPoint(double p1X, double p1Y, double p2X, double p2Y) {
                 return this.equalsPoint(p1X, p1Y, p2X, p2Y, 1000.0D);
         }
 
         private boolean equalsPoint(double p1X, double p1Y, double p2X, double p2Y, double range) {
                 return (p2X - range < p1X && p1X < p2X + range) && (p2Y - range < p1Y && p1Y < p2Y + range);
-        }
-
-        private boolean isInside(double pX, double pY, int[] apex) {
-                Point2D p = new Point2D(pX, pY);
-                Vector2D v1 = (new Point2D(apex[apex.length - 2], apex[apex.length - 1])).minus(p);
-                Vector2D v2 = (new Point2D(apex[0], apex[1])).minus(p);
-                double theta = this.getAngle(v1, v2);
-
-                for (int i = 0; i < apex.length - 2; i += 2) {
-                        v1 = (new Point2D(apex[i], apex[i + 1])).minus(p);
-                        v2 = (new Point2D(apex[i + 2], apex[i + 3])).minus(p);
-                        theta += this.getAngle(v1, v2);
-                }
-                return Math.round(Math.abs((theta / 2) / Math.PI)) >= 1;
         }
 
         private boolean intersect(double agentX, double agentY, double pointX, double pointY, Area area) {
@@ -1144,19 +794,46 @@ public class AURActionExtClear extends ExtAction {
                 System.out.println("Road: " + path);
                 System.out.println("Road Nodes: " + pathNodes);
                 
-//                wsg.guidPoints.put(agentInfo.getID(), pathNodes);
+                GuidPoints.guidPoints.put(agentInfo.getID(), pathNodes);
 
-                int index;
-                
-                index = 1;
-                for(int i = 1;i < pathNodes.size(); i ++,index ++){
-                        if (hasRoadIntersect(new Point2D(policeForce.getX(), policeForce.getY()), pathNodes, index)) {
-                                System.out.println("intersect on " + pathNodes.get(index).second());
-                                break;
-                        }
+                double[] buildingEntranceLine = null;
+                if(path.size() > 1 && worldInfo.getEntity(path.get( path.size() - 1 ) ) instanceof Building  && (lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT)){
+                        Area targetBuilding = (Area) worldInfo.getEntity(path.get( path.size() - 1 ) );
+                        Edge targetBuildingEntrance = targetBuilding.getEdgeTo(path.get( path.size() - 2 ));
+                        buildingEntranceLine = getBuildingEntranceLine(targetBuilding, targetBuildingEntrance);
+                        System.out.println("Building detected as target"); 
+                        Test.line = buildingEntranceLine;
                 }
-                index --;
-
+                
+                int index;
+                Pair<Point2D, EntityID> decidedLine;
+                
+                double[] intersect = new double[]{-1,-1};
+                System.out.println(lastHomeComingStatus);
+                if((this.lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT) && testIf() &&
+                   ! (cw.lastMoveVector[0] == 0 && cw.lastMoveVector[1] == 0) && testIf() &&
+                   buildingEntranceLine != null && testIf() &&
+                   isCurrentLineIntersect(buildingEntranceLine,intersect) && testIf() &&
+                   intersect[0] != -1 && testIf() &&
+                   intersect[1] != -1 && testIf()
+                ){
+                        decidedLine = new Pair(
+                                new Point2D(intersect[0], intersect[1]),
+                                agentInfo.getPosition()
+                        );
+                        lastHomeComing = decidedLine.first();
+                        lastHomeComingStatus = this.GOING_TO_POINT;
+                }
+                else{
+                        index = 1;
+                        for(int i = 1;i < pathNodes.size(); i ++,index ++){
+                                if (hasRoadIntersect(new Point2D(policeForce.getX(), policeForce.getY()), pathNodes, index)) {
+                                        break;
+                                }
+                        }
+                        index --;
+                        decidedLine = pathNodes.get(index);
+                }
 //                if (pathNodes.size() == 2) {
 //                        index = 1;
 //                } else {
@@ -1189,7 +866,7 @@ public class AURActionExtClear extends ExtAction {
 //                );
                 System.out.println("Decided Line: " + pathNodes.get(index));
 //                return null;
-                return continueToDecidedCleaningLine(pathNodes.get(index));
+                return continueToDecidedCleaningLine(decidedLine);
         }
 
         private ArrayList<Pair<Point2D, EntityID>> getPathNodes(ArrayList<EntityID> path) {
@@ -1255,16 +932,6 @@ public class AURActionExtClear extends ExtAction {
                                                 )
                                         );
                                         
-//                                        wsg.guidPointsAdded.get(
-//                                                agentInfo.getID()).add(
-//                                                        new Pair(
-//                                                                new Point2D(
-//                                                                        plus[0],
-//                                                                        plus[1]
-//                                                                ),
-//                                                                path.get(i)
-//                                                        )
-//                                        );
                                         System.out.println("EID: " + path.get(i) + " | " + new Pair(plus,path.get(i)));
                                 }
                                 else{
@@ -1426,11 +1093,11 @@ public class AURActionExtClear extends ExtAction {
                 ArrayList<Area> areasList = new ArrayList<>();
                 ArrayList<Blockade> blocksList = new ArrayList<>();
 
-                Stack<Area> areas = new Stack<>();
+                Queue<Area> areas = new ArrayDeque<>();
                 areas.add(start);
                 areasList.add(start);
-                while (!areas.empty()) {
-                        Area area = areas.pop();
+                while (! areas.isEmpty()) {
+                        Area area = areas.poll();
                                         
                         for (EntityID id : area.getNeighbours()) {
                                 Area tmp = (Area) worldInfo.getEntity(id);
@@ -1609,7 +1276,6 @@ public class AURActionExtClear extends ExtAction {
                 fP[0] += agentPosition[0];
                 fP[1] += agentPosition[1];
                 Polygon cp = getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
-                return isThereBlockadesInBlockadesListInIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
                 return ! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
         }
         
@@ -1633,5 +1299,156 @@ public class AURActionExtClear extends ExtAction {
                                 Lists.newArrayList(nextArea)
                         )
                 );
+        }
+        
+        private double[] getBuildingEntranceLine(Area a,Edge e){
+                double[] pME = AURGeoMetrics.getPointFromPoint2D(
+                        AURGeoTools.getEdgeMid(e)
+                );
+                
+                double vE[] = new double[]{
+                        e.getEndX() - e.getStartX(),
+                        e.getEndY() - e.getStartY()
+                };
+                double[] perpendicularVector = AURGeoMetrics.getPerpendicularVector(vE);
+                perpendicularVector = AURGeoMetrics.getVectorNormal(perpendicularVector);
+                vE = AURGeoMetrics.getVectorNormal(vE);
+                
+                int linesNumber = 5;
+                int linesLen = 10000;
+                double[][][] lines = new double[linesNumber][2][2];
+                double mids[][] = new double[linesNumber][2];
+                for(int i = 0;i < linesNumber;i ++){
+                        mids[i] = AURGeoMetrics.getPointsPlus(
+                                pME,
+                                AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.AGENT_RADIUS * (i - linesNumber / 2) / linesNumber)
+                        );
+                        lines[i][0] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen));
+                        lines[i][1] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
+                }
+                
+                double p1[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen)),
+                       p2[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
+                
+                for(EntityID aid : worldInfo.getObjectIDsInRectangle((int) lines[1][0][0], (int) lines[1][0][1], (int) lines[1][1][0], (int) lines[1][1][1])){
+                        if(! (worldInfo.getEntity(aid) instanceof Area))
+                                continue;
+                        
+                        Area area = (Area) worldInfo.getEntity(aid);
+                        
+                        if(area.isEdgesDefined()){
+                                for(Edge edge : area.getEdges()){
+                                        if(edge.isPassable())
+                                                continue;
+                                        
+                                        for(int i = 0;i < lines.length;i ++){
+                                                double[] intersect = new double[]{-1,-1};
+                                                AURGeoUtil.getIntersection(
+                                                        edge.getLine().getOrigin().getX(),
+                                                        edge.getLine().getOrigin().getY(),
+                                                        edge.getLine().getEndPoint().getX(),
+                                                        edge.getLine().getEndPoint().getY(),
+                                                        lines[i][0][0],
+                                                        lines[i][0][1],
+                                                        lines[i][1][0],
+                                                        lines[i][1][1],
+                                                        intersect
+                                                );
+
+                                                boolean linesIntersect = java.awt.geom.Line2D.linesIntersect(
+                                                        edge.getLine().getOrigin().getX(),
+                                                        edge.getLine().getOrigin().getY(),
+                                                        edge.getLine().getEndPoint().getX(),
+                                                        edge.getLine().getEndPoint().getY(),
+                                                        lines[i][0][0],
+                                                        lines[i][0][1],
+                                                        lines[i][1][0],
+                                                        lines[i][1][1]
+                                                );
+
+                                                if(intersect[0] != -1 && linesIntersect){
+                                                        if(AURGeoUtil.length(intersect[0], intersect[1], p1[0], p1[1]) < AURGeoUtil.length(intersect[0], intersect[1], p2[0], p2[1])){
+                                                                double hypot = Math.hypot(intersect[0] - mids[i][0],intersect[1] - mids[i][1]);
+                                                                for(int j = 0;j < lines.length;j ++){
+                                                                        lines[j][0] = AURGeoMetrics.getPointsPlus(
+                                                                                mids[j],
+                                                                                AURGeoMetrics.getVectorScaled(
+                                                                                        perpendicularVector,
+                                                                                        hypot - AURConstants.AGENT_RADIUS
+                                                                                )
+                                                                        );
+                                                                }
+                                                        }
+                                                        else{
+                                                                double hypot = - Math.hypot(intersect[0] - mids[i][0],intersect[1] - mids[i][1]);
+                                                                for(int j = 0;j < lines.length;j ++){
+                                                                        lines[j][1] = AURGeoMetrics.getPointsPlus(
+                                                                                mids[j],
+                                                                                AURGeoMetrics.getVectorScaled(
+                                                                                        perpendicularVector,
+                                                                                        hypot - AURConstants.AGENT_RADIUS
+                                                                                )
+                                                                        );
+                                                                }
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+                
+                double[] result = new double[4];
+                result[0] = lines[linesNumber / 2][0][0];
+                result[1] = lines[linesNumber / 2][0][1];
+                result[2] = lines[linesNumber / 2][1][0];
+                result[3] = lines[linesNumber / 2][1][1];
+                return result;
+        }
+
+        private boolean isCurrentLineIntersect(double[] buildingEntranceLine, double[] intersect) {
+                double v[] = AURGeoMetrics.getVectorNormal(cw.lastMoveVector);
+                double[] vectorScaled = AURGeoMetrics.getVectorScaled(
+                        v,
+                        Math.max(
+                                Math.hypot(buildingEntranceLine[0] - agentPosition[0],buildingEntranceLine[1] - agentPosition[1]),
+                                Math.hypot(buildingEntranceLine[2] - agentPosition[0],buildingEntranceLine[3] - agentPosition[1])
+                        )
+                );
+                double[] agentLine = new double[]{
+                        agentPosition[0],
+                        agentPosition[1],
+                        agentPosition[0] + vectorScaled[0],
+                        agentPosition[1] + vectorScaled[1]
+                };
+                Test.line1 = agentLine;
+                if(AURGeoUtil.getIntersection(
+                        agentLine[0],
+                        agentLine[1],
+                        agentLine[2],
+                        agentLine[3],
+                        buildingEntranceLine[0],
+                        buildingEntranceLine[1],
+                        buildingEntranceLine[2],
+                        buildingEntranceLine[3],
+                        intersect
+                )){
+                        double[] vectorScaledForAgentSpace = AURGeoMetrics.getVectorScaled(
+                                v,
+                                AURConstants.AGENT_RADIUS
+                        );
+                        agentLine[2] = intersect[0] + vectorScaledForAgentSpace[0];
+                        agentLine[3] = intersect[1] + vectorScaledForAgentSpace[1];
+                        
+                        Test.line1 = agentLine;
+                        
+                        for(EntityID eid : worldInfo.getObjectIDsInRectangle((int) agentLine[0], (int) agentLine[1], (int) agentLine[2], (int) agentLine[3])){
+                                if(worldInfo.getEntity(eid) instanceof Area)
+                                        if(AURGeoTools.intersect(agentLine, (Area) worldInfo.getEntity(eid))){
+                                                return false;
+                                        }
+                        }
+                        return true;
+                }
+                return false;
         }
 }
