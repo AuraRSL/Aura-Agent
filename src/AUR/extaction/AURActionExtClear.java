@@ -1610,6 +1610,7 @@ public class AURActionExtClear extends ExtAction {
                 fP[1] += agentPosition[1];
                 Polygon cp = getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
                 return isThereBlockadesInBlockadesListInIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
+                return ! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
         }
         
         private Action getAreaFullClearActionOrIgnoreBlockades(EntityID nextArea){
