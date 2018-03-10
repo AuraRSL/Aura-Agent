@@ -27,7 +27,19 @@ public class AURFireSimulator {
 	}
 	
 	private void burn() {
-		
+		for(AURAreaGraph ag : wsg.areas.values()) {
+			if(ag.isBuilding() == true) {
+				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
+				if(b.getEstimatedTemperature() >= b.getIgnitionPoint() && b.getEstimatedFuel() > 0 && b.inflammable() == true) {
+					double consumed = b.getConsum();
+					if(consumed > b.getEstimatedFuel()) {
+					    consumed = b.getEstimatedFuel();
+					}
+					b.setEstimatedEnergy(b.getEstimatedEnergy() + consumed);
+					b.setEstimatedFuel(b.getEstimatedFuel() - consumed);
+				}
+			}
+		}
 	}
 	
 	private void cool() {

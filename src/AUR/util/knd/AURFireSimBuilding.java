@@ -38,10 +38,10 @@ public class AURFireSimBuilding {
 	private boolean wasEverWatered = false;
 	private double waterQuantity = 0;
 //	private boolean ignite = false;
-	private int lastRealFieryness = 0;
-	private double lastRealTemperature = 0;
+	public int lastRealFieryness = -1;
+	public double lastRealTemperature = -1;
 	
-	private GaussianGenerator burnRate = new GaussianGenerator(0.15, 0.02, new Random(0));
+	private GaussianGenerator burnRate = new GaussianGenerator(0.142, 0.025, new Random(0));
 	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
@@ -57,30 +57,39 @@ public class AURFireSimBuilding {
 		this.estimatedFuel = getInitialFuel();
 //		this.ignite = false;
 
-//		if(Math.random() < 0.3) {
+//		if(Math.random() < 0.7) {
 //			this.ignite();
 //		}
 	}
-	
-	
-	public void update() {
+
+	public void update() {		
+		if(this.building.building.isTemperatureDefined()) {
+			double t = this.building.building.getTemperature();
+			if(Math.abs(this.lastRealTemperature - t) > 1e-8) {
+				this.onRealTemperatureChange(t);
+				onRealFierynessChange(this.lastRealFieryness);
+				this.lastRealTemperature = t;
+				
+			}
+		}
+		
 		if(this.building.building.isFierynessDefined()) {
 			int f = this.building.building.getFieryness();
-			if(f == 4) {
+			if(f >= 4 && f <= 7) {
 				this.setWasEverWatered(true);
+			} else {
+				if(f == 0) {
+					this.setWasEverWatered(false);
+				}
 			}
 			if(f != this.lastRealFieryness) {
+				//setEstimatedFuel(getInitialFuel());
 				onRealFierynessChange(f);
 				this.lastRealFieryness = f;
 			}
 		}
-		if(this.building.building.isTemperatureDefined()) {
-			double t = this.building.building.getTemperature();
-			if(Math.abs(this.lastRealTemperature - t) < 1e-8) {
-				this.lastRealTemperature = t;
-				this.onRealTemperatureChange(t);
-			}
-		}
+		
+
 		
 	}
 	
@@ -305,12 +314,24 @@ public class AURFireSimBuilding {
 		if (this.estimatedFuel <= 1e-8) {
 			return 0;
 		}
-		double tf = (double) (getEstimatedTemperature() / 1000f);
-		double lf = (double) getEstimatedFuel() / getInitialFuel();
-		double f = (double) (tf * lf * burnRate.nextValue());
-		if (f < 0.005d) {
-			f = 0.005d;
+		double r = burnRate.nextValue();
+		r = 0.14813722985335337;
+		float tf = (float) (getEstimatedTemperature() / 1000f);
+		float lf = (float) getEstimatedFuel() / (float) getInitialFuel();
+		
+		float f = (float) (tf * lf * new Double(r));
+		if (f < 0.005f) {
+			f = 0.005f;
 		}
+		
+//		if(this.building.building.getID().getValue() == 958) {
+//			System.out.println("temp = " + getEstimatedTemperature());
+//			System.out.println("br = " + r);
+//			System.out.println("tf = " + tf);
+//			System.out.println("lf = " + lf);
+//			System.out.println("f = " + f);
+//			System.out.println("c = " + (getInitialFuel()*f));
+//		}
 		return getInitialFuel() * f;
 	}
 		
@@ -393,7 +414,7 @@ public class AURFireSimBuilding {
 	}
 
 	public double getInitialFuel() {
-		return (double) getThermoCapacity() * getVolume();
+		return (double) getFuelDensity() * getVolume();
 	}
 	
 	public double getFuelDensity() {

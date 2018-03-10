@@ -22,7 +22,7 @@ public class K_EstimatedFieryness extends K_ViewerLayer {
 		new Color(100, 140, 210, 80),	// MINOR_DAMAGE
 		new Color(100, 70, 190, 80),	// MODERATE_DAMAGE
 		new Color(80, 60, 140, 80),	// SEVERE_DAMAGE
-		new Color(0, 0, 0, 100)		// BURNT_OUT
+		new Color(0, 0, 0, 200)		// BURNT_OUT
 	};
 	
 	@Override

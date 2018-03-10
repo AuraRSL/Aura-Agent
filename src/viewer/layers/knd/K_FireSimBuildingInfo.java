@@ -77,6 +77,12 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			
 			result += "TotalWallArea:\t\t" + b.getTotalWallArea();
 			result += "\n";
+			
+			result += "LastRealTemperature:\t" + b.lastRealTemperature;
+			result += "\n";
+			
+			result += "LastRealFieryness:\t" + b.lastRealFieryness;
+			result += "\n";
 		}
 		return result;
 	}
