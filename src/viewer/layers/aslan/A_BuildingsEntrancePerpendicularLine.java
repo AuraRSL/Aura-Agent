@@ -78,6 +78,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                 vE = AURGeoMetrics.getVectorNormal(vE);
                 
                 int linesNumber = 5;
+                int linesLen = 10000;
                 double[][][] lines = new double[linesNumber][2][2];
                 double mids[][] = new double[linesNumber][2];
                 for(int i = 0;i < linesNumber;i ++){
@@ -85,12 +86,12 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                 pME,
                                 AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.AGENT_RADIUS * (i - linesNumber / 2) / linesNumber)
                         );
-                        lines[i][0] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, 25000));
-                        lines[i][1] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                        lines[i][0] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen));
+                        lines[i][1] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
                 }
                 
-                double p1[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, 25000)),
-                       p2[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -25000));
+                double p1[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen)),
+                       p2[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
                 
                 for(EntityID aid : wi.getObjectIDsInRectangle((int) lines[1][0][0], (int) lines[1][0][1], (int) lines[1][1][0], (int) lines[1][1][1])){
                         if(! (wi.getEntity(aid) instanceof Area))
@@ -105,7 +106,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                         
                                         for(int i = 0;i < lines.length;i ++){
                                                 double[] intersect = new double[]{-1,-1};
-                                                AURGeoUtil.getIntersection(
+                                                boolean linesIntersect = AURGeoUtil.getIntersection(
                                                         edge.getLine().getOrigin().getX(),
                                                         edge.getLine().getOrigin().getY(),
                                                         edge.getLine().getEndPoint().getX(),
@@ -116,17 +117,17 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                                         lines[i][1][1],
                                                         intersect
                                                 );
-
-                                                boolean linesIntersect = Line2D.linesIntersect(
-                                                        edge.getLine().getOrigin().getX(),
-                                                        edge.getLine().getOrigin().getY(),
-                                                        edge.getLine().getEndPoint().getX(),
-                                                        edge.getLine().getEndPoint().getY(),
-                                                        lines[i][0][0],
-                                                        lines[i][0][1],
-                                                        lines[i][1][0],
-                                                        lines[i][1][1]
-                                                );
+//
+//                                                Line2D.linesIntersect(
+//                                                        edge.getLine().getOrigin().getX(),
+//                                                        edge.getLine().getOrigin().getY(),
+//                                                        edge.getLine().getEndPoint().getX(),
+//                                                        edge.getLine().getEndPoint().getY(),
+//                                                        lines[i][0][0],
+//                                                        lines[i][0][1],
+//                                                        lines[i][1][0],
+//                                                        lines[i][1][1]
+//                                                );
 
                                                 if(intersect[0] != -1 && linesIntersect){
                                                         if(AURGeoUtil.length(intersect[0], intersect[1], p1[0], p1[1]) < AURGeoUtil.length(intersect[0], intersect[1], p2[0], p2[1])){
@@ -136,7 +137,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                                                                 mids[j],
                                                                                 AURGeoMetrics.getVectorScaled(
                                                                                         perpendicularVector,
-                                                                                        hypot
+                                                                                        hypot - AURConstants.AGENT_RADIUS
                                                                                 )
                                                                         );
                                                                 }
@@ -148,7 +149,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                                                                 mids[j],
                                                                                 AURGeoMetrics.getVectorScaled(
                                                                                         perpendicularVector,
-                                                                                        hypot
+                                                                                        hypot - AURConstants.AGENT_RADIUS
                                                                                 )
                                                                         );
                                                                 }
