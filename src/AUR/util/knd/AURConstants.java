@@ -25,7 +25,7 @@ public class AURConstants {
 		
 		public final static int WORLD_AIR_CELL_SIZE = 10000;
 		public final static int MAX_RADIATION_DISTANCE = 200000;
-		public final static double RADIATION_RAY_RATE = 0.0035;
+		public final static double RADIATION_RAY_RATE = 0.0025;
 	
 		public final static int FLOOR_HEIGHT = 3;
 		

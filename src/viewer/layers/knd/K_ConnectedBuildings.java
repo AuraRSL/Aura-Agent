@@ -25,12 +25,14 @@ public class K_ConnectedBuildings extends K_ViewerLayer {
 			g2.setFont(new Font("Arial", Font.BOLD, 20));
 			g2.setColor(Color.red);
 			g2.drawString("precompute required!", 5, 50);
-			return;
+			//return;
 		}
 		
 		if(selected_ag == null || selected_ag.isBuilding() == false) {
 			return;
 		}
+		
+		selected_ag.getBuilding().fireSimBuilding.calcConnectionsAndPaint(g2, kst);
 		
 		if(selected_ag.getBuilding().fireSimBuilding.connections == null) {
 			return;
@@ -43,7 +45,7 @@ public class K_ConnectedBuildings extends K_ViewerLayer {
 			AURAreaGraph toAg = wsg.getAreaGraph(new EntityID(c.toID));
 			double w = c.weight;
 			w = Math.pow(w, 0.5);
-			g2.setColor(new Color(255, 0, 0, (int) (w * 255)));
+			g2.setColor(new Color(255, 0, 255, (int) (w * 255)));
 			kst.drawTransformedLine(g2, selected_ag.getX(), selected_ag.getY(), toAg.getX(), toAg.getY());
 		}
 	}

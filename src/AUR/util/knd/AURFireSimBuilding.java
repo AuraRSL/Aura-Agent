@@ -1,10 +1,12 @@
 package AUR.util.knd;
 
+import AUR.util.ResqFireGeometry;
 import adf.agent.precompute.PrecomputeData;
 import firesimulator.simulator.Simulator;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -43,6 +45,8 @@ public class AURFireSimBuilding {
 	
 	private GaussianGenerator burnRate = new GaussianGenerator(0.142, 0.025, new Random(0));
 	
+	public double tempVar = 0;
+	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
 		this.wsg = building.wsg;
@@ -58,6 +62,10 @@ public class AURFireSimBuilding {
 //		this.ignite = false;
 
 //		if(Math.random() < 0.7) {
+//			this.ignite();
+//		}
+		
+//		if(this.building.building.getID().getValue() == 51234) {
 //			this.ignite();
 //		}
 	}
@@ -83,7 +91,6 @@ public class AURFireSimBuilding {
 				}
 			}
 			if(f != this.lastRealFieryness) {
-				//setEstimatedFuel(getInitialFuel());
 				onRealFierynessChange(f);
 				this.lastRealFieryness = f;
 			}
@@ -160,7 +167,7 @@ public class AURFireSimBuilding {
 			(int) bounds.getMaxX(),
 			(int) bounds.getMaxY()
 		);
-		cands.remove(this.ag.area);
+		//cands.remove(this.ag.area);
 		
 		ArrayList<AURFireSimBuilding> aroundBuildings = new ArrayList<>();
 		
@@ -177,12 +184,14 @@ public class AURFireSimBuilding {
 		
 		int rays = 0;
 		
-		for(Edge edge : this.ag.area.getEdges()) {
+		Polygon selfPolygon = this.ag.polygon;
+		
+		for(int i = 0; i < selfPolygon.npoints; i++) {
 			ArrayList<double[]> randomOrigins = AURGeoUtil.getRandomPointsOnSegmentLine(
-				edge.getStartX(),
-				edge.getStartY(),
-				edge.getEndX(),
-				edge.getEndY(),
+				selfPolygon.xpoints[i],
+				selfPolygon.ypoints[i],
+				selfPolygon.xpoints[(i + 1) % selfPolygon.npoints],
+				selfPolygon.ypoints[(i + 1) % selfPolygon.npoints],
 				AURConstants.FireSim.RADIATION_RAY_RATE
 			);
 			
@@ -190,7 +199,7 @@ public class AURFireSimBuilding {
 			
 			double rv[] = new double[2];
 			
-			double ray[] = new double[4];
+			float ray[] = new float[4];
 			
 			if(paint) {
 				g2.setStroke(new BasicStroke(1));
@@ -205,17 +214,33 @@ public class AURFireSimBuilding {
 
 				AURGeoUtil.getRandomUnitVector(rv);
 				
-				ray[0] = o[0];
-				ray[1] = o[1];
-				ray[2] = o[0] + rv[0] * maxDist;
-				ray[3] = o[1] + rv[1] * maxDist;
+				ray[0] = (float) o[0];
+				ray[1] = (float) o[1];
+				ray[2] = (float) (o[0] + rv[0] * maxDist);
+				ray[3] = (float) (o[1] + rv[1] * maxDist);
 				
 				AURFireSimBuilding last = null;
 				
 				for(AURFireSimBuilding building : aroundBuildings) {
-					boolean b = AURGeoUtil.hitRayAllEdges(building.ag.polygon , ray);
-					if(b) {
-						last = building;
+					Polygon p = building.ag.polygon;
+					//boolean b = AURGeoUtil.hitRayAllEdges(building.ag.polygon , ray);
+					
+					for(int j = 0; j < p.npoints; j++) {
+						if(building == this && i == j) {
+							continue;
+						}
+						
+						Point ip = ResqFireGeometry.intersect(
+							new Point(p.xpoints[j], p.ypoints[j]),
+							new Point(p.xpoints[(j + 1) % p.npoints], p.ypoints[(j + 1) % p.npoints]),
+							new Point((int) ray[0], (int) ray[1]),
+							new Point((int) ray[2], (int) ray[3])
+						);
+						if(ip != null) {
+							ray[2] = (float) ip.getX();
+							ray[3] = (float) ip.getY();
+							last = building;
+						}
 					}
 				}
 				
@@ -229,8 +254,8 @@ public class AURFireSimBuilding {
 			}
 		}
 		for(AURFireSimBuilding b : aroundBuildings) {
-			if(b.vis_ > 0) {
-				result.add(new AURBuildingConnection(b.ag.area.getID().getValue(), ((float) b.vis_ / rays)));
+			if(b.vis_ > 0 && b != this) {
+				result.add(new AURBuildingConnection(b.ag.area.getID().getValue(), ((float) b.vis_ / rays) / 1) );
 			}
 			
 		}
@@ -315,7 +340,6 @@ public class AURFireSimBuilding {
 			return 0;
 		}
 		double r = burnRate.nextValue();
-		r = 0.14813722985335337;
 		float tf = (float) (getEstimatedTemperature() / 1000f);
 		float lf = (float) getEstimatedFuel() / (float) getInitialFuel();
 		

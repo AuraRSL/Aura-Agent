@@ -1,6 +1,11 @@
 package AUR.util.knd;
 
 import adf.agent.precompute.PrecomputeData;
+import firesimulator.world.Building;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import rescuecore2.worldmodel.EntityID;
 
 /**
  *
@@ -51,7 +56,43 @@ public class AURFireSimulator {
 	}
 	
 	private void exchangeBuilding() {
+		for (AURAreaGraph ag : wsg.areas.values()) {
+			if(ag.isBuilding()) {
+				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
+				exchangeWithAir(b);
+			}
+		}
 		
+		for (AURAreaGraph ag : wsg.areas.values()) {
+			if(ag.isBuilding()) {
+				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
+				b.tempVar = b.getRadiationEnergy();
+			}
+		}
+		for (AURAreaGraph ag : wsg.areas.values()) {
+			if(ag.isBuilding()) {
+				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
+				double radEn = b.tempVar;
+				
+				
+				if(b.connections != null) {
+					for(AURBuildingConnection bc : b.connections) {
+
+						AURFireSimBuilding cb = wsg.getAreaGraph(new EntityID(bc.toID)).getBuilding().fireSimBuilding;
+						double oldEnergy = cb.getEstimatedEnergy();
+						double connectionValue = bc.weight;
+						double a = radEn * connectionValue;
+						double sum = oldEnergy + a;
+						cb.setEstimatedEnergy(sum);
+					}
+				}
+				
+				b.setEstimatedEnergy(b.getEstimatedEnergy() - radEn);
+			}
+		}
+	}
+	
+	private void exchangeWithAir(AURFireSimBuilding building) {
 	}
 	
 	public void precompute(PrecomputeData pd) {
