@@ -482,7 +482,7 @@ public class AURAreaGrid {
 				node.edges.removeAll(delEdges);
 			}
 		}
-		if (blockaePolygons.size() > 0 || true) {
+		if (blockaePolygons.size() > 0 || false) {
 			for (int i = 0; i < edgePointsSize; i++) {
 				bfs(i);
 			}

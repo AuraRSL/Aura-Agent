@@ -57,7 +57,7 @@ public class AURFireSimulator {
 	
 	private void exchangeBuilding() {
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if(ag.isBuilding()) {
+			if(ag.isBuilding() && ag.isOnFire()) {
 				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
 				exchangeWithAir(b);
 			}
@@ -70,7 +70,7 @@ public class AURFireSimulator {
 			}
 		}
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if(ag.isBuilding()) {
+			if(ag.isBuilding()  && ag.isOnFire()) {
 				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
 				double radEn = b.tempVar;
 				
