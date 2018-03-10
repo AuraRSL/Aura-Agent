@@ -39,7 +39,7 @@ public class AURFireValueSetter {
 		calc_ConvexHull(this.points, 1.5);
 
 		calc_Capacity(this.points, 0.0);
-		calc_Fieryness(this.points, 1.7);
+		calc_EstimatedFieryness(this.points, 1.7);
 		calc_GasStation(this.points, 1.6);
 		calc_noName(this.points, 1.6);
 		mul_Color(wsg, points, 1.3);
@@ -131,7 +131,7 @@ public class AURFireValueSetter {
 		}
 	}
 
-	private void calc_Fieryness(ArrayList<AURValuePoint> points, double coefficient) {
+	private void calc_EstimatedFieryness(ArrayList<AURValuePoint> points, double coefficient) {
 		for (AURValuePoint p : points) {
 			Building b = (Building) (p.areaGraph.area);
 			switch (b.getFierynessEnum()) {

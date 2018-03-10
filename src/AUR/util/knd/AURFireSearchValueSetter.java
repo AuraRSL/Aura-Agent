@@ -34,6 +34,8 @@ public class AURFireSearchValueSetter {
 		}
 
 		add_Fieryness(this.points, 1.5);
+		add_EstimatedFieryness(this.points, 1.5);
+		
 		add_GasStation(this.points, 0.55);
                 
 		add_TravelCost(this.points, 1.5);
@@ -160,6 +162,29 @@ public class AURFireSearchValueSetter {
 				p.value += 0.1 * coefficient;
 				break;
 			}
+			}
+
+		}
+	}
+	
+	private void add_EstimatedFieryness(ArrayList<AURValuePoint> points, double coefficient) {
+		for (AURValuePoint p : points) {
+			if(p.areaGraph.isBuilding() == false) {
+				continue;
+			}
+			switch (p.areaGraph.getBuilding().fireSimBuilding.getEstimatedFieryness()) {
+				case 1: {
+					p.value += 1 * coefficient;
+					break;
+				}
+				case 2: {
+					p.value += 0.5 * coefficient;
+					break;
+				}
+				case 3: {
+					p.value += 0.1 * coefficient;
+					break;
+				}
 			}
 
 		}

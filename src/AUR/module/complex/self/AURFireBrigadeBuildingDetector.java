@@ -51,8 +51,10 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		LinkedList<AURAreaGraph> result = new LinkedList<>();
 		wsg.dijkstra(ai.getPosition());
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			
-			if (ag.isOnFire()) {
+			if(ag.isBuilding() == false) {
+				continue;
+			}
+			if (ag.isOnFire() || ag.getBuilding().fireSimBuilding.isOnFire()) {
 
 				if (ag.noSeeTime() <= 4 || ag.isRecentlyReportedFire()) {
 					result.add(ag);
