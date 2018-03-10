@@ -626,7 +626,6 @@ public class AURWorldGraph extends AbstractModule {
 
 	@Override
 	synchronized public AbstractModule updateInfo(MessageManager messageManager) {
-		long t = System.currentTimeMillis();
 		if (updateTime >= ai.getTime()) {
 			return this;
 		}
@@ -675,9 +674,6 @@ public class AURWorldGraph extends AbstractModule {
 		if(AURConstants.Viewer.LAUNCH == true) {
 			K_Viewer.getInstance().update(this);
 		}
-		
-		
-		System.out.println("wsg update: " + (System.currentTimeMillis() - t));
 		
 		return this;
 	}

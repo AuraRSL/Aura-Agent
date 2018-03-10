@@ -419,7 +419,7 @@ public class AURAreaGraph {
 	}
 
 	public boolean longTimeNoSee() {
-		if (this.needUpdate = true) {
+		if (this.needUpdate == true) {
 			return false;
 		}
 		if (this.hasBlockade() == false) {
