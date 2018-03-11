@@ -20,7 +20,7 @@ public class AURBuilding {
 	private Polygon perceptibleArea = null;
 	public AURAreaGraph ag = null;
 	public AURWorldGraph wsg = null;
-	public AUREdgeToSee ets = null;
+	public AUREdgeToStand edgeToPereceptiblePolygon = null;
 	public boolean commonWall[] = null;
 	public AURFireSimBuilding fireSimBuilding = null;
 	public Building building = null;

@@ -1,7 +1,7 @@
 package viewer.layers.knd;
 
 import AUR.util.knd.AURAreaGraph;
-import AUR.util.knd.AUREdgeToSee;
+import AUR.util.knd.AUREdgeToStand;
 import AUR.util.knd.AURNode;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.common.ActionMove;
@@ -31,14 +31,14 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 
 		wsg.dijkstra(wsg.ai.getPosition());
 
-		AUREdgeToSee ets = selected_ag.getBuilding().ets;
-		if (ets == null) {			return;
+		AUREdgeToStand etp = selected_ag.getBuilding().edgeToPereceptiblePolygon;
+		if (etp == null) {			return;
 		}
-		int lastX = kst.xToScreen(ets.standX);
-		int lastY = kst.yToScreen(ets.standY);
+		int lastX = kst.xToScreen(etp.standX);
+		int lastY = kst.yToScreen(etp.standY);
 		
 		AURNode node = new AURNode(lastX, lastY, selected_ag, selected_ag);
-		node.pre = ets.fromNode;
+		node.pre = etp.fromNode;
 		
 		g2.setColor(Color.pink);
 		g2.setStroke(new BasicStroke(2));

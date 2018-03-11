@@ -3,7 +3,6 @@ package AUR.util.knd;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
-import adf.agent.precompute.PrecomputeData;
 import java.awt.Graphics2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
@@ -22,8 +21,8 @@ public class AURAreaGraph {
 	
 	public Area area = null;
 	public int areaCostFactor = 1;
-	public ArrayList<AURBorder> borders = new ArrayList<AURBorder>();
-	public ArrayList<AURAreaGraph> neighbours = new ArrayList<AURAreaGraph>();
+	public ArrayList<AURBorder> borders = new ArrayList<>();
+	public ArrayList<AURAreaGraph> neighbours = new ArrayList<>();
 	public AURWorldGraph wsg = null;
 	public AURAreaGrid instanceAreaGrid = null;
 	public final static int AREA_TYPE_ROAD = 0;
@@ -78,19 +77,34 @@ public class AURAreaGraph {
 		return this.area.getY();
 	}
 	
-	public double getLastDijkstraCost() {
+	public int getTravelCost() {
 		if(this.lastDijkstraEntranceNode == null) {
-			return AURGeoUtil.INF;
+			return AURConstants.Math.INT_INF;
 		}
 		return this.lastDijkstraEntranceNode.cost;
 	}
 	
-	public double getNoBlockadeLastDijkstraCost() {
+	public int getNoBlockadeTravelCost() {
 		if(this.lastNoBlockadeDijkstraEntranceNode == null) {
-			return AURGeoUtil.INF;
+			return AURConstants.Math.INT_INF;
 		}
 		return this.lastNoBlockadeDijkstraEntranceNode.cost;
 	}
+
+	public int getTravelTime() {
+		if(this.lastDijkstraEntranceNode == null) {
+			return AURConstants.Math.INT_INF;
+		}
+		return (int) (Math.ceil((double) this.getTravelCost() / AURConstants.Agent.VELOCITY));
+	}
+	
+	public int getNoBlockadeTravelTime() {
+		if(this.lastDijkstraEntranceNode == null) {
+			return AURConstants.Math.INT_INF;
+		}
+		return (int) (Math.ceil((double) this.getNoBlockadeTravelCost() / AURConstants.Agent.VELOCITY));
+	}
+	
 
 	public boolean isNeighbour(AURAreaGraph ag) {
 		for (AURAreaGraph neiAg : neighbours) {
@@ -135,30 +149,30 @@ public class AURAreaGraph {
 		return false;
 	}
 
-	public double distFromPointToBorder(double fx, double fy, AURBorder border) {
-		return AURGeoUtil.dist(fx, fy, border.CenterNode.x, border.CenterNode.y);
+	public int distFromPointToBorder(double fx, double fy, AURBorder border) {
+		return (int) AURGeoUtil.dist(fx, fy, border.CenterNode.x, border.CenterNode.y);
 	}
 
 	public double distFromBorderToBorder(AURBorder b1, AURBorder b2) {
 		return AURGeoUtil.dist(b1.CenterNode.x, b1.CenterNode.y, b2.CenterNode.x, b2.CenterNode.y);
 	}
 	
-	public int countUnburntsInGrid() {
-		int result = 0;
-
-		int i = (int) ((this.getX() - wsg.gridDy) / wsg.worldGridSize);
-		int j = (int) ((this.getY() - wsg.gridDx) / wsg.worldGridSize);
-		if (wsg.areaGraphsGrid[i][j] != null) {
-
-			for(AURAreaGraph ag : wsg.areaGraphsGrid[i][j]) {
-				if(ag.isBuilding() && ag.burnt == false && ag.isOnFire()) {
-					result++;
-				}
-			}
-		}
-		
-		return result;
-	}
+//	public int countUnburntsInGrid() {
+//		int result = 0;
+//
+//		int i = (int) ((this.getX() - wsg.gridDy) / wsg.worldGridSize);
+//		int j = (int) ((this.getY() - wsg.gridDx) / wsg.worldGridSize);
+//		if (wsg.areaGraphsGrid[i][j] != null) {
+//
+//			for(AURAreaGraph ag : wsg.areaGraphsGrid[i][j]) {
+//				if(ag.isBuilding() && ag.burnt == false && ag.isOnFire()) {
+//					result++;
+//				}
+//			}
+//		}
+//		
+//		return result;
+//	}
 		
 	public int getWaterNeeded() {
 		if (isBuilding() == false) {
@@ -218,7 +232,14 @@ public class AURAreaGraph {
 	
 	public final boolean isBuilding() {
 		StandardEntityURN urn = this.area.getStandardURN();
-		return (urn.equals(StandardEntityURN.BUILDING) || urn.equals(StandardEntityURN.GAS_STATION) || urn.equals(StandardEntityURN.REFUGE));
+		return (false
+			|| urn.equals(StandardEntityURN.BUILDING)
+			|| urn.equals(StandardEntityURN.GAS_STATION)
+			|| urn.equals(StandardEntityURN.REFUGE)
+			|| urn.equals(StandardEntityURN.POLICE_OFFICE)
+			|| urn.equals(StandardEntityURN.AMBULANCE_CENTRE)
+			|| urn.equals(StandardEntityURN.FIRE_STATION)
+		);
 	}
 
 	public ArrayList<AURNode> getReachabeEdgeNodes(double x, double y) {
@@ -233,7 +254,7 @@ public class AURAreaGraph {
 		if (this.hasBlockade() == false) {
 			for (AURBorder border : borders) {
 				for (AURNode node : border.nodes) {
-					node.cost = AURGeoUtil.dist(x, y, node.x, node.y);
+					node.cost = (int) AURGeoUtil.dist(x, y, node.x, node.y);
 					result.add(node);
 				}
 
@@ -244,21 +265,15 @@ public class AURAreaGraph {
 		return result;
 	}
 	
-	public ArrayList<AUREdgeToSee> getReachabeEdgeToSees(double x, double y) {
-		ArrayList<AUREdgeToSee> result = new ArrayList<>();
+	public ArrayList<AUREdgeToStand> getEdgesToPerceptiblePolygons(int x, int y) {
+		ArrayList<AUREdgeToStand> result = new ArrayList<>();
 		if (area.getShape().contains(x, y) == false) {
 			if (area.getShape().intersects(x - 10, y - 10, 20, 20) == false) {
 				result.clear();
 				return result;
 			}
 		}
-
-		AURNode fromNode = instanceAreaGrid.getReachableEdgeToSees(this, x, y);
-		if(fromNode != null && fromNode.toSeeEdges != null) {
-			result.addAll(fromNode.toSeeEdges);
-		}
-		
-		return result;
+		return instanceAreaGrid.getEdgesToPerceptiblePolygons(this, x, y);
 	}
 
 	public ArrayList<AURNode> getEdgeToAllBorderCenters(double x, double y) {

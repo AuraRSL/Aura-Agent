@@ -35,7 +35,7 @@ public class AURSightAreaPolygon {
 			g2.setStroke(new BasicStroke(1));
 		}
 		
-		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.AGENT_RADIUS;
+		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS;
 
 		Polygon result = new Polygon();
 		Polygon bp = building.ag.polygon;

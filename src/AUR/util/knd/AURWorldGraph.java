@@ -20,7 +20,6 @@ import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import java.awt.Polygon;
 import viewer.K_Viewer;
-import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
@@ -249,15 +248,15 @@ public class AURWorldGraph extends AbstractModule {
 		
 		dijkstra(from);
 		
-		AUREdgeToSee ets = targetAg.getBuilding().ets;
-		if(ets == null) {
+		AUREdgeToStand etp = targetAg.getBuilding().edgeToPereceptiblePolygon;
+		if(etp == null) {
 			return null;
 		}
 		ArrayList<EntityID> path = new ArrayList<>();
 		
 		
-		path.add(ets.ownerAg.area.getID());
-		AURNode node = ets.fromNode;
+		path.add(etp.ownerAg.area.getID());
+		AURNode node = etp.fromNode;
 		while (node.pre != startNullNode) {
 			path.add(node.getPreAreaGraph().area.getID());
 			node = node.pre;
@@ -269,7 +268,7 @@ public class AURWorldGraph extends AbstractModule {
 		
 		
 		
-		return new ActionMove(path, (int) ets.standX, (int) ets.standY);
+		return new ActionMove(path, (int) etp.standX, (int) etp.standY);
 		
 	}
 
@@ -688,13 +687,13 @@ public class AURWorldGraph extends AbstractModule {
 	public void initForDijkstra() {
 		for (AURAreaGraph ag : areas.values()) {
 			if(ag.isBuilding()) {
-				ag.getBuilding().ets = null;
+				ag.getBuilding().edgeToPereceptiblePolygon = null;
 			}
 			ag.vis = false;
 			ag.lastDijkstraEntranceNode = null;
 			for (AURBorder border : ag.borders) {
 				for (AURNode node : border.nodes) {
-					node.cost = AURGeoUtil.INF;
+					node.cost = AURConstants.Math.INT_INF;
 					node.pre = null;
 					node.pQueEntry = null;
 				}
@@ -708,7 +707,7 @@ public class AURWorldGraph extends AbstractModule {
 			ag.lastNoBlockadeDijkstraEntranceNode = null;
 			ag.pQueEntry = null;
 			for (AURBorder border : ag.borders) {
-				border.CenterNode.cost = AURGeoUtil.INF;
+				border.CenterNode.cost = AURConstants.Math.INT_INF;
 				border.CenterNode.pre = null;
 				border.CenterNode.pQueEntry = null;
 			}
@@ -737,7 +736,7 @@ public class AURWorldGraph extends AbstractModule {
 		AURAreaGraph closest = null;
 		for (AURAreaGraph ag : targetAgs) {
 			if (ag.lastDijkstraEntranceNode != null) {
-				if (closest == null || closest.getLastDijkstraCost() > ag.getLastDijkstraCost()) {
+				if (closest == null || closest.getTravelCost() > ag.getTravelCost()) {
 					closest = ag;
 				}
 			}
@@ -769,15 +768,15 @@ public class AURWorldGraph extends AbstractModule {
 		fromAg.lastDijkstraEntranceNode = startNullNode;
 		
 		if(fromID.equals(this.ai.getPosition())) {
-			ArrayList<AUREdgeToSee> etss = fromAg.getReachabeEdgeToSees(ai.getX(), ai.getY());
-			for(AUREdgeToSee ets : etss) {
-				ets.fromNode.pre = startNullNode;
-				ets.toSeeAreaGraph.getBuilding().ets = ets;
+			ArrayList<AUREdgeToStand> etps = fromAg.getEdgesToPerceptiblePolygons((int) ai.getX(), (int) ai.getY());
+			for(AUREdgeToStand etp : etps) {
+				etp.fromNode.pre = startNullNode;
+				etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
 			}
 		}
 		
 		
-		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY()); //
+		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY());
 		if (startNodes.isEmpty()) {
 			return;
 		}
@@ -793,17 +792,17 @@ public class AURWorldGraph extends AbstractModule {
 			
 			qNode = que.dequeueMin().getValue();
 			qNode.pQueEntry = null;
-			if(qNode.toSeeEdges != null) {
-				for(AUREdgeToSee ets : qNode.toSeeEdges) {
-					if(ets.toSeeAreaGraph.getBuilding().ets == null) {
-						ets.cost = ets.cost + qNode.cost;
-						ets.toSeeAreaGraph.getBuilding().ets = ets;
+			if(qNode.edgesToPerceptiblePolygons != null) {
+				for(AUREdgeToStand etp : qNode.edgesToPerceptiblePolygons) {
+					if(etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon == null) {
+						etp.cost = etp.cost + qNode.cost;
+						etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
 					} else {
-						double oldCost = ets.toSeeAreaGraph.getBuilding().ets.cost;
-						double newCost = ets.cost + qNode.cost;
+						int oldCost = etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon.cost;
+						int newCost = etp.cost + qNode.cost;
 						if(newCost < oldCost) {
-							ets.cost = newCost;
-							ets.toSeeAreaGraph.getBuilding().ets = ets;
+							etp.cost = newCost;
+							etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
 						}
 					}
 				}
@@ -811,16 +810,16 @@ public class AURWorldGraph extends AbstractModule {
 
 			
 			ag = qNode.ownerArea1;
-			if (ag.getLastDijkstraCost() > qNode.cost) {
+			if (ag.getTravelCost()> qNode.cost) {
 				ag.lastDijkstraEntranceNode = qNode;
 			}
 			ag = qNode.ownerArea2;
-			if (ag.getLastDijkstraCost() > qNode.cost) {
+			if (ag.getTravelCost() > qNode.cost) {
 				ag.lastDijkstraEntranceNode = qNode;
 			}
 			for (AUREdge edge : qNode.edges) {
 
-				double cost = (qNode.cost + edge.weight * edge.areaGraph.areaCostFactor)
+				int cost = (qNode.cost + edge.weight) //  * edge.areaGraph.areaCostFactor
 						+ (1000 - edge.areaGraph.noSeeTime()) * 2;
 				toNode = edge.nextNode(qNode);
 				if (toNode.cost > cost) {
@@ -899,7 +898,7 @@ public class AURWorldGraph extends AbstractModule {
 		AURAreaGraph closest = null;
 		for (AURAreaGraph ag : targetAgs) {
 			if (ag.lastNoBlockadeDijkstraEntranceNode != null) {
-				if (closest == null || closest.getNoBlockadeLastDijkstraCost() > ag.getNoBlockadeLastDijkstraCost()) {
+				if (closest == null || closest.getNoBlockadeTravelCost() > ag.getNoBlockadeTravelCost()) {
 					closest = ag;
 				}
 			}
@@ -920,7 +919,6 @@ public class AURWorldGraph extends AbstractModule {
 	}
 
 	public void NoBlockadeDijkstra(EntityID fromID) {
-		//long t = System.currentTimeMillis();
 		if (lastNoBlockadeDijkstraFrom != null && lastNoBlockadeDijkstraFrom.equals(fromID)) {
 			return;
 		}
@@ -947,16 +945,16 @@ public class AURWorldGraph extends AbstractModule {
 			qNode = que.dequeueMin().getValue();
 			qNode.pQueEntry = null;
 			ag = qNode.ownerArea1;
-			if (ag.getNoBlockadeLastDijkstraCost() > qNode.cost) {
+			if (ag.getNoBlockadeTravelCost() > qNode.cost) {
 				ag.lastNoBlockadeDijkstraEntranceNode = qNode;
 			}
 			ag = qNode.ownerArea2;
-			if (ag.getNoBlockadeLastDijkstraCost() > qNode.cost) {
+			if (ag.getNoBlockadeTravelCost() > qNode.cost) {
 				ag.lastNoBlockadeDijkstraEntranceNode = qNode;
 			}
 			for (AUREdge edge : qNode.edges) {
 				toNode = edge.nextNode(qNode);
-				double cost = (qNode.cost + edge.weight) + 0;
+				int cost = (qNode.cost + edge.weight) + 0;
 				if (toNode.cost > cost) {
 					toNode.cost = cost;
 

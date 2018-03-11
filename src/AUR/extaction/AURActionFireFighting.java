@@ -180,7 +180,7 @@ public class AURActionFireFighting extends ExtAction {
 		}
 
 		for (AURValuePoint vp : vps) {
-			vp.value = (vp.areaGraph.getLastDijkstraCost()) + 1000;
+			vp.value = (vp.areaGraph.getTravelCost()) + 1000;
 			if (vp.areaGraph.isRefuge()) {
 				vp.value *= 1 + ((1 - wsg.colorCoe[wsg.getAgentColor()][vp.areaGraph.color])) / 2;
 			} else {

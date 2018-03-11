@@ -12,7 +12,17 @@ public class AURConstants {
 	public final static int AMBULANCE_FORGET_TIME = 30;
 	public final static int FIREBRIGADE_FORGET_TIME = 30;
 	
-	public final static int AGENT_RADIUS = 500;
+	public static class Agent {
+		public final static int RADIUS = 500;
+		public final static int VELOCITY = 40000;
+		
+	}
+	
+	public static class Math {
+		public final static double DOUBLE_INF = Double.MIN_VALUE;
+		public final static int INT_INF = Integer.MAX_VALUE;
+		public final static double sqr2 = 1.41421;
+	}
 	
 	static class Viewer {
 		public final static boolean LAUNCH = true;
