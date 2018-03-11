@@ -20,7 +20,6 @@ import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import java.awt.Polygon;
 import viewer.K_Viewer;
-import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;

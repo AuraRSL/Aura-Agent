@@ -21,6 +21,9 @@ public class K_LayerTravelCost extends K_ViewerLayer {
         g2.setStroke(new BasicStroke(2));
         g2.setFont(new Font("Arial", 0, 9));
         g2.setColor(Color.white);
+	
+	wsg.dijkstra(wsg.ai.getPosition());
+	
         for(AURAreaGraph ag : wsg.areas.values()) {
             String cost = "inf";
             if(ag.lastDijkstraEntranceNode != null || true) {
