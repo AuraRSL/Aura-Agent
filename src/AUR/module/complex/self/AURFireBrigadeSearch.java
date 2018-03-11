@@ -109,6 +109,7 @@ public class AURFireBrigadeSearch extends Search {
 	@Override
 	public Search resume(PrecomputeData precomputeData) {
 		super.resume(precomputeData);
+		this.preparate();
 		this.worldInfo.requestRollback();
 		return this;
 	}

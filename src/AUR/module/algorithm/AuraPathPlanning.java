@@ -61,6 +61,7 @@ public class AuraPathPlanning extends PathPlanning {
     @Override
     public PathPlanning resume(PrecomputeData precomputeData) {
         super.resume(precomputeData);
+	this.preparate();
         return this;
     }
 
