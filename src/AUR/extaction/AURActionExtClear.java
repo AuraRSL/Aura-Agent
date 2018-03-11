@@ -1140,6 +1140,12 @@ public class AURActionExtClear extends ExtAction {
                 points.add(p1);
                 points.add(p2);
                 
+                for(Edge e : a.getEdges()){
+                        if(e.isPassable()){
+                                points.add(AURGeoTools.getEdgeMid(e));
+                        }
+                }
+                
                 for(int i = 2;i < a.getApexList().length;i += 2){
                         for(int j = 0;j < i;j += 2){
                                 if(
