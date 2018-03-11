@@ -19,7 +19,7 @@ public class AURPerceptibleArea {
 	// the main idea is the same as the SensibleArea of SOS (2014)
 	public static Polygon getPerceptibleArea(AURBuilding building) {
 		
-		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.AGENT_RADIUS;
+		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS;
 		
 		Polygon result = new Polygon();
 		Polygon bp = building.ag.polygon;

@@ -1,6 +1,12 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package viewer.layers.knd;
 
 import AUR.util.knd.AURAreaGraph;
+import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURWorldGraph;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -11,11 +17,11 @@ import viewer.K_ViewerLayer;
 
 /**
  *
- * @author Alireza Kandeh - 2017
+ * @author Alireza Kandeh - 2018
  */
 
-public class K_LayerTravelCost extends K_ViewerLayer {
-	
+public class K_TravelTime extends K_ViewerLayer {
+
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
 		g2.setStroke(new BasicStroke(2));
@@ -26,8 +32,10 @@ public class K_LayerTravelCost extends K_ViewerLayer {
 
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			String cost = "inf";
-			cost = (int) ag.getTravelCost() + "";
+			cost = selected_ag.getTravelTime() + "";
+
 			g2.drawString(cost, kst.xToScreen(ag.getX()), kst.yToScreen(ag.getY()));
+
 		}
 		g2.setStroke(new BasicStroke(1));
 	}

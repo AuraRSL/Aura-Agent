@@ -4,10 +4,10 @@ public class AUREdge {
 
 	public AURNode A;
 	public AURNode B;
-	public double weight = 0;
+	public int weight = 0;
 	public AURAreaGraph areaGraph;
 
-	public AUREdge(AURNode A, AURNode B, double weight, AURAreaGraph areaGraph) {
+	public AUREdge(AURNode A, AURNode B, int weight, AURAreaGraph areaGraph) {
 		this.A = A;
 		this.B = B;
 		this.weight = weight;

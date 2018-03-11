@@ -76,19 +76,19 @@ public class AURFireSearchValueSetter {
 	}
 	
 	private void calc_noName(ArrayList<AURValuePoint> points, double coefficient) {
-		double max = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.countUnburntsInGrid();
-			if (p.temp_value > max) {
-				max = p.temp_value;
-			}
-		}
-
-		if (max > 0) {
-			for (AURValuePoint p : points) {
-				p.value += ((p.temp_value / max)) * coefficient;
-			}
-		}
+//		double max = 0;
+//		for (AURValuePoint p : points) {
+//			p.temp_value = p.areaGraph.countUnburntsInGrid();
+//			if (p.temp_value > max) {
+//				max = p.temp_value;
+//			}
+//		}
+//
+//		if (max > 0) {
+//			for (AURValuePoint p : points) {
+//				p.value += ((p.temp_value / max)) * coefficient;
+//			}
+//		}
 	}
 
 	public void calcNoBlockade(AURWorldGraph wsg, ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster) {
@@ -216,7 +216,7 @@ public class AURFireSearchValueSetter {
 	private void add_TravelCost(ArrayList<AURValuePoint> points, double coefficient) {
 		double maxDist = 0;
 		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.getLastDijkstraCost();
+			p.temp_value = p.areaGraph.getTravelCost();
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
@@ -230,7 +230,7 @@ public class AURFireSearchValueSetter {
 	private void add_NoBlockadeTravelCost(ArrayList<AURValuePoint> points, double coefficient) {
 		double maxDist = 0;
 		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.getNoBlockadeLastDijkstraCost();
+			p.temp_value = p.areaGraph.getNoBlockadeTravelCost();
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}

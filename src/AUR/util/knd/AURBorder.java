@@ -25,7 +25,7 @@ public class AURBorder {
 		ready = false;
 	}
 
-	public AURBorder(AURAreaGraph area1, AURAreaGraph area2, double Ax, double Ay, double Bx, double By) {
+	public AURBorder(AURAreaGraph area1, AURAreaGraph area2, int Ax, int Ay, int Bx, int By) {
 		this.area1 = area1;
 		this.area2 = area2;
 		this.Ax = Ax;

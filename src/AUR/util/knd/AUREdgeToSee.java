@@ -9,14 +9,14 @@ public class AUREdgeToSee {
 	
 	public AURAreaGraph toSeeAreaGraph = null;
 	public AURAreaGraph ownerAg = null;
-	public double cost = 0;
+	public int cost = 0;
 	public AURNode fromNode = null;
 	
-	public double standX = 0;
-	public double standY = 0;
+	public int standX = 0;
+	public int standY = 0;
 	
 
-	public AUREdgeToSee(AURAreaGraph ownerAg, AURAreaGraph toSeeAreaGraph, double cost, AURNode fromNode, double standX, double standY) {
+	public AUREdgeToSee(AURAreaGraph ownerAg, AURAreaGraph toSeeAreaGraph, int cost, AURNode fromNode, int standX, int standY) {
 		this.ownerAg = ownerAg;
 		this.toSeeAreaGraph = toSeeAreaGraph;
 		this.cost = cost;

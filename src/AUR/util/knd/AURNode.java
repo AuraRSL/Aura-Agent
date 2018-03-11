@@ -10,18 +10,18 @@ import AUR.util.FibonacciHeap.Entry;
 
 public class AURNode {
 
-	public double x;
-	public double y;
+	public int x;
+	public int y;
 	public ArrayList<AUREdge> edges = null;
 	public ArrayList<AUREdgeToSee> toSeeEdges = null;
 	public AURAreaGraph ownerArea1 = null;
 	public AURAreaGraph ownerArea2 = null;
-	public double cost;
+	public int cost;
 	public AURNode pre = null;
 
 	public Entry<AURNode> pQueEntry = null;
 
-	public AURNode(double x, double y, AURAreaGraph ownerArea1, AURAreaGraph ownerArea2) {
+	public AURNode(int x, int y, AURAreaGraph ownerArea1, AURAreaGraph ownerArea2) {
 		edges = new ArrayList<AUREdge>();
 		this.ownerArea1 = ownerArea1;
 		this.ownerArea2 = ownerArea2;
