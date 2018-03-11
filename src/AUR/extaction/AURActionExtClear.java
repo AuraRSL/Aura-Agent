@@ -58,6 +58,7 @@ import rescuecore2.worldmodel.EntityID;
 public class AURActionExtClear extends ExtAction {
         
         private int CLEAR_POLYGON_HEIGHT = AURConstants.AGENT_RADIUS * 3;
+        private boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = false;
 
         private int clearDistance;
         private int clearRad;
@@ -234,27 +235,10 @@ public class AURActionExtClear extends ExtAction {
                  * Buildings Entrance Perpendicular Line Settings.
                  */
                 
-                if(lastHomeComing != null && this.lastHomeComingStatus == GOING_TO_POINT && AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())){
-                        lastHomeComingStatus = this.GOING_FROM_POINT_TO_BUILDING;
+                if(USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE){
+                        setChangesOfBuildingsEntrancePerpendicularLine();
                 }
-                if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT && AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())){
-                        lastHomeComing = null;
-                        lastHomeComingStatus = this.NO_POINT_SELECTED;
-                }
-                else if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT){
-                        System.out.println("Back to point...");
-                        this.result = this.cw.getAction(
-                                new ActionMove(
-                                        Lists.newArrayList(agentInfo.getPosition()),
-                                        (int) lastHomeComing.getX(),
-                                        (int) lastHomeComing.getY()
-                                )
-                        );
-                        return this;
-                }
-                if(lastHomeComingStatus == GOING_FROM_POINT_TO_BUILDING && worldInfo.getEntity(agentInfo.getPosition()) instanceof Building){
-                        lastHomeComingStatus = this.GOING_FROM_BUILDING_TO_POINT;
-                }
+                
                 
                 /**
                  * if agent is standing on the target
@@ -275,6 +259,37 @@ public class AURActionExtClear extends ExtAction {
                 System.out.println("Get improved road clearing...");
                 this.result = improvedRoadClearing(policeForce, target);
                 return this;
+        }
+
+        private void setChangesOfBuildingsEntrancePerpendicularLine() {
+                if(lastHomeComing != null &&
+                   this.lastHomeComingStatus == GOING_TO_POINT &&
+                   AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
+                ){
+                        lastHomeComingStatus = this.GOING_FROM_POINT_TO_BUILDING;
+                }
+                if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT &&
+                   AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
+                ){
+                        lastHomeComing = null;
+                        lastHomeComingStatus = this.NO_POINT_SELECTED;
+                }
+                else if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT){
+                        System.out.println("Back to point...");
+                        this.result = this.cw.getAction(
+                                new ActionMove(
+                                        Lists.newArrayList(agentInfo.getPosition()),
+                                        (int) lastHomeComing.getX(),
+                                        (int) lastHomeComing.getY()
+                                )
+                        );
+                        return;
+                }
+                if(lastHomeComingStatus == GOING_FROM_POINT_TO_BUILDING &&
+                   worldInfo.getEntity(agentInfo.getPosition()) instanceof Building
+                ){
+                        lastHomeComingStatus = this.GOING_FROM_BUILDING_TO_POINT;
+                }
         }
 
         private Point2D getPointClear(double startX, double startY, double endX, double endY) {
@@ -789,13 +804,18 @@ public class AURActionExtClear extends ExtAction {
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
                 if(pathNodes == null && path.size() > 1){
+                        System.out.println("Full Clear Action...");
                         return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
                 }
                 System.out.println("Road: " + path);
                 System.out.println("Road Nodes: " + pathNodes);
 
                 double[] buildingEntranceLine = null;
-                if(path.size() > 1 && worldInfo.getEntity(path.get( path.size() - 1 ) ) instanceof Building  && (lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT)){
+                if(USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE && 
+                   path.size() > 1 &&
+                   worldInfo.getEntity(path.get( path.size() - 1 ) ) instanceof Building  &&
+                   (lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT)
+                ){
                         Area targetBuilding = (Area) worldInfo.getEntity(path.get( path.size() - 1 ) );
                         Edge targetBuildingEntrance = targetBuilding.getEdgeTo(path.get( path.size() - 2 ));
                         buildingEntranceLine = getBuildingEntranceLine(targetBuilding, targetBuildingEntrance);
@@ -807,7 +827,8 @@ public class AURActionExtClear extends ExtAction {
                 
                 double[] intersect = new double[]{-1,-1};
                 System.out.println(lastHomeComingStatus);
-                if((this.lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT) &&
+                if(USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE &&
+                   (this.lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT) &&
                    ! (cw.lastMoveVector[0] == 0 && cw.lastMoveVector[1] == 0) &&
                    buildingEntranceLine != null &&
                    isCurrentLineIntersect(buildingEntranceLine,intersect) &&
@@ -826,11 +847,25 @@ public class AURActionExtClear extends ExtAction {
                         for(int i = 1;i < pathNodes.size(); i ++,index ++){
                                 if (hasRoadIntersect(new Point2D(policeForce.getX(), policeForce.getY()), pathNodes, index)) {
                                         break;
+                        int intersectCounter = 0;
+                        Point2D policePoint = new Point2D(policeForce.getX(), policeForce.getY());
+                        for(int i = 1;i < pathNodes.size(); i ++){
+                                if (hasRoadIntersect(policePoint, pathNodes, i)) {
+                                        if(intersectCounter >= 5){
+                                                break;
+                                        }
+                                        else{
+                                                intersectCounter ++;
+                                        }
+                                }
+                                else{
+                                        intersectCounter = 0;
+                                        index = i;
                                 }
                         }
-                        index --;
                         decidedLine = pathNodes.get(index);
                 }
+                
 //                if (pathNodes.size() == 2) {
 //                        index = 1;
 //                } else {
@@ -989,15 +1024,14 @@ public class AURActionExtClear extends ExtAction {
                 ); 
                 
 //                wsg.policeClearArea.put(agentInfo.getID(),clearLine);
-                for (int i = 0; i <= to; i++) {
-                        for (EntityID aid : ((Area) worldInfo.getEntity(path.get(i).second())).getNeighbours()) {
-                                if (((Area) worldInfo.getEntity(aid)).isEdgesDefined()) {
-                                        for (Edge e : ((Area) worldInfo.getEntity(aid)).getEdges()) {
-                                                if ((!e.isPassable())
-                                                        && ((AURGeoTools.getIntersection(clearLine, e.getLine()))
-                                                        || (AURGeoTools.getIntersection(clearLineAgentSpace, e.getLine())))) {
-                                                        return true;
-                                                }
+                Rectangle er = clearLine.getBounds();
+                for (EntityID aid : worldInfo.getObjectIDsInRectangle(er.x, er.y, er.x + er.width, er.y + er.height)) {
+                        if (worldInfo.getEntity(aid) instanceof Area && ((Area) worldInfo.getEntity(aid)).isEdgesDefined()) {
+                                for (Edge e : ((Area) worldInfo.getEntity(aid)).getEdges()) {
+                                        if ((!e.isPassable())
+                                            && ((AURGeoTools.getIntersection(clearLine, e.getLine()))
+                                            || (AURGeoTools.getIntersection(clearLineAgentSpace, e.getLine())))) {
+                                                return true;
                                         }
                                 }
                         }
