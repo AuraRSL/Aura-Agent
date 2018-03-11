@@ -20,7 +20,6 @@ public class K_LayerAdder {
 	public final static String TAB_POLICE = "Police";
 	
 	public static void addTo(K_Viewer viewer) {
-		
 		viewer.addLayer(TAB_MAP, K_AreaPropery.class, true);
 		viewer.addLayer(TAB_MAP, K_LayerRoads.class, true);
 		viewer.addLayer(TAB_MAP, K_LayerBuildings.class, true);
@@ -29,6 +28,8 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, K_LayerWalls.class, true);
 		viewer.addLayer(TAB_MAP, CivilianLayer.class, true);
 		viewer.addLayer(TAB_MAP, K_AgentsLayer.class, true);
+                
+		viewer.addLayer(TAB_MAP, A_SelectedArea.class, true);
 		
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
 		
