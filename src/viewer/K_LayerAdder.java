@@ -65,7 +65,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ReachableEdgeToSeesFromCenter.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_ReachableEdgeToSeesFromCenter.class, false);
 		
 		
 	}

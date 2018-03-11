@@ -662,6 +662,8 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		
+		this.dijkstra(this.ai.getPosition());
+		
 		this.fireSimulator.step();
 		
 		for (EntityID entID : changes) {
