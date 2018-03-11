@@ -32,7 +32,7 @@ public class K_TravelTime extends K_ViewerLayer {
 
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			String cost = "inf";
-			cost = selected_ag.getTravelTime() + "";
+			cost = ag.getTravelTime() + "";
 
 			g2.drawString(cost, kst.xToScreen(ag.getX()), kst.yToScreen(ag.getY()));
 

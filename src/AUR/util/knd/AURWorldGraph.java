@@ -248,15 +248,15 @@ public class AURWorldGraph extends AbstractModule {
 		
 		dijkstra(from);
 		
-		AUREdgeToSee ets = targetAg.getBuilding().ets;
-		if(ets == null) {
+		AUREdgeToStand etp = targetAg.getBuilding().edgeToPereceptiblePolygon;
+		if(etp == null) {
 			return null;
 		}
 		ArrayList<EntityID> path = new ArrayList<>();
 		
 		
-		path.add(ets.ownerAg.area.getID());
-		AURNode node = ets.fromNode;
+		path.add(etp.ownerAg.area.getID());
+		AURNode node = etp.fromNode;
 		while (node.pre != startNullNode) {
 			path.add(node.getPreAreaGraph().area.getID());
 			node = node.pre;
@@ -268,7 +268,7 @@ public class AURWorldGraph extends AbstractModule {
 		
 		
 		
-		return new ActionMove(path, (int) ets.standX, (int) ets.standY);
+		return new ActionMove(path, (int) etp.standX, (int) etp.standY);
 		
 	}
 
@@ -687,7 +687,7 @@ public class AURWorldGraph extends AbstractModule {
 	public void initForDijkstra() {
 		for (AURAreaGraph ag : areas.values()) {
 			if(ag.isBuilding()) {
-				ag.getBuilding().ets = null;
+				ag.getBuilding().edgeToPereceptiblePolygon = null;
 			}
 			ag.vis = false;
 			ag.lastDijkstraEntranceNode = null;
@@ -768,15 +768,15 @@ public class AURWorldGraph extends AbstractModule {
 		fromAg.lastDijkstraEntranceNode = startNullNode;
 		
 		if(fromID.equals(this.ai.getPosition())) {
-			ArrayList<AUREdgeToSee> etss = fromAg.getReachabeEdgeToSees((int) ai.getX(), (int) ai.getY());
-			for(AUREdgeToSee ets : etss) {
-				ets.fromNode.pre = startNullNode;
-				ets.toSeeAreaGraph.getBuilding().ets = ets;
+			ArrayList<AUREdgeToStand> etps = fromAg.getEdgesToPerceptiblePolygons((int) ai.getX(), (int) ai.getY());
+			for(AUREdgeToStand etp : etps) {
+				etp.fromNode.pre = startNullNode;
+				etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
 			}
 		}
 		
 		
-		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY()); //
+		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY());
 		if (startNodes.isEmpty()) {
 			return;
 		}
@@ -792,17 +792,17 @@ public class AURWorldGraph extends AbstractModule {
 			
 			qNode = que.dequeueMin().getValue();
 			qNode.pQueEntry = null;
-			if(qNode.toSeeEdges != null) {
-				for(AUREdgeToSee ets : qNode.toSeeEdges) {
-					if(ets.toSeeAreaGraph.getBuilding().ets == null) {
-						ets.cost = ets.cost + qNode.cost;
-						ets.toSeeAreaGraph.getBuilding().ets = ets;
+			if(qNode.edgesToPerceptiblePolygons != null) {
+				for(AUREdgeToStand etp : qNode.edgesToPerceptiblePolygons) {
+					if(etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon == null) {
+						etp.cost = etp.cost + qNode.cost;
+						etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
 					} else {
-						int oldCost = ets.toSeeAreaGraph.getBuilding().ets.cost;
-						int newCost = ets.cost + qNode.cost;
+						int oldCost = etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon.cost;
+						int newCost = etp.cost + qNode.cost;
 						if(newCost < oldCost) {
-							ets.cost = newCost;
-							ets.toSeeAreaGraph.getBuilding().ets = ets;
+							etp.cost = newCost;
+							etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
 						}
 					}
 				}
@@ -919,7 +919,6 @@ public class AURWorldGraph extends AbstractModule {
 	}
 
 	public void NoBlockadeDijkstra(EntityID fromID) {
-		//long t = System.currentTimeMillis();
 		if (lastNoBlockadeDijkstraFrom != null && lastNoBlockadeDijkstraFrom.equals(fromID)) {
 			return;
 		}

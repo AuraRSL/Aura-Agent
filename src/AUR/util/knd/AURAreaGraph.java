@@ -95,14 +95,14 @@ public class AURAreaGraph {
 		if(this.lastDijkstraEntranceNode == null) {
 			return AURConstants.Math.INT_INF;
 		}
-		return (int) (Math.ceil(this.getTravelCost() / AURConstants.Agent.VELOCITY));
+		return (int) (Math.ceil((double) this.getTravelCost() / AURConstants.Agent.VELOCITY));
 	}
 	
 	public int getNoBlockadeTravelTime() {
 		if(this.lastDijkstraEntranceNode == null) {
 			return AURConstants.Math.INT_INF;
 		}
-		return (int) (Math.ceil(this.getNoBlockadeTravelCost() / AURConstants.Agent.VELOCITY));
+		return (int) (Math.ceil((double) this.getNoBlockadeTravelCost() / AURConstants.Agent.VELOCITY));
 	}
 	
 
@@ -258,21 +258,15 @@ public class AURAreaGraph {
 		return result;
 	}
 	
-	public ArrayList<AUREdgeToSee> getReachabeEdgeToSees(int x, int y) {
-		ArrayList<AUREdgeToSee> result = new ArrayList<>();
+	public ArrayList<AUREdgeToStand> getEdgesToPerceptiblePolygons(int x, int y) {
+		ArrayList<AUREdgeToStand> result = new ArrayList<>();
 		if (area.getShape().contains(x, y) == false) {
 			if (area.getShape().intersects(x - 10, y - 10, 20, 20) == false) {
 				result.clear();
 				return result;
 			}
 		}
-
-		AURNode fromNode = instanceAreaGrid.getReachableEdgeToSees(this, x, y);
-		if(fromNode != null && fromNode.toSeeEdges != null) {
-			result.addAll(fromNode.toSeeEdges);
-		}
-		
-		return result;
+		return instanceAreaGrid.getEdgesToPerceptiblePolygons(this, x, y);
 	}
 
 	public ArrayList<AURNode> getEdgeToAllBorderCenters(double x, double y) {

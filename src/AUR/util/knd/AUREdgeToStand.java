@@ -5,7 +5,7 @@ package AUR.util.knd;
  * @author Alireza Kandeh - 2018
  */
 
-public class AUREdgeToSee {
+public class AUREdgeToStand {
 	
 	public AURAreaGraph toSeeAreaGraph = null;
 	public AURAreaGraph ownerAg = null;
@@ -14,9 +14,8 @@ public class AUREdgeToSee {
 	
 	public int standX = 0;
 	public int standY = 0;
-	
 
-	public AUREdgeToSee(AURAreaGraph ownerAg, AURAreaGraph toSeeAreaGraph, int cost, AURNode fromNode, int standX, int standY) {
+	public AUREdgeToStand(AURAreaGraph ownerAg, AURAreaGraph toSeeAreaGraph, int cost, AURNode fromNode, int standX, int standY) {
 		this.ownerAg = ownerAg;
 		this.toSeeAreaGraph = toSeeAreaGraph;
 		this.cost = cost;

@@ -13,7 +13,7 @@ public class AURNode {
 	public int x;
 	public int y;
 	public ArrayList<AUREdge> edges = null;
-	public ArrayList<AUREdgeToSee> toSeeEdges = null;
+	public ArrayList<AUREdgeToStand> edgesToPerceptiblePolygons = null;
 	public AURAreaGraph ownerArea1 = null;
 	public AURAreaGraph ownerArea2 = null;
 	public int cost;

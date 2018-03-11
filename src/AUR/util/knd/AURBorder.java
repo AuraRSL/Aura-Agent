@@ -10,10 +10,10 @@ public class AURBorder {
 	public boolean calced = false;
 	public boolean ready = false;
 
-	public double Ax = 0;
-	public double Ay = 0;
-	public double Bx = 0;
-	public double By = 0;
+	public int Ax = 0;
+	public int Ay = 0;
+	public int Bx = 0;
+	public int By = 0;
 
 	public AURNode CenterNode;
 
