@@ -60,10 +60,6 @@ import rescuecore2.worldmodel.EntityID;
  */
 
 public class AURActionExtClear extends ExtAction {
-        
-        private int CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 3;
-        private boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = false;
-
         private int clearDistance;
         private int clearRad;
         private int distanceLimit;
@@ -85,18 +81,13 @@ public class AURActionExtClear extends ExtAction {
         
         private AURClearWatcher cw = null;
         private Point2D lastHomeComing = null;
-        private int lastHomeComingStatus = this.NO_POINT_SELECTED;
-        
-        public final int NO_POINT_SELECTED = 0,
-                         GOING_TO_POINT = 1,
-                         GOING_FROM_POINT_TO_BUILDING = 2,
-                         GOING_FROM_BUILDING_TO_POINT = 3;
         
         private int[] agentPosition;
 
 //        private boolean isThereDecidedCleaningLine = false;
 //        private Pair<Point2D, EntityID> decidedCleaningLineTarget = null;
-        private ArrayList<Blockade> lastBlockadeList = null;
+        
+        private AURBuildingsEntrancePerpendicularLine bp = null;
 
         public AURActionExtClear(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
@@ -116,6 +107,7 @@ public class AURActionExtClear extends ExtAction {
                 this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
                 
                 this.cw = new AURClearWatcher(ai);
+                this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi);
         }
 
         @Override
@@ -252,9 +244,10 @@ public class AURActionExtClear extends ExtAction {
                 /**
                  * Buildings Entrance Perpendicular Line Settings.
                  */
-                
-                if(USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE){
-                        setChangesOfBuildingsEntrancePerpendicularLine();
+                Action settingAction = this.bp.setChangesOfBuildingsEntrancePerpendicularLine();
+                if(settingAction != null){
+                        this.result = settingAction;
+                        return this;
                 }
                 
                 
@@ -277,37 +270,6 @@ public class AURActionExtClear extends ExtAction {
                 System.out.println("Get improved road clearing...");
                 this.result = improvedRoadClearing(policeForce, target);
                 return this;
-        }
-
-        private void setChangesOfBuildingsEntrancePerpendicularLine() {
-                if(lastHomeComing != null &&
-                   this.lastHomeComingStatus == GOING_TO_POINT &&
-                   AURConstants.Agent.RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
-                ){
-                        lastHomeComingStatus = this.GOING_FROM_POINT_TO_BUILDING;
-                }
-                if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT &&
-                   AURConstants.Agent.RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
-                ){
-                        lastHomeComing = null;
-                        lastHomeComingStatus = this.NO_POINT_SELECTED;
-                }
-                else if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT){
-                        System.out.println("Back to point...");
-                        this.result = this.cw.getAction(
-                                new ActionMove(
-                                        Lists.newArrayList(agentInfo.getPosition()),
-                                        (int) lastHomeComing.getX(),
-                                        (int) lastHomeComing.getY()
-                                )
-                        );
-                        return;
-                }
-                if(lastHomeComingStatus == GOING_FROM_POINT_TO_BUILDING &&
-                   worldInfo.getEntity(agentInfo.getPosition()) instanceof Building
-                ){
-                        lastHomeComingStatus = this.GOING_FROM_BUILDING_TO_POINT;
-                }
         }
 
         private Point2D getPointClear(double startX, double startY, double endX, double endY) {
@@ -820,40 +782,11 @@ public class AURActionExtClear extends ExtAction {
                 System.out.println("Road: " + path);
                 System.out.println("Road Nodes: " + pathNodes);
 
-                double[] buildingEntranceLine = null;
-                if(USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE && 
-                   path.size() > 1 &&
-                   worldInfo.getEntity(path.get( path.size() - 1 ) ) instanceof Building  &&
-                   (lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT)
-                ){
-                        Area targetBuilding = (Area) worldInfo.getEntity(path.get( path.size() - 1 ) );
-                        Edge targetBuildingEntrance = targetBuilding.getEdgeTo(path.get( path.size() - 2 ));
-                        buildingEntranceLine = getBuildingEntranceLine(targetBuilding, targetBuildingEntrance);
-                        System.out.println("Building detected as target"); 
-                }
+                double[] buildingEntranceLine = bp.getBuildingEntranceLine(path);
+                Pair<Point2D, EntityID> decidedLine = bp.isGoingToPoint(buildingEntranceLine);
                 
-                int index;
-                Pair<Point2D, EntityID> decidedLine;
-                
-                double[] intersect = new double[]{-1,-1};
-                System.out.println(lastHomeComingStatus);
-                if(USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE &&
-                   (this.lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT) &&
-                   ! (cw.lastMoveVector[0] == 0 && cw.lastMoveVector[1] == 0) &&
-                   buildingEntranceLine != null &&
-                   isCurrentLineIntersect(buildingEntranceLine,intersect) &&
-                   intersect[0] != -1 &&
-                   intersect[1] != -1
-                ){
-                        decidedLine = new Pair(
-                                new Point2D(intersect[0], intersect[1]),
-                                agentInfo.getPosition()
-                        );
-                        lastHomeComing = decidedLine.first();
-                        lastHomeComingStatus = this.GOING_TO_POINT;
-                }
-                else{
-                        index = 1;
+                if(decidedLine == null){
+                        int index = 1;
                         ArrayList<Point2D> k = new ArrayList<>();
                         int intersectCounter = 0;
                         Point2D policePoint = new Point2D(policeForce.getX(), policeForce.getY());
@@ -875,6 +808,7 @@ public class AURActionExtClear extends ExtAction {
                         }
                         decidedLine = pathNodes.get(index);
                 }
+                
                 
 //                if (pathNodes.size() == 2) {
 //                        index = 1;
@@ -1051,7 +985,7 @@ public class AURActionExtClear extends ExtAction {
         }
         
         private Polygon getClearPolygon(Point2D p1, Point2D p2) {
-                return AURGeoTools.getClearPolygon(p1, p2, CLEAR_POLYGON_HEIGHT);
+                return AURGeoTools.getClearPolygon(p1, p2, AURConstants.PoliceExtClear.CLEAR_POLYGON_HEIGHT);
         }
 
         private Action continueToDecidedCleaningLine(Pair<Point2D, EntityID> decidedCleaningLineTarget) {
@@ -1065,7 +999,7 @@ public class AURActionExtClear extends ExtAction {
                         decidedCleaningLineTarget.first().getY()
                 );
                 
-                int clearVectorLen = Math.min(distanceToTarget + (int)(AURConstants.Agent.RADIUS * 3), this.clearDistance);
+                int clearVectorLen = Math.min(distanceToTarget + AURConstants.PoliceExtClear.CLEAR_POLYGON_HEIGHT, this.clearDistance);
                 
                 Vector2D clearVector = vectorToTarget.scale(clearVectorLen * 98 / 100);
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
@@ -1088,7 +1022,7 @@ public class AURActionExtClear extends ExtAction {
                                 moveVector = vectorToTarget.scale(distanceToTarget);
                         else{
                                 moveVector = vectorToTarget.scale(this.clearDistance - agentSize);
-                                for(double to = moveVector.getLength() + 500;to < distanceToTarget;to += 500){ // deghate mohasebe toole masire ghabele tey kardan
+                                for(double to = moveVector.getLength() + AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR;to < distanceToTarget;to += AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR){ // deghate mohasebe toole masire ghabele tey kardan
                                         if(thereIsNoBlockade(to,vectorToTarget)){
                                                 moveVector = vectorToTarget.scale(to - agentSize - 10);
                                         }
@@ -1346,153 +1280,5 @@ public class AURActionExtClear extends ExtAction {
                                 Lists.newArrayList(nextArea)
                         )
                 );
-        }
-        
-        private double[] getBuildingEntranceLine(Area a,Edge e){
-                double[] pME = AURGeoMetrics.getPointFromPoint2D(
-                        AURGeoTools.getEdgeMid(e)
-                );
-                
-                double vE[] = new double[]{
-                        e.getEndX() - e.getStartX(),
-                        e.getEndY() - e.getStartY()
-                };
-                double[] perpendicularVector = AURGeoMetrics.getPerpendicularVector(vE);
-                perpendicularVector = AURGeoMetrics.getVectorNormal(perpendicularVector);
-                vE = AURGeoMetrics.getVectorNormal(vE);
-                
-                int linesNumber = 5;
-                int linesLen = 10000;
-                double[][][] lines = new double[linesNumber][2][2];
-                double mids[][] = new double[linesNumber][2];
-                for(int i = 0;i < linesNumber;i ++){
-                        mids[i] = AURGeoMetrics.getPointsPlus(
-                                pME,
-                                AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.Agent.RADIUS * (i - linesNumber / 2) / linesNumber)
-                        );
-                        lines[i][0] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen));
-                        lines[i][1] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
-                }
-                
-                double p1[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen)),
-                       p2[] = AURGeoMetrics.getPointsPlus(pME, AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
-                
-                for(EntityID aid : worldInfo.getObjectIDsInRectangle((int) lines[1][0][0], (int) lines[1][0][1], (int) lines[1][1][0], (int) lines[1][1][1])){
-                        if(! (worldInfo.getEntity(aid) instanceof Area))
-                                continue;
-                        
-                        Area area = (Area) worldInfo.getEntity(aid);
-                        
-                        if(area.isEdgesDefined()){
-                                for(Edge edge : area.getEdges()){
-                                        if(edge.isPassable())
-                                                continue;
-                                        
-                                        for(int i = 0;i < lines.length;i ++){
-                                                double[] intersect = new double[]{-1,-1};
-                                                AURGeoUtil.getIntersection(
-                                                        edge.getLine().getOrigin().getX(),
-                                                        edge.getLine().getOrigin().getY(),
-                                                        edge.getLine().getEndPoint().getX(),
-                                                        edge.getLine().getEndPoint().getY(),
-                                                        lines[i][0][0],
-                                                        lines[i][0][1],
-                                                        lines[i][1][0],
-                                                        lines[i][1][1],
-                                                        intersect
-                                                );
-
-                                                boolean linesIntersect = java.awt.geom.Line2D.linesIntersect(
-                                                        edge.getLine().getOrigin().getX(),
-                                                        edge.getLine().getOrigin().getY(),
-                                                        edge.getLine().getEndPoint().getX(),
-                                                        edge.getLine().getEndPoint().getY(),
-                                                        lines[i][0][0],
-                                                        lines[i][0][1],
-                                                        lines[i][1][0],
-                                                        lines[i][1][1]
-                                                );
-
-                                                if(intersect[0] != -1 && linesIntersect){
-                                                        if(AURGeoUtil.length(intersect[0], intersect[1], p1[0], p1[1]) < AURGeoUtil.length(intersect[0], intersect[1], p2[0], p2[1])){
-                                                                double hypot = Math.hypot(intersect[0] - mids[i][0],intersect[1] - mids[i][1]);
-                                                                for(int j = 0;j < lines.length;j ++){
-                                                                        lines[j][0] = AURGeoMetrics.getPointsPlus(
-                                                                                mids[j],
-                                                                                AURGeoMetrics.getVectorScaled(
-                                                                                        perpendicularVector,
-                                                                                        hypot - AURConstants.Agent.RADIUS
-                                                                                )
-                                                                        );
-                                                                }
-                                                        }
-                                                        else{
-                                                                double hypot = - Math.hypot(intersect[0] - mids[i][0],intersect[1] - mids[i][1]);
-                                                                for(int j = 0;j < lines.length;j ++){
-                                                                        lines[j][1] = AURGeoMetrics.getPointsPlus(
-                                                                                mids[j],
-                                                                                AURGeoMetrics.getVectorScaled(
-                                                                                        perpendicularVector,
-                                                                                        hypot - AURConstants.Agent.RADIUS
-                                                                                )
-                                                                        );
-                                                                }
-                                                        }
-                                                }
-                                        }
-                                }
-                        }
-                }
-                
-                double[] result = new double[4];
-                result[0] = lines[linesNumber / 2][0][0];
-                result[1] = lines[linesNumber / 2][0][1];
-                result[2] = lines[linesNumber / 2][1][0];
-                result[3] = lines[linesNumber / 2][1][1];
-                return result;
-        }
-
-        private boolean isCurrentLineIntersect(double[] buildingEntranceLine, double[] intersect) {
-                double v[] = AURGeoMetrics.getVectorNormal(cw.lastMoveVector);
-                double[] vectorScaled = AURGeoMetrics.getVectorScaled(
-                        v,
-                        Math.max(
-                                Math.hypot(buildingEntranceLine[0] - agentPosition[0],buildingEntranceLine[1] - agentPosition[1]),
-                                Math.hypot(buildingEntranceLine[2] - agentPosition[0],buildingEntranceLine[3] - agentPosition[1])
-                        )
-                );
-                double[] agentLine = new double[]{
-                        agentPosition[0],
-                        agentPosition[1],
-                        agentPosition[0] + vectorScaled[0],
-                        agentPosition[1] + vectorScaled[1]
-                };
-                if(AURGeoUtil.getIntersection(
-                        agentLine[0],
-                        agentLine[1],
-                        agentLine[2],
-                        agentLine[3],
-                        buildingEntranceLine[0],
-                        buildingEntranceLine[1],
-                        buildingEntranceLine[2],
-                        buildingEntranceLine[3],
-                        intersect
-                )){
-                        double[] vectorScaledForAgentSpace = AURGeoMetrics.getVectorScaled(
-                                v,
-                                AURConstants.Agent.RADIUS
-                        );
-                        agentLine[2] = intersect[0] + vectorScaledForAgentSpace[0];
-                        agentLine[3] = intersect[1] + vectorScaledForAgentSpace[1];
-                        
-                        for(EntityID eid : worldInfo.getObjectIDsInRectangle((int) agentLine[0], (int) agentLine[1], (int) agentLine[2], (int) agentLine[3])){
-                                if(worldInfo.getEntity(eid) instanceof Area)
-                                        if(AURGeoTools.intersect(agentLine, (Area) worldInfo.getEntity(eid))){
-                                                return false;
-                                        }
-                        }
-                        return true;
-                }
-                return false;
         }
 }

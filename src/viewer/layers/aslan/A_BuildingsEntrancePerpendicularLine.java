@@ -84,7 +84,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                 for(int i = 0;i < linesNumber;i ++){
                         mids[i] = AURGeoMetrics.getPointsPlus(
                                 pME,
-                                AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.AGENT_RADIUS * (i - linesNumber / 2) / linesNumber)
+                                AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.Agent.RADIUS * (i - linesNumber / 2) / linesNumber)
                         );
                         lines[i][0] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen));
                         lines[i][1] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
@@ -137,7 +137,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                                                                 mids[j],
                                                                                 AURGeoMetrics.getVectorScaled(
                                                                                         perpendicularVector,
-                                                                                        hypot - AURConstants.AGENT_RADIUS
+                                                                                        hypot - AURConstants.Agent.RADIUS
                                                                                 )
                                                                         );
                                                                 }
@@ -149,7 +149,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                                                                 mids[j],
                                                                                 AURGeoMetrics.getVectorScaled(
                                                                                         perpendicularVector,
-                                                                                        hypot - AURConstants.AGENT_RADIUS
+                                                                                        hypot - AURConstants.Agent.RADIUS
                                                                                 )
                                                                         );
                                                                 }

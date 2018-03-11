@@ -11,7 +11,7 @@ public class AURAreaCostComparator implements Comparator<AURAreaGraph> {
 
         @Override
         public int compare(AURAreaGraph o1, AURAreaGraph o2) {
-                return (int) ( o1.getTravelCost()- o2.getTravelCost() );
+                return (int) ( o1.getTravelCost() - o2.getTravelCost() );
         }
         
 }
