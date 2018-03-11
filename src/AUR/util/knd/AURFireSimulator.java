@@ -1,11 +1,6 @@
 package AUR.util.knd;
 
 import adf.agent.precompute.PrecomputeData;
-import static firesimulator.simulator.Simulator.GAMMA;
-import firesimulator.world.Building;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import rescuecore2.worldmodel.EntityID;
 
 /**

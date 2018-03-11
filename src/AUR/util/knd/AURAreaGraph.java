@@ -243,6 +243,23 @@ public class AURAreaGraph {
 		result.addAll(instanceAreaGrid.getReachableEdgeNodesFrom(this, x, y));
 		return result;
 	}
+	
+	public ArrayList<AUREdgeToSee> getReachabeEdgeToSees(double x, double y) {
+		ArrayList<AUREdgeToSee> result = new ArrayList<>();
+		if (area.getShape().contains(x, y) == false) {
+			if (area.getShape().intersects(x - 10, y - 10, 20, 20) == false) {
+				result.clear();
+				return result;
+			}
+		}
+
+		AURNode fromNode = instanceAreaGrid.getReachableEdgeToSees(this, x, y);
+		if(fromNode != null && fromNode.toSeeEdges != null) {
+			result.addAll(fromNode.toSeeEdges);
+		}
+		
+		return result;
+	}
 
 	public ArrayList<AURNode> getEdgeToAllBorderCenters(double x, double y) {
 		ArrayList<AURNode> result = new ArrayList<>();

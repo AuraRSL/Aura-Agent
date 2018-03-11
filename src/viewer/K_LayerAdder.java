@@ -59,12 +59,13 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleBuildings.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_ReachableEdgeToSeesFromCenter.class, true);
 		
 		
 	}

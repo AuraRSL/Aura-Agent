@@ -173,63 +173,63 @@ public class AURWorldGraph extends AbstractModule {
 		return (i >= 0 && j >= 0 && i < gridRows && j < gridCols);
 	}
 
-	public ActionMove getMoveActionToSee(EntityID from, EntityID target) {
-		if (target == null) {
-			return null;
-		}
-		ActionMove result = null;
-		Collection<EntityID> targets = new ArrayList<>();
-		AURAreaGraph fromAg = getAreaGraph(from);
-		AURAreaGraph targetAg = getAreaGraph(target);
-		targets.add(target);
-		double destX = -1;
-		double destY = -1;
-		ArrayList<EntityID> path = null;
-		AURAreaInSightChecker checker = new AURAreaInSightChecker(this, targetAg);
-		path = getPathToClosest(from, targets);
-
-		if (path == null || path.size() <= 1) {
-			return result;
-		}
-		EntityID firstStep = path.get(1);
-		if (path.size() == 2 && (firstStep.equals(target) || firstStep.equals(from))) {
-			path.clear();
-			Point2D point = this.instanceAreaGrid.getPointHasSight(fromAg, checker, ai.getX(), ai.getY());
-			if (point != null) {
-				path.add(from);
-				destX = point.getX();
-				destY = point.getY();
-			}
-		} else if (path.get(path.size() - 1).getValue() == target.getValue()) {
-			path.remove(path.size() - 1);
-			if (path.size() >= 2) {
-				AURAreaGraph ag = getAreaGraph(path.get(path.size() - 1));
-				if (ag.isSmall()) {
-					path.remove(path.size() - 1);
-				}
-			}
-		}
-		if (path != null && path.size() > 1) {
-			if (destX >= 0) {
-				result = new ActionMove(path, (int) destX, (int) destY);
-			} else {
-				result = new ActionMove(path);
-			}
-		} else {
-			if (checker.hasChance(fromAg)) {
-				Point2D point = this.instanceAreaGrid.getPointHasSight(fromAg, checker, ai.getX(), ai.getY());
-				if (point != null) {
-					path = new ArrayList<>();
-					path.add(from);
-					destX = point.getX();
-					destY = point.getY();
-					result = new ActionMove(path, (int) destX, (int) destY);
-					return result;
-				}
-			}
-		}
-		return result;
-	}
+//	public ActionMove getMoveActionToSee(EntityID from, EntityID target) {
+//		if (target == null) {
+//			return null;
+//		}
+//		ActionMove result = null;
+//		Collection<EntityID> targets = new ArrayList<>();
+//		AURAreaGraph fromAg = getAreaGraph(from);
+//		AURAreaGraph targetAg = getAreaGraph(target);
+//		targets.add(target);
+//		double destX = -1;
+//		double destY = -1;
+//		ArrayList<EntityID> path = null;
+//		AURAreaInSightChecker checker = new AURAreaInSightChecker(this, targetAg);
+//		path = getPathToClosest(from, targets);
+//
+//		if (path == null || path.size() <= 1) {
+//			return result;
+//		}
+//		EntityID firstStep = path.get(1);
+//		if (path.size() == 2 && (firstStep.equals(target) || firstStep.equals(from))) {
+//			path.clear();
+//			Point2D point = this.instanceAreaGrid.getPointHasSight(fromAg, checker, ai.getX(), ai.getY());
+//			if (point != null) {
+//				path.add(from);
+//				destX = point.getX();
+//				destY = point.getY();
+//			}
+//		} else if (path.get(path.size() - 1).getValue() == target.getValue()) {
+//			path.remove(path.size() - 1);
+//			if (path.size() >= 2) {
+//				AURAreaGraph ag = getAreaGraph(path.get(path.size() - 1));
+//				if (ag.isSmall()) {
+//					path.remove(path.size() - 1);
+//				}
+//			}
+//		}
+//		if (path != null && path.size() > 1) {
+//			if (destX >= 0) {
+//				result = new ActionMove(path, (int) destX, (int) destY);
+//			} else {
+//				result = new ActionMove(path);
+//			}
+//		} else {
+//			if (checker.hasChance(fromAg)) {
+//				Point2D point = this.instanceAreaGrid.getPointHasSight(fromAg, checker, ai.getX(), ai.getY());
+//				if (point != null) {
+//					path = new ArrayList<>();
+//					path.add(from);
+//					destX = point.getX();
+//					destY = point.getY();
+//					result = new ActionMove(path, (int) destX, (int) destY);
+//					return result;
+//				}
+//			}
+//		}
+//		return result;
+//	}
 	
 	
 	
@@ -237,7 +237,6 @@ public class AURWorldGraph extends AbstractModule {
 		if (target == null) {
 			return null;
 		}
-		ActionMove result = null;
 		Collection<EntityID> targets = new ArrayList<>();
 		AURAreaGraph fromAg = getAreaGraph(from);
 		AURAreaGraph targetAg = getAreaGraph(target);
@@ -263,7 +262,9 @@ public class AURWorldGraph extends AbstractModule {
 			path.add(node.getPreAreaGraph().area.getID());
 			node = node.pre;
 		}
-		path.add(from);
+		if(path.get(path.size() - 1).equals(from) == false) {
+			path.add(from);
+		}
 		java.util.Collections.reverse(path);
 		
 		
@@ -764,6 +765,16 @@ public class AURWorldGraph extends AbstractModule {
 			return;
 		}
 		fromAg.lastDijkstraEntranceNode = startNullNode;
+		
+		if(fromID.equals(this.ai.getPosition())) {
+			ArrayList<AUREdgeToSee> etss = fromAg.getReachabeEdgeToSees(ai.getX(), ai.getY());
+			for(AUREdgeToSee ets : etss) {
+				ets.fromNode.pre = startNullNode;
+				ets.toSeeAreaGraph.getBuilding().ets = ets;
+			}
+		}
+		
+		
 		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY()); //
 		if (startNodes.isEmpty()) {
 			return;
