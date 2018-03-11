@@ -11,7 +11,7 @@ public class AURNoBlockadesAreaCostComparator implements Comparator<AURAreaGraph
 
         @Override
         public int compare(AURAreaGraph o1, AURAreaGraph o2) {
-                return (int) ( o1.getNoBlockadeLastDijkstraCost() - o2.getNoBlockadeLastDijkstraCost() );
+                return (int) ( o1.getNoBlockadeTravelCost() - o2.getNoBlockadeTravelCost() );
         }
         
 }

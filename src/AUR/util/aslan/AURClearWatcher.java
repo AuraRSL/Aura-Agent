@@ -97,8 +97,10 @@ public class AURClearWatcher {
                 else if(action instanceof ActionMove){
                         System.out.println(" -> MOVE");
                         this.lastAction = this.MOVE;
-                        this.lastMoveVector[0] = ((ActionMove)action).getPosX() - ai.getX();
-                        this.lastMoveVector[1] = ((ActionMove)action).getPosY() - ai.getY();
+                        if(((ActionMove)action).getUsePosition()){
+                                this.lastMoveVector[0] = ((ActionMove)action).getPosX() - ai.getX();
+                                this.lastMoveVector[1] = ((ActionMove)action).getPosY() - ai.getY();
+                        }
                 }
                 
                 return newAction;
@@ -124,6 +126,6 @@ public class AURClearWatcher {
         }
         
         private boolean isMoveLessThanAllowedValue(){
-                return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.AGENT_RADIUS;
+                return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.Agent.RADIUS;
         }
 }

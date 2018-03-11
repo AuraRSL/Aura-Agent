@@ -38,7 +38,7 @@ public class A_PoliceClearAreaAndAgentsInThat extends K_ViewerLayer {
         g2.setColor(new Color(255, 0, 0, 100));
         Polygon agentPolygon = AURGeoTools.getCircle(
                 agentPosition,
-                wsg.si.getClearRepairDistance() - AURConstants.AGENT_RADIUS
+                wsg.si.getClearRepairDistance() - AURConstants.Agent.RADIUS
         );
         
         System.out.println("X drawen!");
@@ -46,7 +46,7 @@ public class A_PoliceClearAreaAndAgentsInThat extends K_ViewerLayer {
         g2.fill(kst.getTransformedPolygon(agentPolygon));
                         
         
-        Collection<EntityID> objectIDsInRange = wsg.wi.getObjectIDsInRange(agentPosition[0], agentPosition[1], wsg.si.getClearRepairDistance() - AURConstants.AGENT_RADIUS);
+        Collection<EntityID> objectIDsInRange = wsg.wi.getObjectIDsInRange(agentPosition[0], agentPosition[1], wsg.si.getClearRepairDistance() - AURConstants.Agent.RADIUS);
         for(EntityID o : objectIDsInRange){
                 StandardEntity se = wsg.wi.getEntity(o);
                 
@@ -56,7 +56,7 @@ public class A_PoliceClearAreaAndAgentsInThat extends K_ViewerLayer {
                         int[] humanPosition = new int[]{(int)h.getX(), (int)h.getY()};
                         Polygon agentSPolygon = AURGeoTools.getCircle(
                                 humanPosition,
-                                (int) AURConstants.AGENT_RADIUS + 10
+                                (int) AURConstants.Agent.RADIUS + 10
                         );
                         
                         boolean x = true;

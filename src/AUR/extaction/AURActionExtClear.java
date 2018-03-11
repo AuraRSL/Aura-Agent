@@ -1,9 +1,12 @@
 package AUR.extaction;
 
+import AUR.util.aslan.AURAreaCostComparator;
 import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURDijkstra;
 import AUR.util.aslan.AURGeoMetrics;
 import AUR.util.aslan.AURGeoTools;
+import AUR.util.aslan.AURNoBlockadesAreaCostComparator;
+import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
 import java.awt.Polygon;
@@ -45,6 +48,7 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
+import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
@@ -57,7 +61,7 @@ import rescuecore2.worldmodel.EntityID;
 
 public class AURActionExtClear extends ExtAction {
         
-        private int CLEAR_POLYGON_HEIGHT = AURConstants.AGENT_RADIUS * 3;
+        private int CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 3;
         private boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = false;
 
         private int clearDistance;
@@ -72,7 +76,7 @@ public class AURActionExtClear extends ExtAction {
         private int oldClearY;
         private int count;
 
-        private double agentSize = AURConstants.AGENT_RADIUS;
+        private double agentSize = AURConstants.Agent.RADIUS;
         private double repairRate = 2;
 
         private AURWorldGraph wsg = null;
@@ -193,14 +197,28 @@ public class AURActionExtClear extends ExtAction {
                 this.result = null;
                 PoliceForce policeForce = (PoliceForce) this.agentInfo.me();
 
+                /**
+                 * if agent need rest then change target to nearest refuge.
+                 */
                 if (this.needRest(policeForce)) {
-                        List<EntityID> list = new ArrayList<>();
-                        if (this.target != null) {
-                                list.add(this.target);
+                        if(worldInfo.getEntity(policeForce.getPosition()) instanceof Refuge){
+                                this.result = new ActionRest();
+                                return this;
                         }
-                        this.result = this.calcRest(policeForce, list);
+                        Pair<EntityID, Boolean> tempTarget = this.calcRest(policeForce);
+                        if(tempTarget != null){
+                                if(tempTarget.second()){
+                                        this.result = new ActionMove(
+                                                pathPlanning.setFrom(policeForce.getPosition()).setDestination(tempTarget.first()).calc().getResult()
+                                        );
+                                        return this;
+                                }
+                                else{
+                                        this.target = tempTarget.first();
+                                }
+                        }
                 }
-
+                
                 if (this.target == null) {
                         return this;
                 }
@@ -264,12 +282,12 @@ public class AURActionExtClear extends ExtAction {
         private void setChangesOfBuildingsEntrancePerpendicularLine() {
                 if(lastHomeComing != null &&
                    this.lastHomeComingStatus == GOING_TO_POINT &&
-                   AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
+                   AURConstants.Agent.RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
                 ){
                         lastHomeComingStatus = this.GOING_FROM_POINT_TO_BUILDING;
                 }
                 if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT &&
-                   AURConstants.AGENT_RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
+                   AURConstants.Agent.RADIUS > Math.hypot(this.agentPosition[0] - lastHomeComing.getX(), this.agentPosition[1] - lastHomeComing.getY())
                 ){
                         lastHomeComing = null;
                         lastHomeComingStatus = this.NO_POINT_SELECTED;
@@ -746,40 +764,32 @@ public class AURActionExtClear extends ExtAction {
                 return damage >= this.thresholdRest || (activeTime + this.agentInfo.getTime()) < this.kernelTime;
         }
 
-        private Action calcRest(Human human, Collection<EntityID> targets) {
+        private Pair<EntityID, Boolean> calcRest(Human human) {
                 EntityID position = human.getPosition();
                 Collection<EntityID> refuges = this.worldInfo.getEntityIDsOfType(StandardEntityURN.REFUGE);
-                int currentSize = refuges.size();
-                if (refuges.contains(position)) {
-                        return new ActionRest();
-                }
-                List<EntityID> firstResult = null;
-                while (refuges.size() > 0) {
-                        List<EntityID> path = this.wsg.getNoBlockadePathToClosest(position, new ArrayList<EntityID>(refuges));
-                        if (path != null && path.size() > 0) {
-                                if (firstResult == null) {
-                                        firstResult = new ArrayList<>(path);
-                                        if (targets == null || targets.isEmpty()) {
-                                                break;
-                                        }
-                                }
-                                EntityID refugeID = path.get(path.size() - 1);
-                                this.setTarget(refugeID);
-                                List<EntityID> fromRefugeToTarget = this.wsg.getNoBlockadePathToClosest(position, new ArrayList<EntityID>(targets));
-                                if (fromRefugeToTarget != null && fromRefugeToTarget.size() > 0) {
-                                        return new ActionMove(path);
-                                }
-                                refuges.remove(refugeID);
-                                // remove failed
-                                if (currentSize == refuges.size()) {
-                                        break;
-                                }
-                                currentSize = refuges.size();
-                        } else {
-                                break;
+                if(refuges.size() > 0){
+                        wsg.getNoBlockadePathToClosest(position, refuges);
+                        wsg.getPathToClosest(position, refuges);
+
+                        ArrayList<AURAreaGraph> closeRefuges = wsg.getAreaGraph(refuges);
+                        closeRefuges.sort(new AURAreaCostComparator());
+                        ArrayList<AURAreaGraph> closeRefugesNoBlockades = wsg.getAreaGraph(refuges);
+                        closeRefugesNoBlockades.sort(new AURNoBlockadesAreaCostComparator());
+                        
+                        if(closeRefuges.get(0).getTravelTime() > closeRefugesNoBlockades.get(0).getNoBlockadeTravelTime() * 1.5){
+                                return new Pair(
+                                        closeRefugesNoBlockades.get(0).area.getID(),
+                                        Boolean.FALSE
+                                );
+                        }
+                        else{
+                                return new Pair(
+                                        closeRefuges.get(0).area.getID(),
+                                        Boolean.TRUE
+                                );
                         }
                 }
-                return firstResult != null ? new ActionMove(firstResult) : null;
+                return null;
         }
 
         // Improved Road Clearing Methodes
@@ -844,13 +854,13 @@ public class AURActionExtClear extends ExtAction {
                 }
                 else{
                         index = 1;
-                        for(int i = 1;i < pathNodes.size(); i ++,index ++){
-                                if (hasRoadIntersect(new Point2D(policeForce.getX(), policeForce.getY()), pathNodes, index)) {
-                                        break;
+                        ArrayList<Point2D> k = new ArrayList<>();
                         int intersectCounter = 0;
                         Point2D policePoint = new Point2D(policeForce.getX(), policeForce.getY());
                         for(int i = 1;i < pathNodes.size(); i ++){
                                 if (hasRoadIntersect(policePoint, pathNodes, i)) {
+                                        System.out.println("Kit: " + pathNodes.get(i).first() + " : " + i);
+                                        k.add(pathNodes.get(i).first());
                                         if(intersectCounter >= 5){
                                                 break;
                                         }
@@ -949,7 +959,7 @@ public class AURActionExtClear extends ExtAction {
                                                                         p22
                                                                 )
                                                         ),
-                                                        AURConstants.AGENT_RADIUS
+                                                        AURConstants.Agent.RADIUS
                                                 ),
                                                 p11
                                         );
@@ -1055,7 +1065,7 @@ public class AURActionExtClear extends ExtAction {
                         decidedCleaningLineTarget.first().getY()
                 );
                 
-                int clearVectorLen = Math.min(distanceToTarget + (int)(AURConstants.AGENT_RADIUS * 3), this.clearDistance);
+                int clearVectorLen = Math.min(distanceToTarget + (int)(AURConstants.Agent.RADIUS * 3), this.clearDistance);
                 
                 Vector2D clearVector = vectorToTarget.scale(clearVectorLen * 98 / 100);
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
@@ -1358,7 +1368,7 @@ public class AURActionExtClear extends ExtAction {
                 for(int i = 0;i < linesNumber;i ++){
                         mids[i] = AURGeoMetrics.getPointsPlus(
                                 pME,
-                                AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.AGENT_RADIUS * (i - linesNumber / 2) / linesNumber)
+                                AURGeoMetrics.getVectorScaled(vE,3 * AURConstants.Agent.RADIUS * (i - linesNumber / 2) / linesNumber)
                         );
                         lines[i][0] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, linesLen));
                         lines[i][1] = AURGeoMetrics.getPointsPlus(mids[i], AURGeoMetrics.getVectorScaled(perpendicularVector, -linesLen));
@@ -1411,7 +1421,7 @@ public class AURActionExtClear extends ExtAction {
                                                                                 mids[j],
                                                                                 AURGeoMetrics.getVectorScaled(
                                                                                         perpendicularVector,
-                                                                                        hypot - AURConstants.AGENT_RADIUS
+                                                                                        hypot - AURConstants.Agent.RADIUS
                                                                                 )
                                                                         );
                                                                 }
@@ -1423,7 +1433,7 @@ public class AURActionExtClear extends ExtAction {
                                                                                 mids[j],
                                                                                 AURGeoMetrics.getVectorScaled(
                                                                                         perpendicularVector,
-                                                                                        hypot - AURConstants.AGENT_RADIUS
+                                                                                        hypot - AURConstants.Agent.RADIUS
                                                                                 )
                                                                         );
                                                                 }
@@ -1470,7 +1480,7 @@ public class AURActionExtClear extends ExtAction {
                 )){
                         double[] vectorScaledForAgentSpace = AURGeoMetrics.getVectorScaled(
                                 v,
-                                AURConstants.AGENT_RADIUS
+                                AURConstants.Agent.RADIUS
                         );
                         agentLine[2] = intersect[0] + vectorScaledForAgentSpace[0];
                         agentLine[3] = intersect[1] + vectorScaledForAgentSpace[1];
