@@ -2,7 +2,6 @@ package viewer;
 
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
-import viewer.layers.knd.K_CommonWalls;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -21,6 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -31,14 +31,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.StyleConstants;
 import rescuecore2.worldmodel.EntityID;
 import viewer.fromMisc.PanZoomListener;
-import viewer.layers.AmboLayers.*;
-import viewer.layers.aslan.*;
-import viewer.layers.knd.*;
 
 /**
  *
@@ -46,52 +44,6 @@ import viewer.layers.knd.*;
  */
 
 public class K_Viewer extends JFrame {
-
-	private void addLayers() {
-		addLayer(K_AreaPropery.class, true);
-		addLayer(K_LayerRoads.class, true);
-		addLayer(K_LayerBuildings.class, true);
-		addLayer(K_LayerBuildingsClusterColor.class, false);
-		addLayer(K_LayerAreaCenters.class, false);
-		addLayer(k_LayerReachableAreas.class, false);
-		addLayer(K_LayerTravelCost.class, false);
-		addLayer(K_LayerAliveBlockades.class, true);
-		addLayer(K_LayerAllBlockades.class, true);
-		addLayer(K_LayerWalls.class, true);
-		addLayer(K_LayerWorldGraph.class, false);
-		addLayer(K_NoBlockadeWorldGraph.class, false);
-		addLayer(K_ShortestPath.class, false);
-		addLayer(K_NoBlockadeShortestPath.class, false);
-		addLayer(K_AreaVertices.class, false);
-		addLayer(K_AreaExtinguishableRange.class, false);
-		addLayer(CivilianLayer.class, true);
-		addLayer(K_AirCells.class, false);
-		addLayer(K_BuildingAirCells.class, false);
-		addLayer(K_AreaGrid.class, false);
-		addLayer(K_AreaPassableSegments.class, false);
-		addLayer(K_AreaGraph.class, false);
-		addLayer(K_BuildingPerceptibleAreas.class, false);
-		addLayer(K_PerceptibleAreaPolygon.class, false);
-		addLayer(K_PerceptibleBuildings.class, false);
-		addLayer(K_ShortestPathToCheckFire.class, false);
-		addLayer(K_RoadScore.class, false);
-		addLayer(K_SmallAreas.class, false);
-		addLayer(K_MediumAreas.class, false);
-		addLayer(K_BigAreas.class, false);
-		addLayer(K_CommonWalls.class, false);
-		addLayer(K_BuildingSightAreaPolygon.class, false);
-		addLayer(K_BuildingCodes.class, false);
-		addLayer(K_RealFieryBuildings.class, true);
-		addLayer(K_EstimatedFieryness.class, true);
-		addLayer(K_FireSimBuildingInfo.class, true);
-		addLayer(K_InflammableBuildings.class, false);
-		addLayer(K_AgentsLayer.class, true);
-		addLayer(K_ConnectedBuildings.class, false);
-		addLayer(A_AreasEntityID.class, false);
-		addLayer(A_BlockadesEntityID.class, false);
-		addLayer(A_PoliceClearAreaAndAgentsInThat.class, false);
-		addLayer(A_BuildingsEntrancePerpendicularLine.class, false);
-	}
 	
 	private static K_Viewer _instance = null;
 	
@@ -160,11 +112,27 @@ public class K_Viewer extends JFrame {
 		}
 	}
 
-	private void addLayer(Class c, boolean de) {
+	
+	private HashMap<String, JPanel> layerPanels = new HashMap<>();
+	
+	public void addLayer(String tabName, Class c, boolean de) {
 		String packageName = c.getPackage().getName();
 		String className = c.getName().replace(packageName + ".", "");
 		K_ViewerLayerFactory.getInstance().addLayer(className, c);
-		layersCheckBox.add(new JCheckBox(className, de));
+		
+		JPanel panel = layerPanels.get(tabName);
+		
+		if(panel == null) {
+			panel = new JPanel();
+			BoxLayout bxl = new BoxLayout(panel, BoxLayout.Y_AXIS);
+			panel.setLayout(bxl);
+
+			tabbedPane.addTab(tabName, panel);
+			layerPanels.put(tabName, panel);
+		}
+		JCheckBox chb = new JCheckBox(className, de);
+		panel.add(chb);
+		layersCheckBox.add(chb);
 	}
 
 	ItemListener repaintEvent = new ItemListener() {
@@ -174,9 +142,12 @@ public class K_Viewer extends JFrame {
 		}
 	};
 
+	public JTabbedPane tabbedPane = new JTabbedPane();
+	
 	public K_Viewer() {
 		
-		addLayers();
+		K_LayerAdder.addTo(this);
+		
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLayout(new FlowLayout(StyleConstants.ALIGN_LEFT));
 
@@ -191,12 +162,7 @@ public class K_Viewer extends JFrame {
 			}
 		});
 
-		JPanel panel_layers = new JPanel();
-		BoxLayout bxl = new BoxLayout(panel_layers, BoxLayout.Y_AXIS);
-		panel_layers.setLayout(bxl);
-
 		for (JCheckBox chb : layersCheckBox) {
-			panel_layers.add(chb);
 			chb.addItemListener(repaintEvent);
 		}
 
@@ -204,13 +170,12 @@ public class K_Viewer extends JFrame {
 
 		this.add(new DrawPanel(), BorderLayout.CENTER);
 		
-		JScrollPane layersSP = new JScrollPane(panel_layers, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		JScrollPane layersSP = new JScrollPane(tabbedPane, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 		this.add(layersSP, BorderLayout.WEST);
-		
-		JScrollBar vertical = layersSP.getVerticalScrollBar();
-		vertical.setValue( vertical.getMaximum() );
 
+		layersSP.setPreferredSize(new Dimension(300, 250));
+		
 		JScrollPane textSP = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		textSP.setPreferredSize(new Dimension(300, 250));
 		this.add(textSP, BorderLayout.EAST);

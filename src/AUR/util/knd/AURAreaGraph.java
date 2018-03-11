@@ -164,12 +164,7 @@ public class AURAreaGraph {
 		if (isBuilding() == false) {
 			return 0;
 		}
-		Building b = (Building) area;
-		if (b.isTemperatureDefined()) {
-			return AURFireSimulator.getWaterNeeded(this, b.getTemperature() * 1.0, 10);
-		}
-		return AURFireSimulator.getWaterNeeded(this, 1000, 0);
-
+		return getBuilding().fireSimBuilding.getWaterNeeded();
 	}
 	
 	public boolean isSmall() {
@@ -246,6 +241,23 @@ public class AURAreaGraph {
 			return result;
 		}
 		result.addAll(instanceAreaGrid.getReachableEdgeNodesFrom(this, x, y));
+		return result;
+	}
+	
+	public ArrayList<AUREdgeToSee> getReachabeEdgeToSees(double x, double y) {
+		ArrayList<AUREdgeToSee> result = new ArrayList<>();
+		if (area.getShape().contains(x, y) == false) {
+			if (area.getShape().intersects(x - 10, y - 10, 20, 20) == false) {
+				result.clear();
+				return result;
+			}
+		}
+
+		AURNode fromNode = instanceAreaGrid.getReachableEdgeToSees(this, x, y);
+		if(fromNode != null && fromNode.toSeeEdges != null) {
+			result.addAll(fromNode.toSeeEdges);
+		}
+		
 		return result;
 	}
 
@@ -349,7 +361,9 @@ public class AURAreaGraph {
 			}
 			lastTemperature = temp;
 		}
-		
+		if(this.isBuilding() == true) {
+			this.getBuilding().update();
+		}
 	}
 
 	// toDo
@@ -422,7 +436,7 @@ public class AURAreaGraph {
 	}
 
 	public boolean longTimeNoSee() {
-		if (this.needUpdate = true) {
+		if (this.needUpdate == true) {
 			return false;
 		}
 		if (this.hasBlockade() == false) {

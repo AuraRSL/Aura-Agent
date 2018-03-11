@@ -1,9 +1,12 @@
 package AUR.util.knd;
 
+import AUR.util.ResqFireGeometry;
 import adf.agent.precompute.PrecomputeData;
+import firesimulator.simulator.Simulator;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -36,10 +39,13 @@ public class AURFireSimBuilding {
 	private double estimatedFuel = 0;
 	private boolean wasEverWatered = false;
 	private double waterQuantity = 0;
+//	private boolean ignite = false;
+	public int lastRealFieryness = -1;
+	public double lastRealTemperature = -1;
 	
-	private int lastRealFieryness = 0;
+	private GaussianGenerator burnRate = new GaussianGenerator(0.142, 0.025, new Random(0));
 	
-	private GaussianGenerator burnRate = new GaussianGenerator(0.15, 0.02, new Random(0));
+	public double tempVar = 0;
 	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
@@ -53,32 +59,79 @@ public class AURFireSimBuilding {
 		}
 		this.estimatedEnergy = 0;
 		this.estimatedFuel = getInitialFuel();
+//		this.ignite = false;
+
+//		if(Math.random() < 0.7) {
+//			this.ignite();
+//		}
+		
+//		if(this.building.building.getID().getValue() == 51234) {
+//			this.ignite();
+//		}
 	}
-	
-	
-	public void update() {
+
+	public void update() {		
+		if(this.building.building.isTemperatureDefined()) {
+			double t = this.building.building.getTemperature();
+			if(Math.abs(this.lastRealTemperature - t) > 1e-8) {
+				this.onRealTemperatureChange(t);
+				onRealFierynessChange(this.lastRealFieryness);
+				this.lastRealTemperature = t;
+				
+			}
+		}
+		
 		if(this.building.building.isFierynessDefined()) {
 			int f = this.building.building.getFieryness();
-			if(f == 4) {
+			if(f >= 4 && f <= 7) {
 				this.setWasEverWatered(true);
+			} else {
+				if(f == 0) {
+					this.setWasEverWatered(false);
+				}
 			}
 			if(f != this.lastRealFieryness) {
 				onRealFierynessChange(f);
+				this.lastRealFieryness = f;
 			}
 		}
+		
+
 		
 	}
 	
 	public void onRealFierynessChange(int newFieryness) {
-//		this.lastRealFieryness = newFieryness;
-//		switch(newFieryness) {
-//			case 0:
-//			case 4: {
-//				setEstimatedFuel(getInitialFuel());
-//			}
-//			case 1:
-//			case 5:
-//		}
+		switch(newFieryness) {
+			case 0:
+			case 1:
+			case 4:
+			case 5: {
+				setEstimatedFuel(getInitialFuel());
+				break;
+			}
+			case 2:
+			case 6: {
+				setEstimatedFuel(getInitialFuel() * 0.66);
+				break;
+			}
+			case 3:
+			case 7: {
+				setEstimatedFuel(getInitialFuel() * 0.33);
+				break;
+			}
+			
+			default: {
+				setEstimatedFuel(0);
+				break;
+			}
+		}
+	}
+	
+	public void onRealTemperatureChange(double newTemperature) {
+		if(newTemperature >= getIgnitionPoint()) {
+			setWaterQuantity(0);
+		}
+		this.setEstimatedEnergy(newTemperature * getCapacity());
 	}
 	
 	public void precomputeRadiation(PrecomputeData pd) {
@@ -114,7 +167,7 @@ public class AURFireSimBuilding {
 			(int) bounds.getMaxX(),
 			(int) bounds.getMaxY()
 		);
-		cands.remove(this.ag.area);
+		//cands.remove(this.ag.area);
 		
 		ArrayList<AURFireSimBuilding> aroundBuildings = new ArrayList<>();
 		
@@ -131,12 +184,14 @@ public class AURFireSimBuilding {
 		
 		int rays = 0;
 		
-		for(Edge edge : this.ag.area.getEdges()) {
+		Polygon selfPolygon = this.ag.polygon;
+		
+		for(int i = 0; i < selfPolygon.npoints; i++) {
 			ArrayList<double[]> randomOrigins = AURGeoUtil.getRandomPointsOnSegmentLine(
-				edge.getStartX(),
-				edge.getStartY(),
-				edge.getEndX(),
-				edge.getEndY(),
+				selfPolygon.xpoints[i],
+				selfPolygon.ypoints[i],
+				selfPolygon.xpoints[(i + 1) % selfPolygon.npoints],
+				selfPolygon.ypoints[(i + 1) % selfPolygon.npoints],
 				AURConstants.FireSim.RADIATION_RAY_RATE
 			);
 			
@@ -144,7 +199,7 @@ public class AURFireSimBuilding {
 			
 			double rv[] = new double[2];
 			
-			double ray[] = new double[4];
+			float ray[] = new float[4];
 			
 			if(paint) {
 				g2.setStroke(new BasicStroke(1));
@@ -159,17 +214,33 @@ public class AURFireSimBuilding {
 
 				AURGeoUtil.getRandomUnitVector(rv);
 				
-				ray[0] = o[0];
-				ray[1] = o[1];
-				ray[2] = o[0] + rv[0] * maxDist;
-				ray[3] = o[1] + rv[1] * maxDist;
+				ray[0] = (float) o[0];
+				ray[1] = (float) o[1];
+				ray[2] = (float) (o[0] + rv[0] * maxDist);
+				ray[3] = (float) (o[1] + rv[1] * maxDist);
 				
 				AURFireSimBuilding last = null;
 				
 				for(AURFireSimBuilding building : aroundBuildings) {
-					boolean b = AURGeoUtil.hitRayAllEdges(building.ag.polygon , ray);
-					if(b) {
-						last = building;
+					Polygon p = building.ag.polygon;
+					//boolean b = AURGeoUtil.hitRayAllEdges(building.ag.polygon , ray);
+					
+					for(int j = 0; j < p.npoints; j++) {
+						if(building == this && i == j) {
+							continue;
+						}
+						
+						Point ip = ResqFireGeometry.intersect(
+							new Point(p.xpoints[j], p.ypoints[j]),
+							new Point(p.xpoints[(j + 1) % p.npoints], p.ypoints[(j + 1) % p.npoints]),
+							new Point((int) ray[0], (int) ray[1]),
+							new Point((int) ray[2], (int) ray[3])
+						);
+						if(ip != null) {
+							ray[2] = (float) ip.getX();
+							ray[3] = (float) ip.getY();
+							last = building;
+						}
 					}
 				}
 				
@@ -183,8 +254,8 @@ public class AURFireSimBuilding {
 			}
 		}
 		for(AURFireSimBuilding b : aroundBuildings) {
-			if(b.vis_ > 0) {
-				result.add(new AURBuildingConnection(b.ag.area.getID().getValue(), ((float) b.vis_ / rays)));
+			if(b.vis_ > 0 && b != this) {
+				result.add(new AURBuildingConnection(b.ag.area.getID().getValue(), ((float) b.vis_ / rays) / 1) );
 			}
 			
 		}
@@ -215,40 +286,76 @@ public class AURFireSimBuilding {
 		airCells = new ArrayList<>();
 		Polygon buildingPolygon = (Polygon) this.building.ag.area.getShape();
 		Rectangle2D buildingBounds = buildingPolygon.getBounds();
-
-		int ij[] = building.wsg.fireSimulator.getCell_ij(buildingBounds.getMinX(), buildingBounds.getMinY());
-
+		int ij[] = building.wsg.fireSimulator.airCells.getCell_ij(buildingBounds.getMinX(), buildingBounds.getMinY());
 		int i0 = ij[0];
 		int j0 = ij[1];
-
-		ij = building.wsg.fireSimulator.getCell_ij(buildingBounds.getMaxX(), buildingBounds.getMaxY());
-
+		ij = building.wsg.fireSimulator.airCells.getCell_ij(buildingBounds.getMaxX(), buildingBounds.getMaxY());
 		int i1 = ij[0];
 		int j1 = ij[1];
-
 		for(int i = i0; i <= i1; i++) {
 			for(int j = j0; j <= j1; j++) {
-				int xy[] = this.building.wsg.fireSimulator.getCell_xy(i, j);
-				if(buildingPolygon.intersects(xy[0], xy[1], this.building.wsg.fireSimulator.getCellSize(), this.building.wsg.fireSimulator.getCellSize())) {
+				int xy[] = this.building.wsg.fireSimulator.airCells.getCell_xy(i, j);
+				if(buildingPolygon.intersects(xy[0], xy[1], this.building.wsg.fireSimulator.airCells.getCellSize(), this.building.wsg.fireSimulator.airCells.getCellSize())) {
 					int[] cell = new int[] {i, j, 0};
-					AURGeoUtil.setAirCellPercent(building.wsg.fireSimulator, cell, building.wsg.fireSimulator.getCellSize(), buildingPolygon);
+					setAirCellPercent(building.wsg.fireSimulator, cell, building.wsg.fireSimulator.airCells.getCellSize(), buildingPolygon);
 					airCells.add(cell);
 				}
-
 			}
 		}
+	}
+	
+	private void setAirCellPercent(AURFireSimulator fs, int airCell[], int airCellSize, Polygon buildingPolygon) {
+		double dw = (double) airCellSize / 10;
+		double dh = (double) airCellSize / 10;
+		int xy[] = fs.airCells.getCell_xy(airCell[0], airCell[1]);
+		int count = 0;
+		double x = 0;
+		double y = 0;
+		for(int i = 0; i < 10; i++) {
+			for(int j = 0; j < 10; j++) {
+				x = xy[0] + j * dw;
+				y = xy[1] + i * dh;
+				if(buildingPolygon.contains(x, y)) {
+					count++;
+				}
+			}
+		}
+		airCell[2] = count;
+	}
+	
+	public double getRadiationEnergy() {
+		double t = getEstimatedTemperature() + 293; // Assume ambient temperature is 293 Kelvin.
+		double radEn = (t * t * t * t) * getTotalWallArea() * AURConstants.FireSim.RADIATION_COEFFICENT * AURConstants.FireSim.STEFAN_BOLTZMANN_CONSTANT;
+		if (radEn == Double.NaN || radEn == Double.POSITIVE_INFINITY || radEn == Double.NEGATIVE_INFINITY) {
+			radEn = Double.MAX_VALUE * 0.75;
+		}
+		if (radEn > getEstimatedEnergy()) {
+			radEn = getEstimatedEnergy();
+		}
+		return radEn;
 	}
 	
 	public double getConsum() {
 		if (this.estimatedFuel <= 1e-8) {
 			return 0;
 		}
-		double tf = (double) (getEstimatedTemperature() / 1000f);
-		double lf = (double) getEstimatedFuel() / getInitialFuel();
-		double f = (double) (tf * lf * burnRate.nextValue());
+		double r = burnRate.nextValue();
+		float tf = (float) (getEstimatedTemperature() / 1000f);
+		float lf = (float) getEstimatedFuel() / (float) getInitialFuel();
+		
+		float f = (float) (tf * lf * new Double(r));
 		if (f < 0.005f) {
 			f = 0.005f;
 		}
+		
+//		if(this.building.building.getID().getValue() == 958) {
+//			System.out.println("temp = " + getEstimatedTemperature());
+//			System.out.println("br = " + r);
+//			System.out.println("tf = " + tf);
+//			System.out.println("lf = " + lf);
+//			System.out.println("f = " + f);
+//			System.out.println("c = " + (getInitialFuel()*f));
+//		}
 		return getInitialFuel() * f;
 	}
 		
@@ -273,6 +380,10 @@ public class AURFireSimBuilding {
 		}
 	}
 	
+	public void addWater(double waterQuantity) {
+		this.setWaterQuantity(this.getWaterQuantity() + waterQuantity);
+	}
+	
 	public void setWaterQuantity(double waterQuantity) {
 		if(waterQuantity > 0) {
 			setWasEverWatered(true);
@@ -294,7 +405,16 @@ public class AURFireSimBuilding {
 	
 	public void ignite() {
 		setEstimatedEnergy(getCapacity() * getIgnitionPoint() * 1.5);
+//		setIgnite(true);
 	}
+	
+//	public void setIgnite(boolean i) {
+//		this.ignite = i;
+//	}
+//	
+//	public boolean getIgnite() {
+//		return this.ignite;
+//	}
 	
 	public double getIgnitionPoint() {
 		switch (building.building.getBuildingCodeEnum()) {
@@ -322,7 +442,7 @@ public class AURFireSimBuilding {
 	}
 
 	public double getInitialFuel() {
-		return (double) getThermoCapacity() * getVolume();
+		return (double) getFuelDensity() * getVolume();
 	}
 	
 	public double getFuelDensity() {
@@ -437,6 +557,19 @@ public class AURFireSimBuilding {
 			return 7;        // extinguished, severely damaged
 		}
 		return 8;           // completely burnt down
+	}
+	
+	public boolean isOnFire() {
+		int f = getEstimatedFieryness();
+		return f > 0 && f < 4;
+	}
+	
+	public int getWaterNeeded() {
+		if(isOnFire() == true) {
+			return ag.wsg.si.getFireExtinguishMaxSum();
+		} else {
+			return 0;
+		}
 	}
 	
 }

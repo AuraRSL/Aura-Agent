@@ -21,25 +21,6 @@ public class AURGeoUtil {
 
 	public final static double INF = 1e50;
 	public final static double EPS = 1e-8;
-	
-	public static void setAirCellPercent(AURFireSimulator fs, int airCell[], int airCellSize, Polygon buildingPolygon) {
-		double dw = (double) airCellSize / 10;
-		double dh = (double) airCellSize / 10;
-		int xy[] = fs.getCell_xy(airCell[0], airCell[1]);
-		int count = 0;
-		double x = 0;
-		double y = 0;
-		for(int i = 0; i < 10; i++) {
-			for(int j = 0; j < 10; j++) {
-				x = xy[0] + j * dw;
-				y = xy[1] + i * dh;
-				if(buildingPolygon.contains(x, y)) {
-					count++;
-				}
-			}
-		}
-		airCell[2] = count;
-	}
         
 	public static double dist(double Ax, double Ay, double Bx, double By) {
 		return Math.hypot(Ax - Bx, Ay - By);
@@ -197,6 +178,30 @@ public class AURGeoUtil {
 		}
 		return result;
 	}
+	
+//	public static boolean hitRayAllEdges(Polygon p, double ray[]) {
+//		double ip[] = new double[2];
+//		boolean result = false;
+//		for(int i = 0; i < p.npoints; i++) {
+//			boolean b = AURGeoUtil.getIntersection(
+//					p.xpoints[i],
+//					p.ypoints[i],
+//					p.xpoints[(i + 1) % p.npoints],
+//					p.ypoints[(i + 1) % p.npoints],
+//					ray[0],
+//					ray[1],
+//					ray[2],
+//					ray[3],
+//					ip
+//			);
+//			if(b) {
+//				ray[2] = ip[0];
+//				ray[3] = ip[1];
+//				result = true;
+//			}
+//		}
+//		return result;
+//	}
 	
 	public static boolean hitRayWalls(Building building, double ray[]) {
 		double ip[] = new double[2];

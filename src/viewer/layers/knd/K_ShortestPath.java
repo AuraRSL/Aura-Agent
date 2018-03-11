@@ -63,6 +63,7 @@ public class K_ShortestPath extends K_ViewerLayer {
 
 		g2.setStroke(new BasicStroke(1));
 	}
+	
 	@Override
 	public String getString(AURWorldGraph wsg, AURAreaGraph selected_ag) {
 		if(selected_ag == null) {
@@ -81,4 +82,5 @@ public class K_ShortestPath extends K_ViewerLayer {
 		}
 		return result;
 	}
+	
 }

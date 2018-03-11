@@ -793,8 +793,6 @@ public class AURActionExtClear extends ExtAction {
                 }
                 System.out.println("Road: " + path);
                 System.out.println("Road Nodes: " + pathNodes);
-                
-                GuidPoints.guidPoints.put(agentInfo.getID(), pathNodes);
 
                 double[] buildingEntranceLine = null;
                 if(path.size() > 1 && worldInfo.getEntity(path.get( path.size() - 1 ) ) instanceof Building  && (lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT)){
@@ -802,7 +800,6 @@ public class AURActionExtClear extends ExtAction {
                         Edge targetBuildingEntrance = targetBuilding.getEdgeTo(path.get( path.size() - 2 ));
                         buildingEntranceLine = getBuildingEntranceLine(targetBuilding, targetBuildingEntrance);
                         System.out.println("Building detected as target"); 
-                        Test.line = buildingEntranceLine;
                 }
                 
                 int index;
@@ -810,12 +807,12 @@ public class AURActionExtClear extends ExtAction {
                 
                 double[] intersect = new double[]{-1,-1};
                 System.out.println(lastHomeComingStatus);
-                if((this.lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT) && testIf() &&
-                   ! (cw.lastMoveVector[0] == 0 && cw.lastMoveVector[1] == 0) && testIf() &&
-                   buildingEntranceLine != null && testIf() &&
-                   isCurrentLineIntersect(buildingEntranceLine,intersect) && testIf() &&
-                   intersect[0] != -1 && testIf() &&
-                   intersect[1] != -1 && testIf()
+                if((this.lastHomeComingStatus == this.NO_POINT_SELECTED || this.lastHomeComingStatus == this.GOING_TO_POINT) &&
+                   ! (cw.lastMoveVector[0] == 0 && cw.lastMoveVector[1] == 0) &&
+                   buildingEntranceLine != null &&
+                   isCurrentLineIntersect(buildingEntranceLine,intersect) &&
+                   intersect[0] != -1 &&
+                   intersect[1] != -1
                 ){
                         decidedLine = new Pair(
                                 new Point2D(intersect[0], intersect[1]),
@@ -864,7 +861,7 @@ public class AURActionExtClear extends ExtAction {
 //                                pathNodes.get(index).first()
 //                        )
 //                );
-                System.out.println("Decided Line: " + pathNodes.get(index));
+                System.out.println("Decided Line: " + decidedLine);
 //                return null;
                 return continueToDecidedCleaningLine(decidedLine);
         }
@@ -1420,7 +1417,6 @@ public class AURActionExtClear extends ExtAction {
                         agentPosition[0] + vectorScaled[0],
                         agentPosition[1] + vectorScaled[1]
                 };
-                Test.line1 = agentLine;
                 if(AURGeoUtil.getIntersection(
                         agentLine[0],
                         agentLine[1],
@@ -1438,8 +1434,6 @@ public class AURActionExtClear extends ExtAction {
                         );
                         agentLine[2] = intersect[0] + vectorScaledForAgentSpace[0];
                         agentLine[3] = intersect[1] + vectorScaledForAgentSpace[1];
-                        
-                        Test.line1 = agentLine;
                         
                         for(EntityID eid : worldInfo.getObjectIDsInRectangle((int) agentLine[0], (int) agentLine[1], (int) agentLine[2], (int) agentLine[3])){
                                 if(worldInfo.getEntity(eid) instanceof Area)
