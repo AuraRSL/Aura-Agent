@@ -58,7 +58,7 @@ public class AURPerceptibleArea {
 		Rectangle bounds4 = new Rectangle((int) cx, (int) cy - r_, r_, r_);
 		
 		for(StandardEntity sent : cands) {
-			if(sent.getStandardURN().equals(StandardEntityURN.BUILDING) == false) {
+			if(isBuilding(sent) == false) {
 				continue;
 			}
 			Polygon p = (Polygon) ((Building) sent).getShape();
@@ -185,6 +185,18 @@ public class AURPerceptibleArea {
 		}
 		
 		return result;
+	}
+	
+	private static boolean isBuilding(StandardEntity sent) {
+		StandardEntityURN urn = sent.getStandardURN();
+		return (false
+			|| urn.equals(StandardEntityURN.BUILDING)
+			|| urn.equals(StandardEntityURN.GAS_STATION)
+			|| urn.equals(StandardEntityURN.REFUGE)
+			|| urn.equals(StandardEntityURN.POLICE_OFFICE)
+			|| urn.equals(StandardEntityURN.AMBULANCE_CENTRE)
+			|| urn.equals(StandardEntityURN.FIRE_STATION)
+		);
 	}
 	
 	private static boolean isCollinear(double x1, double y1, double x2, double y2, double x3, double y3) {

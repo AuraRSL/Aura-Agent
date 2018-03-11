@@ -232,7 +232,14 @@ public class AURAreaGraph {
 	
 	public final boolean isBuilding() {
 		StandardEntityURN urn = this.area.getStandardURN();
-		return (urn.equals(StandardEntityURN.BUILDING) || urn.equals(StandardEntityURN.GAS_STATION) || urn.equals(StandardEntityURN.REFUGE));
+		return (false
+			|| urn.equals(StandardEntityURN.BUILDING)
+			|| urn.equals(StandardEntityURN.GAS_STATION)
+			|| urn.equals(StandardEntityURN.REFUGE)
+			|| urn.equals(StandardEntityURN.POLICE_OFFICE)
+			|| urn.equals(StandardEntityURN.AMBULANCE_CENTRE)
+			|| urn.equals(StandardEntityURN.FIRE_STATION)
+		);
 	}
 
 	public ArrayList<AURNode> getReachabeEdgeNodes(double x, double y) {
