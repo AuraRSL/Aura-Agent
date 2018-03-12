@@ -55,7 +55,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeWorldGraph.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaGraph.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaGrid.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_AreaPassableSegments.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_AreaBorders.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);

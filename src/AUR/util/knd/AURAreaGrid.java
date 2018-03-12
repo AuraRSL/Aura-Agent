@@ -387,10 +387,10 @@ public class AURAreaGrid {
 		boundsX1 = bounds.maxX;
 		boundsY1 = bounds.maxY;
 
-		int boundJ0 = (int) (Math.floor((boundsX0 - 0 + gridSize / 2) / gridSize)) - 0;
-		int boundI0 = (int) (Math.floor((boundsY0 - 0 + gridSize / 2) / gridSize)) - 0;
-		int boundJ1 = (int) (Math.ceil((boundsX1 - 0 + gridSize / 2) / gridSize)) + 0;
-		int boundI1 = (int) (Math.ceil((boundsY1 - 0 + gridSize / 2) / gridSize)) + 0;
+		int boundJ0 = (int) (Math.floor((boundsX0 - 0 + gridSize / 2) / gridSize)) - 1;
+		int boundI0 = (int) (Math.floor((boundsY0 - 0 + gridSize / 2) / gridSize)) - 1;
+		int boundJ1 = (int) (Math.ceil((boundsX1 - 0 + gridSize / 2) / gridSize)) + 1;
+		int boundI1 = (int) (Math.ceil((boundsY1 - 0 + gridSize / 2) / gridSize)) + 1;
 
 		gridM = boundI1 - boundI0 + 0;
 		gridN = boundJ1 - boundJ0 + 0;
@@ -435,11 +435,11 @@ public class AURAreaGrid {
 
 		initGrid();
 
-		for (AURAreaGraph ag : areaGraph.neighbours) {
-			for (AURBorder border : ag.borders) {
-				markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
-			}
-		}
+//		for (AURAreaGraph ag : areaGraph.neighbours) {
+//			for (AURBorder border : ag.borders) {
+//				markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
+//			}
+//		}
 
 		for (AURBorder border : areaGraph.borders) {
 			markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
@@ -815,7 +815,7 @@ public class AURAreaGrid {
 		if (res[0] >= 0) {
 			x0 = res[1] * gridSize + gridPoints[0][0][0];
 			y0 = res[0] * gridSize + gridPoints[0][0][1];
-		}
+		}		
 		dx = x1 - x0;
 		dy = y1 - y0;
 		if (Math.abs(dx) >= Math.abs(dy)) {
@@ -827,6 +827,7 @@ public class AURAreaGrid {
 				y0 = y1;
 				y1 = t;
 			}
+			
 			m = dy / dx;
 			t = x0;
 			double g = 0;
@@ -847,6 +848,7 @@ public class AURAreaGrid {
 				y0 = y1;
 				y1 = t;
 			}
+			
 			m = dx / dy;
 			t = y0;
 			double g = 0;
