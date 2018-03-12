@@ -32,9 +32,10 @@ public class AURBuildingsEntrancePerpendicularLine {
         private Point2D lastHomeComing = null;
         private int lastHomeComingStatus = this.NO_POINT_SELECTED;
 
-        public AURBuildingsEntrancePerpendicularLine(AgentInfo ai, WorldInfo wi) {
+        public AURBuildingsEntrancePerpendicularLine(AgentInfo ai, WorldInfo wi, AURClearWatcher cw) {
                 this.ai = ai;
                 this.wi = wi;
+                this.cw = cw;
         }
         
         public Action setChangesOfBuildingsEntrancePerpendicularLine() {

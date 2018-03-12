@@ -1,6 +1,7 @@
 package AUR.extaction;
 
 import AUR.util.aslan.AURAreaCostComparator;
+import AUR.util.aslan.AURBuildingsEntrancePerpendicularLine;
 import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURDijkstra;
 import AUR.util.aslan.AURGeoMetrics;
@@ -107,7 +108,7 @@ public class AURActionExtClear extends ExtAction {
                 this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
                 
                 this.cw = new AURClearWatcher(ai);
-                this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi);
+                this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi, cw);
         }
 
         @Override
@@ -809,37 +810,6 @@ public class AURActionExtClear extends ExtAction {
                         decidedLine = pathNodes.get(index);
                 }
                 
-                
-//                if (pathNodes.size() == 2) {
-//                        index = 1;
-//                } else {
-//                        // Binary Search - O(log(n)) | n = path.size()
-//                        int uBound = pathNodes.size() - 1, lBound = 0;
-//                        while (true) {
-//                                index = (uBound + lBound) / 2;
-//                                if (index == lBSetound || index == uBound) {
-//                                        break;
-//                                } else if (pathNodes.get(index).second().equals(target)) {
-//                                        System.out.println("Fuck the system!! there is a wrong thing.");
-//                                        break;
-//                                } else if (hasRoadIntersect(new Point2D(policeForce.getX(), policeForce.getY()), pathNodes, index)) {
-//                                        uBound = index - 1;
-//                                } else {
-//                                        lBound = index + 1;
-//                                }
-//                        }
-//                }
-
-//                this.isThereDecidedCleaningLine = true;
-//                this.decidedCleaningLineTarget = pathNodes.get(index);
-
-//                wsg.policeClearArea.put(
-//                        policeForce.getID(),
-//                        getClearPolygon(
-//                                new Point2D(policeForce.getX(), policeForce.getY()),
-//                                pathNodes.get(index).first()
-//                        )
-//                );
                 System.out.println("Decided Line: " + decidedLine);
 //                return null;
                 return continueToDecidedCleaningLine(decidedLine);
@@ -1005,9 +975,6 @@ public class AURActionExtClear extends ExtAction {
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
                 Polygon clearPolygon = getClearPolygon(policePoint, clearPoint);
                 
-                
-//                this.wsg.policeSelectedAreasToCkeckBlockades.put(agentInfo.getID(), areasAndBlockadesOfClearPolygon.first());
-//                this.wsg.policeClearPolygon.put(agentInfo.getID(), clearPolygon);
                 Pair<Boolean, ArrayList<Blockade>> blockadesList = isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon,(Area) worldInfo.getEntity(agentInfo.getPosition()));
 
                 if(blockadesList.first()){ // Then Clear
