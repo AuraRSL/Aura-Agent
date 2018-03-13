@@ -1012,7 +1012,7 @@ public class AURWorldGraph extends AbstractModule {
 	public ArrayList<AURBorder> getCommonBorders(AURAreaGraph a1, AURAreaGraph a2) {
 		ArrayList<AURBorder> result = new ArrayList<AURBorder>();
 		for (Edge e1 : a1.area.getEdges()) {
-			if (e1.isPassable() && getEdgeLength(e1) > 750) {
+			if (e1.isPassable() && getEdgeLength(e1) > 1) {
 				for (Edge e2 : a2.area.getEdges()) {
 					if (e2.isPassable() && AURGeoUtil.equals(e1, e2)) {
 						result.add(new AURBorder(a1, a2, e1.getStartX(), e1.getStartY(), e1.getEndX(), e1.getEndY()));

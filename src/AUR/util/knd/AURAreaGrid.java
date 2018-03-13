@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import rescuecore2.misc.geometry.Point2D;
@@ -31,8 +32,7 @@ public class AURAreaGrid {
 	public final int CELL_OUT = 8;
 	private Polygon areaPolygon;
 	public int gridPoints[][][] = new int[defaultSizeM][defaultSizeN][2];
-	public int gridIntInfo[][][] = new int[defaultSizeM][defaultSizeN][3];
-	public int graph[][] = new int[100][100];
+	public int gridIntInfo[][][] = new int[defaultSizeM][defaultSizeN][2];
 	public int edgePoint[][] = new int[100][3];
 	public AURNode edgePointObject[] = new AURNode[100];
 	private int gridM = 0;
@@ -48,13 +48,14 @@ public class AURAreaGrid {
 	public int edgePointsSize = 0;
 	public static final int TYPE = 0;
 	public static final int COST = 1;
-	public static final int EDGE_POINT_ID = 2;
 	public static long _word_size = 1000000;
 	public final int INF = 1000 * 1000 * 1000;
 	public final double lineStepSize = gridSize / 4;
 	private Queue<Long> que = new LinkedList<Long>();
 	private ArrayList<Polygon> blockaePolygons = new ArrayList<Polygon>();
 	public AURAreaGraph areaGraph = null;
+	
+	private HashMap<String, ArrayList<AURNode> > nodes = new HashMap<>();
 	
 	public final static int dij_4[][] = {
 		{-1, +0},
@@ -378,6 +379,10 @@ public class AURAreaGrid {
 		}
 
 	}
+	
+	public String getKey(int i, int j) {
+		return i + ", " + j;
+	}
 
 	public void initGrid() {
 		AuraBound bounds = new AuraBound(areaPolygon);
@@ -407,10 +412,13 @@ public class AURAreaGrid {
 				gridPoints[i][j][0] = cx;
 				gridPoints[i][j][1] = cy;
 				gridIntInfo[i][j][TYPE] = CELL_FREE;
-				gridIntInfo[i][j][EDGE_POINT_ID] = -1;
+//				gridIntInfo[i][j][EDGE_POINT_ID] = -1;
 
 			}
 		}
+		
+		nodes.clear();
+		
 		for (int i = 0; i < gridM; i++) {
 			for (int j = 0; j < gridN; j++) {
 				if (gridIntInfo[i][j][TYPE] == CELL_FREE) {
@@ -435,12 +443,26 @@ public class AURAreaGrid {
 
 		initGrid();
 
-//		for (AURAreaGraph ag : areaGraph.neighbours) {
-//			for (AURBorder border : ag.borders) {
-//				markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
+		for (AURAreaGraph ag : areaGraph.neighbours) {
+			for (AURBorder border : ag.borders) {
+				markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
+			}
+		}
+
+//		for(Edge edge : this.areaGraph.area.getEdges()) {
+//			if(edge.isPassable() == false) {
+//				markLine(edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY(), CELL_BLOCK);
 //			}
 //		}
-
+//		
+//		for (AURAreaGraph ag : areaGraph.neighbours) {
+//			for(Edge edge : ag.area.getEdges()) {
+//				if(edge.isPassable() == false) {
+//					markLine(edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY(), CELL_BLOCK);
+//				}
+//			}
+//		}
+		
 		for (AURBorder border : areaGraph.borders) {
 			markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
 		}
@@ -517,10 +539,12 @@ public class AURAreaGrid {
 			j = ij[1];
 
 			if (gridIntInfo[i][j][0] == CELL_NODE) {
-				int cell_id = gridIntInfo[i][j][EDGE_POINT_ID];
-				AURNode node = edgePointObject[cell_id];
-				node.cost = (int) (gridIntInfo[i][j][COST]);
-				result.add(node);
+				
+				ArrayList<AURNode> arr = nodes.get(getKey(i, j));
+				for(AURNode node : arr) {
+					node.cost = (int) (gridIntInfo[i][j][COST]);
+					result.add(node);
+				}
 			}
 
 			for (int d = 0; d < 9; d++) {
@@ -652,12 +676,12 @@ public class AURAreaGrid {
 				border.ready = true;
 			}
 		}
-		for (int i = 0; i < edgePointsSize; i++) {
-			for (int j = 0; j < edgePointsSize; j++) {
-				graph[i][j] = INF;
-				graph[j][i] = INF;
-			}
-		}
+//		for (int i = 0; i < edgePointsSize; i++) {
+//			for (int j = 0; j < edgePointsSize; j++) {
+//				graph[i][j] = INF;
+//				graph[j][i] = INF;
+//			}
+//		}
 		ArrayList<AUREdge> delEdges = new ArrayList<>();
 		for (AURBorder border : areaGraph.borders) {
 			for (AURNode node : border.nodes) {
@@ -684,8 +708,6 @@ public class AURAreaGrid {
 					jNode = edgePointObject[j];
 					cost = Math.abs(edgePoint[i][0] - edgePoint[j][0]) + Math.abs(edgePoint[i][1] - edgePoint[j][1]);
 					cost = cost * gridSize;
-					graph[i][j] = (int) cost;
-					graph[j][i] = (int) cost;
 					edge = new AUREdge(iNode, jNode, cost, areaGraph);
 					iNode.edges.add(edge);
 					jNode.edges.add(edge);
@@ -697,22 +719,16 @@ public class AURAreaGrid {
 	public void bfs(int from) {
 		que.clear();
 		AURNode fromNode;
-		AURNode toNode;
 		fromNode = edgePointObject[from];
 		int i, j;
 		int ip, jp;
 		int ij[] = new int[2];
-		int count = 0;
 		for (int ii = 0; ii < gridM; ii++) {
 			for (int jj = 0; jj < gridN; jj++) {
 				gridIntInfo[ii][jj][COST] = -1;
 			}
 		}
-		for (int k = 0; k < edgePointsSize; k++) {
-			if (graph[from][k] < INF) {
-				count++;
-			}
-		}
+
 		i = edgePoint[from][0];
 		j = edgePoint[from][1];
 		gridIntInfo[i][j][COST] = 0;
@@ -758,20 +774,20 @@ public class AURAreaGrid {
 			
 			
 
-			if (gridIntInfo[i][j][0] == CELL_NODE && (gridIntInfo[i][j][EDGE_POINT_ID] != from)) {
-				int cell_id = gridIntInfo[i][j][EDGE_POINT_ID];
-				if ((graph[from][cell_id] >= INF)) {
-					graph[from][cell_id] = gridIntInfo[i][j][COST];
-					graph[cell_id][from] = gridIntInfo[i][j][COST];
-					toNode = edgePointObject[cell_id];
-					int cost = gridIntInfo[i][j][COST];
-					edge = new AUREdge(fromNode, toNode, cost, areaGraph);
-					fromNode.edges.add(edge);
-					toNode.edges.add(edge);
-					count++;
-					if (count >= edgePointsSize) {
-						break;
+			if (gridIntInfo[i][j][0] == CELL_NODE) {
+				
+				ArrayList<AURNode> arr = nodes.get(getKey(i, j));
+				
+				for(AURNode toNode : arr) {
+					if(toNode == fromNode) {
+						continue;
 					}
+					if (true) {
+						int cost = gridIntInfo[i][j][COST];
+						edge = new AUREdge(fromNode, toNode, cost, areaGraph);
+						fromNode.edges.add(edge);
+						toNode.edges.add(edge);						
+					}				
 				}
 			}
 
@@ -869,14 +885,23 @@ public class AURAreaGrid {
 			return;
 		}
 		int res[] = getCell((x0 + x1) / 2, (y0 + y1) / 2);
-		if (res[0] != -1 && (gridIntInfo[res[0]][res[1]][TYPE] == CELL_AREA_EDGE)) {
+		if (res[0] != -1 && (gridIntInfo[res[0]][res[1]][TYPE] == CELL_AREA_EDGE || gridIntInfo[res[0]][res[1]][TYPE] == CELL_NODE)) {
 			edgePoint[edgePointsSize][0] = res[0];
 			edgePoint[edgePointsSize][1] = res[1];
-			gridIntInfo[res[0]][res[1]][EDGE_POINT_ID] = edgePointsSize;
 			markCell(res, type);
 			double cx = res[1] * gridSize + gridPoints[0][0][0];
 			double cy = res[0] * gridSize + gridPoints[0][0][1];
 			edgePointObject[edgePointsSize] = new AURNode((int) cx, (int) cy, border.area1, border.area2);
+			
+			ArrayList<AURNode> arr = nodes.get(getKey(res[0], res[1]));
+			
+			if(arr == null) {
+				arr = new ArrayList<>();
+				nodes.put(getKey(res[0], res[1]), arr);
+			}
+			
+			arr.add(edgePointObject[edgePointsSize]);
+			
 			border.nodes.add(edgePointObject[edgePointsSize]);
 			edgePointsSize++;
 		}
@@ -887,7 +912,14 @@ public class AURAreaGrid {
 		if (res[0] != -1) {
 			edgePoint[edgePointsSize][0] = res[0];
 			edgePoint[edgePointsSize][1] = res[1];
-			gridIntInfo[res[0]][res[1]][EDGE_POINT_ID] = edgePointsSize;
+			ArrayList<AURNode> arr = nodes.get(getKey(res[0], res[1]));
+			
+			if(arr == null) {
+				arr = new ArrayList<>();
+				nodes.put(getKey(res[0], res[1]), arr);
+			}
+			
+			arr.add(node);
 			markCell(res, type);
 			edgePointObject[edgePointsSize] = node;
 			edgePointsSize++;
@@ -948,7 +980,7 @@ public class AURAreaGrid {
 				i = res[0];
 				j = res[1];
 				cur_valid = true;
-				if (i == -1 || gridIntInfo[i][j][TYPE] != CELL_AREA_EDGE) {
+				if (i == -1 || (gridIntInfo[i][j][TYPE] != CELL_AREA_EDGE && gridIntInfo[i][j][TYPE] != CELL_NODE)) {
 					cur_valid = false;
 				}
 				if (!last_valid && cur_valid) {
@@ -1059,6 +1091,10 @@ public class AURAreaGrid {
 					}
 					case CELL_NODE: {
 						color = new Color(0, 255, 0, 200);
+						break;
+					}
+					case CELL_OUT: {
+						color = new Color(0, 0, 0, 100);
 						break;
 					}
 				}
