@@ -31,7 +31,7 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 
 		wsg.dijkstra(wsg.ai.getPosition());
 
-		AUREdgeToStand etp = selected_ag.getBuilding().edgeToPereceptiblePolygon;
+		AUREdgeToStand etp = selected_ag.getBuilding().edgeToPereceptAndExtinguish;
 		if (etp == null) {			return;
 		}
 		int lastX = kst.xToScreen(etp.standX);

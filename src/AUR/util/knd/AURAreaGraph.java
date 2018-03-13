@@ -67,7 +67,7 @@ public class AURAreaGraph {
 	
 	private AURBuilding building = null;
 	
-	public ArrayList<AURBuilding> perceptibleBuildings;
+	public ArrayList<AURBuilding> perceptibleAndExtinguishableBuildings;
 	
 	public int getX() {
 		return this.area.getX();
@@ -435,8 +435,8 @@ public class AURAreaGraph {
 	public double getScore() {
 		double perceptScore = 0;
 		int p = 1;
-		if(perceptibleBuildings != null) {
-			perceptScore = (double) Math.pow(perceptibleBuildings.size(), p) / Math.pow(wsg.getMaxPerceptibleBuildings(), p);
+		if(perceptibleAndExtinguishableBuildings != null) {
+			perceptScore = (double) Math.pow(perceptibleAndExtinguishableBuildings.size(), p) / Math.pow(wsg.getMaxPerceptibleBuildings(), p);
 		}
 		
 		double aScore = 1 - (Math.pow(AURGeoUtil.getArea((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadArea(), p));

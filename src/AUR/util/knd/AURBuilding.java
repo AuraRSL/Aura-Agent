@@ -17,10 +17,11 @@ import rescuecore2.standard.entities.StandardEntityURN;
 
 public class AURBuilding {
 	
-	private Polygon perceptibleArea = null;
+	private Polygon perceptibleAreaPolygon = null;
+	private Polygon perceptibleAndExtinguishableAreaPolygon = null;
 	public AURAreaGraph ag = null;
 	public AURWorldGraph wsg = null;
-	public AUREdgeToStand edgeToPereceptiblePolygon = null;
+	public AUREdgeToStand edgeToPereceptAndExtinguish = null;
 	public boolean commonWall[] = null;
 	public AURFireSimBuilding fireSimBuilding = null;
 	public Building building = null;
@@ -37,7 +38,21 @@ public class AURBuilding {
 			commonWall[i] = false;
 		}
 	}
-
+	
+	public int getPerceptCost() {
+		if(this.edgeToPereceptAndExtinguish == null) {
+			return AURConstants.Math.INT_INF;
+		}
+		return this.edgeToPereceptAndExtinguish.cost;
+	}
+	
+	public int getTravelTime() {
+		if(this.edgeToPereceptAndExtinguish == null) {
+			return AURConstants.Math.INT_INF;
+		}
+		return (int) (Math.ceil((double) this.getPerceptCost() / AURConstants.Agent.VELOCITY));
+	}
+	
 	public void setCommonWalls() {
 		
 		Polygon bp = ag.polygon;
@@ -101,8 +116,8 @@ public class AURBuilding {
 	
 	public ArrayList<AURAreaGraph> getPerceptibleAreas() {
 		
-		Polygon perceptibleAreaPolygon = getPerceptibleAreaPolygon();
-		Rectangle2D bounds = perceptibleAreaPolygon.getBounds();
+		Polygon perceptibleAndExtinguishablePolygon = getPerceptibleAndExtinguishableAreaPolygon();
+		Rectangle2D bounds = perceptibleAndExtinguishablePolygon.getBounds();
 		
 		Collection<StandardEntity> cands = wsg.wi.getObjectsInRectangle(
 			(int) bounds.getMinX(),
@@ -117,7 +132,7 @@ public class AURBuilding {
 			if(sent.getStandardURN().equals(StandardEntityURN.ROAD) == false && sent.getStandardURN().equals(StandardEntityURN.HYDRANT) == false) {
 				continue;
 			}
-			if(AURGeoUtil.intersectsOrContains(perceptibleAreaPolygon, (Polygon) ((Area) sent).getShape())) {
+			if(AURGeoUtil.intersectsOrContains(perceptibleAndExtinguishablePolygon, (Polygon) ((Area) sent).getShape())) {
 				result.add(wsg.getAreaGraph(sent.getID()));
 			}
 		}
@@ -133,10 +148,17 @@ public class AURBuilding {
 	}
 
 	public Polygon getPerceptibleAreaPolygon() {
-		if(this.perceptibleArea == null) {
-			this.perceptibleArea = AURPerceptibleArea.getPerceptibleArea(this);
+		if(this.perceptibleAreaPolygon == null) {
+			this.perceptibleAreaPolygon = AURPerceptibleArea.get(this);
 		}
-		return this.perceptibleArea;
+		return this.perceptibleAreaPolygon;
+	}
+	
+	public Polygon getPerceptibleAndExtinguishableAreaPolygon() {
+		if(this.perceptibleAndExtinguishableAreaPolygon == null) {
+			this.perceptibleAndExtinguishableAreaPolygon = AURPerceptibleAndExtinguishablePolygon.get(this);
+		}
+		return this.perceptibleAndExtinguishableAreaPolygon;
 	}
 	
 }

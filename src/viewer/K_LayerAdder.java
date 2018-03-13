@@ -49,6 +49,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_FIRE, K_AreaExtinguishableRange.class, false);
 		
 		viewer.addLayer(TAB_SCENARIO, K_AgentExtinguishRange.class, false);
+		viewer.addLayer(TAB_SCENARIO, K_AgentPerceptionRange.class, false);
 		viewer.addLayer(TAB_SCENARIO, K_FireScenarioInfo.class, true);
 		
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerWorldGraph.class, false);
@@ -59,13 +60,14 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, true);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleBuildings.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishableBuildings.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		
 		
 	}

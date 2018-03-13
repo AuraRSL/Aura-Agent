@@ -564,7 +564,7 @@ public class AURAreaGrid {
 	public ArrayList<AUREdgeToStand> getEdgesToPerceptiblePolygons(AURAreaGraph ag, int fromX, int fromY) {
 		AURNode fromNode = new AURNode(fromX, fromY, ag, ag);
 		ArrayList<AUREdgeToStand> result = new ArrayList<>();
-		if(ag.perceptibleBuildings == null || ag.perceptibleBuildings.size() <= 0) {
+		if(ag.perceptibleAndExtinguishableBuildings == null || ag.perceptibleAndExtinguishableBuildings.size() <= 0) {
 			return result;
 		}
 		
@@ -610,9 +610,9 @@ public class AURAreaGrid {
 
 		ArrayList<AURBuilding> perceptibleAreas = null;
 		ArrayList<AURBuilding> remove = null;
-		if(areaGraph.perceptibleBuildings != null) {
+		if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
 			perceptibleAreas = new ArrayList<>();
-			perceptibleAreas.addAll(areaGraph.perceptibleBuildings);
+			perceptibleAreas.addAll(areaGraph.perceptibleAndExtinguishableBuildings);
 			remove = new ArrayList<AURBuilding>();
 		}
 		
@@ -623,9 +623,9 @@ public class AURAreaGrid {
 			j = ij[1];
 
 
-			if(areaGraph.perceptibleBuildings != null) {
+			if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
 				for(AURBuilding b : perceptibleAreas) {
-					if(b.getPerceptibleAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
+					if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
 						int cost = gridIntInfo[i][j][COST];
 						AUREdgeToStand toSeeEdge = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
 						if(fromNode.edgesToPerceptiblePolygons == null) {
@@ -738,9 +738,9 @@ public class AURAreaGrid {
 		
 		ArrayList<AURBuilding> perceptibleAreas = null;
 		ArrayList<AURBuilding> remove = null;
-		if(areaGraph.perceptibleBuildings != null) {
+		if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
 			perceptibleAreas = new ArrayList<>();
-			perceptibleAreas.addAll(areaGraph.perceptibleBuildings);
+			perceptibleAreas.addAll(areaGraph.perceptibleAndExtinguishableBuildings);
 			remove = new ArrayList<AURBuilding>();
 		}
 		
@@ -757,9 +757,9 @@ public class AURAreaGrid {
 			
 			
 			
-			if(areaGraph.perceptibleBuildings != null) {
+			if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
 				for(AURBuilding b : perceptibleAreas) {
-					if(b.getPerceptibleAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
+					if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
 						int cost = gridIntInfo[i][j][COST];
 						AUREdgeToStand etp = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
 						if(fromNode.edgesToPerceptiblePolygons == null) {

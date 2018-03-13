@@ -14,24 +14,27 @@ import rescuecore2.standard.entities.StandardEntityURN;
  * @author Alireza Kandeh - 2018
  */
 
-public class AURPerceptibleArea {
-	
-	// the main idea is the same as the SensibleArea of SOS (2014)
+public class AURPerceptibleAndExtinguishablePolygon {
+
 	public static Polygon get(AURBuilding building) {
 		
-		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS;
+		double maxDist = building.wsg.si.getPerceptionLosMaxDistance();
+		maxDist = Math.min(maxDist, building.wsg.si.getFireExtinguishMaxDistance());
+		maxDist = Math.min(maxDist, maxDist - AURConstants.Agent.RADIUS);
+		
+		double cx = building.ag.area.getX();
+		double cy = building.ag.area.getY();
 		
 		Polygon result = new Polygon();
 		Polygon bp = building.ag.polygon;
 		Rectangle bounds = bp.getBounds();
 		
 		bounds = new Rectangle(
-				(int) (bounds.getMinX() - maxViewDistance),
-				(int) (bounds.getMinY() - maxViewDistance),
-				(int) (bounds.getWidth() + 2 * maxViewDistance),
-				(int) (bounds.getHeight() + 2 * maxViewDistance)
+				(int) (cx - maxDist),
+				(int) (cy - maxDist),
+				(int) (0 + 2 * maxDist),
+				(int) (0 + 2 * maxDist)
 		);
-		
 		
 		Collection<StandardEntity> cands = building.wsg.wi.getObjectsInRectangle(
 			(int) bounds.getMinX(),
@@ -47,10 +50,6 @@ public class AURPerceptibleArea {
 		ArrayList<Polygon> q2 = new ArrayList<>();
 		ArrayList<Polygon> q3 = new ArrayList<>();
 		ArrayList<Polygon> q4 = new ArrayList<>();
-		
-		
-		double cx = building.ag.area.getX();
-		double cy = building.ag.area.getY();
 		
 		Rectangle bounds1 = new Rectangle((int) cx, (int) cy, r_, r_);
 		Rectangle bounds2 = new Rectangle((int) cx - r_, (int) cy, r_, r_);
@@ -90,78 +89,40 @@ public class AURPerceptibleArea {
 		double r = 0;
 		double dr = (2 * Math.PI) / 64;
 		
-		double smallINF = 1e10;
-		
-		double p[] = new double[2];
 		double ray[] = new double[4];
 
 		while(r < Math.PI * 2) {
-			double max_ = 0;
-			double d = 0;
-			double fx = 0;
-			double fy = 0;
-			rx = cx + Math.cos(r) * smallINF;
-			ry = cy + Math.sin(r) * smallINF;
-			boolean commonW = false;
-			for(int i = 0; i < bp.npoints; i++) {
-				boolean b = AURGeoUtil.getIntersection(
-						cx,
-						cy,
-						rx,
-						ry,
-						bp.xpoints[i],
-						bp.ypoints[i],
-						bp.xpoints[(i + 1) % bp.npoints],
-						bp.ypoints[(i + 1) % bp.npoints],
-						p
-				);
-				if(b) {
-					d = AURGeoUtil.dist(cx, cy, p[0], p[1]);
-					if(d >= max_) {
-						max_ = d;
-						fx = p[0];
-						fy = p[1];
-						commonW = building.commonWall[i];
-					}
-				}
-			}
+			rx = cx + Math.cos(r) * maxDist;
+			ry = cy + Math.sin(r) * maxDist;
 			
-			if(commonW) {
-				rx = fx;
-				ry = fy;
-			} else {
-				rx = fx + Math.cos(r) * maxViewDistance;
-				ry = fy + Math.sin(r) * maxViewDistance;
-				ArrayList<Polygon> candi = null;
-				if(r >= 0 && r <= Math.PI / 2) {
-					candi = q1;
-				} else if(r >= Math.PI / 2 && r <= Math.PI / 1) {
-					candi = q2;
-				} else if(r >= Math.PI / 1 && r <= 3 * Math.PI / 2) {
-					candi = q3;
-				} else if(r >= 3 * Math.PI / 2 && r <= 2 * Math.PI / 1) {
-					candi = q4;
-				}
-				
-				for(Polygon po : candi) {
-					ray[0] = fx;
-					ray[1] = fy;
-					ray[2] = rx;
-					ray[3] = ry;
+			ArrayList<Polygon> candi = null;
+			if(r >= 0 && r <= Math.PI / 2) {
+				candi = q1;
+			} else if(r >= Math.PI / 2 && r <= Math.PI / 1) {
+				candi = q2;
+			} else if(r >= Math.PI / 1 && r <= 3 * Math.PI / 2) {
+				candi = q3;
+			} else if(r >= 3 * Math.PI / 2 && r <= 2 * Math.PI / 1) {
+				candi = q4;
+			}
 
-					if(AURGeoUtil.hitRayAllEdges(po, ray)) {
-						rx = ray[2];
-						ry = ray[3];
-						if(Math.abs(rx - fx) < 1 && Math.abs(ry - fy) < 1) {
-							continue;
-						}
+			for(Polygon po : candi) {
+				ray[0] = cx;
+				ray[1] = cy;
+				ray[2] = rx;
+				ray[3] = ry;
+
+				if(AURGeoUtil.hitRayAllEdges(po, ray)) {
+					rx = ray[2];
+					ry = ray[3];
+					if(Math.abs(rx - cx) < 1 && Math.abs(ry - cy) < 1) {
+						continue;
 					}
 				}
 			}
 			
 			if(count > 0) {
 				boolean co = isCollinear(lastInsertedX, lastInsertedY, lastX, lastY, rx, ry);
-
 				if(co) {
 					lastX = rx;
 					lastY = ry;

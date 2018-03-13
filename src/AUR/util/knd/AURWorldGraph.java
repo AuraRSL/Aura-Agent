@@ -248,7 +248,7 @@ public class AURWorldGraph extends AbstractModule {
 		
 		dijkstra(from);
 		
-		AUREdgeToStand etp = targetAg.getBuilding().edgeToPereceptiblePolygon;
+		AUREdgeToStand etp = targetAg.getBuilding().edgeToPereceptAndExtinguish;
 		if(etp == null) {
 			return null;
 		}
@@ -516,10 +516,10 @@ public class AURWorldGraph extends AbstractModule {
 				}
 				
 				for(AURAreaGraph ag_ : arr) {
-					if(ag_.perceptibleBuildings == null) {
-						ag_.perceptibleBuildings = new ArrayList<>();
+					if(ag_.perceptibleAndExtinguishableBuildings == null) {
+						ag_.perceptibleAndExtinguishableBuildings = new ArrayList<>();
 					}
-					ag_.perceptibleBuildings.add(ag.getBuilding());
+					ag_.perceptibleAndExtinguishableBuildings.add(ag.getBuilding());
 				}
 			}
 		}
@@ -599,30 +599,42 @@ public class AURWorldGraph extends AbstractModule {
 			area.addBorderCenterEdges();
 		}
 	}
-
-	public ArrayList<AURAreaGraph> getReachableUnburntBuildingIDs() {
+	
+	public ArrayList<AURAreaGraph> getPerceptibleUnburntBuildingIDs() {
 		this.dijkstra(ai.getPosition());
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : areas.values()) {
 			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
-					&& ag.lastDijkstraEntranceNode != null) {
+					&& ag.getBuilding().edgeToPereceptAndExtinguish != null) {
 				result.add(ag);
 			}
 		}
 		return result;
 	}
 
-	public ArrayList<AURAreaGraph> getNoBlockadeReachableUnburntBuildingIDs() {
-		this.NoBlockadeDijkstra(ai.getPosition());
-		ArrayList<AURAreaGraph> result = new ArrayList<>();
-		for (AURAreaGraph ag : areas.values()) {
-			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
-					&& ag.lastNoBlockadeDijkstraEntranceNode != null) {
-				result.add(ag);
-			}
-		}
-		return result;
-	}
+//	public ArrayList<AURAreaGraph> getReachableUnburntBuildingIDs() {
+//		this.dijkstra(ai.getPosition());
+//		ArrayList<AURAreaGraph> result = new ArrayList<>();
+//		for (AURAreaGraph ag : areas.values()) {
+//			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
+//					&& ag.lastDijkstraEntranceNode != null) {
+//				result.add(ag);
+//			}
+//		}
+//		return result;
+//	}
+//
+//	public ArrayList<AURAreaGraph> getNoBlockadeReachableUnburntBuildingIDs() {
+//		this.NoBlockadeDijkstra(ai.getPosition());
+//		ArrayList<AURAreaGraph> result = new ArrayList<>();
+//		for (AURAreaGraph ag : areas.values()) {
+//			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
+//					&& ag.lastNoBlockadeDijkstraEntranceNode != null) {
+//				result.add(ag);
+//			}
+//		}
+//		return result;
+//	}
 
 	@Override
 	synchronized public AbstractModule updateInfo(MessageManager messageManager) {
@@ -687,7 +699,7 @@ public class AURWorldGraph extends AbstractModule {
 	public void initForDijkstra() {
 		for (AURAreaGraph ag : areas.values()) {
 			if(ag.isBuilding()) {
-				ag.getBuilding().edgeToPereceptiblePolygon = null;
+				ag.getBuilding().edgeToPereceptAndExtinguish = null;
 			}
 			ag.vis = false;
 			ag.lastDijkstraEntranceNode = null;
@@ -771,7 +783,7 @@ public class AURWorldGraph extends AbstractModule {
 			ArrayList<AUREdgeToStand> etps = fromAg.getEdgesToPerceptiblePolygons((int) ai.getX(), (int) ai.getY());
 			for(AUREdgeToStand etp : etps) {
 				etp.fromNode.pre = startNullNode;
-				etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
+				etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
 			}
 		}
 		
@@ -794,15 +806,15 @@ public class AURWorldGraph extends AbstractModule {
 			qNode.pQueEntry = null;
 			if(qNode.edgesToPerceptiblePolygons != null) {
 				for(AUREdgeToStand etp : qNode.edgesToPerceptiblePolygons) {
-					if(etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon == null) {
+					if(etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish == null) {
 						etp.cost = etp.cost + qNode.cost;
-						etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
+						etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
 					} else {
-						int oldCost = etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon.cost;
+						int oldCost = etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish.cost;
 						int newCost = etp.cost + qNode.cost;
 						if(newCost < oldCost) {
 							etp.cost = newCost;
-							etp.toSeeAreaGraph.getBuilding().edgeToPereceptiblePolygon = etp;
+							etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
 						}
 					}
 				}
@@ -848,10 +860,10 @@ public class AURWorldGraph extends AbstractModule {
 			maxPerceptibleBuildings = 0;
 			for(AURAreaGraph ag : areas.values()) {
 				if(ag.isBuilding() == false) {
-					if(ag.perceptibleBuildings == null) {
+					if(ag.perceptibleAndExtinguishableBuildings == null) {
 						continue;
 					}
-					maxPerceptibleBuildings = Math.max(maxPerceptibleBuildings, ag.perceptibleBuildings.size());
+					maxPerceptibleBuildings = Math.max(maxPerceptibleBuildings, ag.perceptibleAndExtinguishableBuildings.size());
 				}
 			}
 		}
