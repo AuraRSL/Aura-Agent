@@ -17,6 +17,7 @@ import rescuecore2.standard.entities.StandardEntityURN;
 
 public class AURBuilding {
 	
+	private Polygon sightAreaPolygon = null;
 	private Polygon perceptibleAreaPolygon = null;
 	private Polygon perceptibleAndExtinguishableAreaPolygon = null;
 	public AURAreaGraph ag = null;
@@ -113,8 +114,33 @@ public class AURBuilding {
 			}
 		}
 	}
+
+	public ArrayList<AURAreaGraph> getSightableAreas() {
+		
+		Polygon sightPolygon = getSightAreaPolygon();
+		Rectangle2D bounds = sightPolygon.getBounds();
+		
+		Collection<StandardEntity> cands = wsg.wi.getObjectsInRectangle(
+			(int) bounds.getMinX(),
+			(int) bounds.getMinY(),
+			(int) bounds.getMaxX(),
+			(int) bounds.getMaxY()
+		);
 	
-	public ArrayList<AURAreaGraph> getPerceptibleAreas() {
+		ArrayList<AURAreaGraph> result = new ArrayList<>();
+		
+		for(StandardEntity sent : cands) {
+			if(sent.getStandardURN().equals(StandardEntityURN.ROAD) == false && sent.getStandardURN().equals(StandardEntityURN.HYDRANT) == false) {
+				continue;
+			}
+			if(AURGeoUtil.intersectsOrContains(sightPolygon, (Polygon) ((Area) sent).getShape())) {
+				result.add(wsg.getAreaGraph(sent.getID()));
+			}
+		}
+		return result;
+	}
+	
+	public ArrayList<AURAreaGraph> getPerceptibleAndExtinguishableAreas() {
 		
 		Polygon perceptibleAndExtinguishablePolygon = getPerceptibleAndExtinguishableAreaPolygon();
 		Rectangle2D bounds = perceptibleAndExtinguishablePolygon.getBounds();
@@ -147,6 +173,13 @@ public class AURBuilding {
 		this.fireSimBuilding.update();
 	}
 
+	public Polygon getSightAreaPolygon() {
+		if(this.sightAreaPolygon == null) {
+			this.sightAreaPolygon = AURSightAreaPolygon.get(this);
+		}
+		return this.sightAreaPolygon;
+	}
+	
 	public Polygon getPerceptibleAreaPolygon() {
 		if(this.perceptibleAreaPolygon == null) {
 			this.perceptibleAreaPolygon = AURPerceptibleArea.get(this);

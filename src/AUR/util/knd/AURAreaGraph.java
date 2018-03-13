@@ -4,6 +4,8 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
 import java.awt.Graphics2D;
+import java.util.Collection;
+import java.util.Set;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
@@ -68,6 +70,8 @@ public class AURAreaGraph {
 	private AURBuilding building = null;
 	
 	public ArrayList<AURBuilding> perceptibleAndExtinguishableBuildings;
+	public ArrayList<AURBuilding> sightableBuildings;
+	
 	
 	public int getX() {
 		return this.area.getX();

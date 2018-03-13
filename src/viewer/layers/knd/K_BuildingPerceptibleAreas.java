@@ -21,7 +21,7 @@ public class K_BuildingPerceptibleAreas extends K_ViewerLayer {
 			return;
 		}
 		g2.setColor(new Color(0, 100, 150, 100));
-        for(AURAreaGraph ag : selected_ag.getBuilding().getPerceptibleAreas()) {
+        for(AURAreaGraph ag : selected_ag.getBuilding().getPerceptibleAndExtinguishableAreas()) {
             if(true) {
                 Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
                 g2.fillPolygon(polygon);

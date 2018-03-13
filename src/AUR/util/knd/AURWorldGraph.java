@@ -471,6 +471,7 @@ public class AURWorldGraph extends AbstractModule {
 		addWalls();
 		setCommonWalls();
 		addPerceptibleBuildings();
+		addSightableBuildings();
 		
 //		for(AURAreaGraph ag_ : areas.values()) {
 //			if(ag_.isBuilding()) {
@@ -510,7 +511,7 @@ public class AURWorldGraph extends AbstractModule {
 	public void addPerceptibleBuildings() {
 		for(AURAreaGraph ag : areas.values()) {
 			if(ag.isBuilding()) {
-				ArrayList<AURAreaGraph> arr = ag.getBuilding().getPerceptibleAreas();
+				ArrayList<AURAreaGraph> arr = ag.getBuilding().getPerceptibleAndExtinguishableAreas();
 				if(arr.size() == 0) {
 					continue;
 				}
@@ -520,6 +521,24 @@ public class AURWorldGraph extends AbstractModule {
 						ag_.perceptibleAndExtinguishableBuildings = new ArrayList<>();
 					}
 					ag_.perceptibleAndExtinguishableBuildings.add(ag.getBuilding());
+				}
+			}
+		}
+	}
+	
+	public void addSightableBuildings() {
+		for(AURAreaGraph ag : areas.values()) {
+			if(ag.isBuilding()) {
+				ArrayList<AURAreaGraph> arr = ag.getBuilding().getSightableAreas();
+				if(arr.size() == 0) {
+					continue;
+				}
+				
+				for(AURAreaGraph ag_ : arr) {
+					if(ag_.sightableBuildings == null) {
+						ag_.sightableBuildings = new ArrayList<>();
+					}
+					ag_.sightableBuildings.add(ag.getBuilding());
 				}
 			}
 		}
