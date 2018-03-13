@@ -279,6 +279,17 @@ public class AURAreaGraph {
 		}
 		return instanceAreaGrid.getEdgesToPerceptiblePolygons(this, x, y);
 	}
+	
+	public ArrayList<AUREdgeToStand> getEdgesToSightPolygons(int x, int y) {
+		ArrayList<AUREdgeToStand> result = new ArrayList<>();
+		if (area.getShape().contains(x, y) == false) {
+			if (area.getShape().intersects(x - 10, y - 10, 20, 20) == false) {
+				result.clear();
+				return result;
+			}
+		}
+		return instanceAreaGrid.getEdgesToSightPolygon(this, x, y);
+	}
 
 	public ArrayList<AURNode> getEdgeToAllBorderCenters(double x, double y) {
 		ArrayList<AURNode> result = new ArrayList<>();

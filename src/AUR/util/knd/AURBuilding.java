@@ -23,6 +23,7 @@ public class AURBuilding {
 	public AURAreaGraph ag = null;
 	public AURWorldGraph wsg = null;
 	public AUREdgeToStand edgeToPereceptAndExtinguish = null;
+	public AUREdgeToStand edgeToSeeInside = null;
 	public boolean commonWall[] = null;
 	public AURFireSimBuilding fireSimBuilding = null;
 	public Building building = null;

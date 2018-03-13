@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package viewer.layers.knd;
 
 import AUR.util.knd.AURAreaGraph;
@@ -20,7 +25,7 @@ import viewer.K_ViewerLayer;
  * @author Alireza Kandeh - 2018
  */
 
-public class K_ShortestPathToCheckFire extends K_ViewerLayer {
+public class K_ShortestPathSeeInside extends K_ViewerLayer {
 	
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
@@ -31,8 +36,8 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 
 		wsg.dijkstra(wsg.ai.getPosition());
 
-		AUREdgeToStand etp = selected_ag.getBuilding().edgeToPereceptAndExtinguish;
-		if (etp == null) {
+		AUREdgeToStand etp = selected_ag.getBuilding().edgeToSeeInside;
+		if (etp == null) {			
 			return;
 		}
 		int lastX = kst.xToScreen(etp.standX);
@@ -41,7 +46,7 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 		AURNode node = new AURNode(lastX, lastY, selected_ag, selected_ag);
 		node.pre = etp.fromNode;
 		
-		g2.setColor(Color.pink);
+		g2.setColor(new Color(0, 128, 128));
 		g2.setStroke(new BasicStroke(3));
 		
 		while (node.pre != wsg.startNullNode) {
@@ -81,7 +86,7 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 		String result = "";
 		Collection<EntityID> targets = new ArrayList<>();
 		targets.add(selected_ag.area.getID());
-		ActionMove am = wsg.getMoveActionToPercept(wsg.ai.getPosition(), selected_ag.area.getID());
+		ActionMove am = wsg.getMoveActionToSeeInside(wsg.ai.getPosition(), selected_ag.area.getID());
 		if(am == null) {
 				result += "null";
 				result += "\n";

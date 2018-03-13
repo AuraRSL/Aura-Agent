@@ -232,7 +232,7 @@ public class AURWorldGraph extends AbstractModule {
 	
 	
 	
-	public ActionMove getMoveActionToSee___New(EntityID from, EntityID target) {
+	public ActionMove getMoveActionToPercept(EntityID from, EntityID target) {
 		if (target == null) {
 			return null;
 		}
@@ -271,6 +271,44 @@ public class AURWorldGraph extends AbstractModule {
 		return new ActionMove(path, (int) etp.standX, (int) etp.standY);
 		
 	}
+	
+	public ActionMove getMoveActionToSeeInside(EntityID from, EntityID target) {
+		if (target == null) {
+			return null;
+		}
+		Collection<EntityID> targets = new ArrayList<>();
+		AURAreaGraph fromAg = getAreaGraph(from);
+		AURAreaGraph targetAg = getAreaGraph(target);
+		if(targetAg.isBuilding() == false) {
+			return null;
+		}
+		targets.add(target);
+		double destX = -1;
+		double destY = -1;
+		
+		dijkstra(from);
+		
+		AUREdgeToStand etp = targetAg.getBuilding().edgeToSeeInside;
+		if(etp == null) {
+			return null;
+		}
+		ArrayList<EntityID> path = new ArrayList<>();
+		
+		
+		path.add(etp.ownerAg.area.getID());
+		AURNode node = etp.fromNode;
+		while (node.pre != startNullNode) {
+			path.add(node.getPreAreaGraph().area.getID());
+			node = node.pre;
+		}
+		if(path.get(path.size() - 1).equals(from) == false) {
+			path.add(from);
+		}
+		java.util.Collections.reverse(path);
+		
+		return new ActionMove(path, (int) etp.standX, (int) etp.standY);
+	}
+	
 
 	public ActionMove getNoBlockadeMoveAction(EntityID from, EntityID target) {
 		if (target == null) {
@@ -719,6 +757,7 @@ public class AURWorldGraph extends AbstractModule {
 		for (AURAreaGraph ag : areas.values()) {
 			if(ag.isBuilding()) {
 				ag.getBuilding().edgeToPereceptAndExtinguish = null;
+				ag.getBuilding().edgeToSeeInside = null;
 			}
 			ag.vis = false;
 			ag.lastDijkstraEntranceNode = null;
@@ -806,6 +845,14 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		
+		if(fromID.equals(this.ai.getPosition())) {
+			ArrayList<AUREdgeToStand> etss = fromAg.getEdgesToSightPolygons((int) ai.getX(), (int) ai.getY());
+			for(AUREdgeToStand ets : etss) {
+				ets.fromNode.pre = startNullNode;
+				ets.toSeeAreaGraph.getBuilding().edgeToSeeInside = ets;
+			}
+		}
+		
 		
 		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY());
 		if (startNodes.isEmpty()) {
@@ -823,8 +870,8 @@ public class AURWorldGraph extends AbstractModule {
 			
 			qNode = que.dequeueMin().getValue();
 			qNode.pQueEntry = null;
-			if(qNode.edgesToPerceptiblePolygons != null) {
-				for(AUREdgeToStand etp : qNode.edgesToPerceptiblePolygons) {
+			if(qNode.edgesToPerceptAndExtinguish != null) {
+				for(AUREdgeToStand etp : qNode.edgesToPerceptAndExtinguish) {
 					if(etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish == null) {
 						etp.cost = etp.cost + qNode.cost;
 						etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
@@ -834,6 +881,22 @@ public class AURWorldGraph extends AbstractModule {
 						if(newCost < oldCost) {
 							etp.cost = newCost;
 							etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
+						}
+					}
+				}
+			}
+			
+			if(qNode.edgesToSeeInside != null) {
+				for(AUREdgeToStand ets : qNode.edgesToSeeInside) {
+					if(ets.toSeeAreaGraph.getBuilding().edgeToSeeInside == null) {
+						ets.cost = ets.cost + qNode.cost;
+						ets.toSeeAreaGraph.getBuilding().edgeToSeeInside = ets;
+					} else {
+						int oldCost = ets.toSeeAreaGraph.getBuilding().edgeToSeeInside.cost;
+						int newCost = ets.cost + qNode.cost;
+						if(newCost < oldCost) {
+							ets.cost = newCost;
+							ets.toSeeAreaGraph.getBuilding().edgeToSeeInside = ets;
 						}
 					}
 				}
@@ -866,6 +929,27 @@ public class AURWorldGraph extends AbstractModule {
 			}
 
 		}
+		
+		for(AURAreaGraph ag_ : this.areas.values()) {
+			if(ag_.isBuilding() == true) {
+				if(ag_.lastDijkstraEntranceNode == null) {
+					continue;
+				}
+				AURBuilding b = ag_.getBuilding();
+				AURNode eNode = ag_.lastDijkstraEntranceNode;
+				if(b.edgeToPereceptAndExtinguish == null) {
+					double cost = AURGeoUtil.dist(eNode.x, eNode.y, ag_.getX(), ag_.getY());
+					AUREdgeToStand e = new AUREdgeToStand(ag_, ag_, (int) cost, eNode, ag_.getX(), ag_.getY());
+					b.edgeToPereceptAndExtinguish = e;
+				}
+				if(b.edgeToSeeInside == null) {
+					double cost = AURGeoUtil.dist(eNode.x, eNode.y, ag_.getX(), ag_.getY());
+					AUREdgeToStand e = new AUREdgeToStand(ag_, ag_, (int) cost, eNode, ag_.getX(), ag_.getY());
+					b.edgeToSeeInside = e;
+				}
+			}
+		}
+		
 	}
 
 	private int lastSetChangeSetSeenTime = -1;

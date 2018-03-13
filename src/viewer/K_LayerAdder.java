@@ -70,7 +70,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, true);
-		
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, true);		
 		
 	}
 	
