@@ -72,4 +72,11 @@ public class AURGeoMetrics {
                         v[0]
                 };
         }
+        
+        public static int[] getInt(double[] i){
+                int[] result = new int[i.length];
+                for(int j = 0;j < i.length;j ++)
+                        result[j] = (int) i[j];
+                return result;
+        }
 }

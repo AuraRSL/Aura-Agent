@@ -243,4 +243,17 @@ public class AURGeoTools {
                         (int) Math.abs(line[1] - line[3])
                 );
         }
+        
+        public static Polygon getScaledPolygon(Polygon polygon, double p,int[] center){
+                Polygon result = new Polygon();
+                for(int i = 0;i < polygon.npoints;i ++){
+                        double[] v = new double[] {polygon.xpoints[i] - center[0], polygon.ypoints[i] - center[1]};
+                        double[] r = AURGeoMetrics.getVectorScaled(v, p);
+                        result.addPoint(
+                                (int) r[0] + center[0],
+                                (int) r[1] + center[1]
+                        );
+                }
+                return result;
+        }
 }

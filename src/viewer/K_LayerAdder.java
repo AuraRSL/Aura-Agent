@@ -74,6 +74,8 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, A_BlockadesEntityID.class, false);
 		viewer.addLayer(TAB_POLICE, A_PoliceClearAreaAndAgentsInThat.class, false);
 		viewer.addLayer(TAB_POLICE, A_BuildingsEntrancePerpendicularLine.class, false);
+		viewer.addLayer(TAB_POLICE, A_BuildingBlockadeEstimator.class, false);
+		viewer.addLayer(TAB_POLICE, A_WorldBlockadeEstimator.class, false);
 	}
 	
 }
