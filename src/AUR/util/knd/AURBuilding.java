@@ -45,7 +45,7 @@ public class AURBuilding {
 		if(this.edgeToPereceptAndExtinguish == null) {
 			return AURConstants.Math.INT_INF;
 		}
-		return this.edgeToPereceptAndExtinguish.cost;
+		return this.edgeToPereceptAndExtinguish.standCost;
 	}
 	
 	public int getTravelTime() {

@@ -873,13 +873,12 @@ public class AURWorldGraph extends AbstractModule {
 			if(qNode.edgesToPerceptAndExtinguish != null) {
 				for(AUREdgeToStand etp : qNode.edgesToPerceptAndExtinguish) {
 					if(etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish == null) {
-						etp.cost = etp.cost + qNode.cost;
+						etp.standCost = etp.weight + qNode.cost;
 						etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
 					} else {
-						int oldCost = etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish.cost;
-						int newCost = etp.cost + qNode.cost;
-						if(newCost < oldCost) {
-							etp.cost = newCost;
+						int oldCost = etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish.standCost;
+						etp.standCost = etp.weight + qNode.cost;
+						if(etp.standCost < oldCost) {
 							etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
 						}
 					}
@@ -889,13 +888,12 @@ public class AURWorldGraph extends AbstractModule {
 			if(qNode.edgesToSeeInside != null) {
 				for(AUREdgeToStand ets : qNode.edgesToSeeInside) {
 					if(ets.toSeeAreaGraph.getBuilding().edgeToSeeInside == null) {
-						ets.cost = ets.cost + qNode.cost;
+						ets.standCost = ets.weight + qNode.cost;
 						ets.toSeeAreaGraph.getBuilding().edgeToSeeInside = ets;
 					} else {
-						int oldCost = ets.toSeeAreaGraph.getBuilding().edgeToSeeInside.cost;
-						int newCost = ets.cost + qNode.cost;
-						if(newCost < oldCost) {
-							ets.cost = newCost;
+						int oldCost = ets.toSeeAreaGraph.getBuilding().edgeToSeeInside.standCost;
+						ets.standCost = ets.weight + qNode.cost;
+						if(ets.standCost < oldCost) {
 							ets.toSeeAreaGraph.getBuilding().edgeToSeeInside = ets;
 						}
 					}
