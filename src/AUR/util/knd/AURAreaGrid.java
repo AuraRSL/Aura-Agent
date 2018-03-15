@@ -83,16 +83,16 @@ public class AURAreaGrid {
 		{ +1, -1 }
 	};
 	
-	public final static double dij_8_costCoefficient[] = {
-		AURConstants.Math.sqr2,
-		1,
-		AURConstants.Math.sqr2,
-		1,
-		1,
-		AURConstants.Math.sqr2,
-		1,
-		AURConstants.Math.sqr2
-	};
+//	public final static double dij_8_costCoefficient[] = {
+//		AURConstants.Math.sqr2,
+//		1,
+//		AURConstants.Math.sqr2,
+//		1,
+//		1,
+//		AURConstants.Math.sqr2,
+//		1,
+//		AURConstants.Math.sqr2
+//	};
 	
 	public final static int[][] dij_9 = {
 		{-1, +1},
@@ -106,17 +106,17 @@ public class AURAreaGrid {
 		{+1, -1}
 	};
 	
-	public final static double dij_9_costCoefficient[] = {
-		AURConstants.Math.sqr2,
-		1,
-		AURConstants.Math.sqr2,
-		1,
-		0,
-		1,
-		AURConstants.Math.sqr2,
-		1,
-		AURConstants.Math.sqr2,
-	};
+//	public final static double dij_9_costCoefficient[] = {
+//		AURConstants.Math.sqr2,
+//		1,
+//		AURConstants.Math.sqr2,
+//		1,
+//		0,
+//		1,
+//		AURConstants.Math.sqr2,
+//		1,
+//		AURConstants.Math.sqr2,
+//	};
 	
 	private void checkGridArraySize(int m, int n) {
 		if (currentSizeM >= m && currentSizeN >= n) {
@@ -340,7 +340,7 @@ public class AURAreaGrid {
 						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
 				}
-				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + (int) (dij_8_costCoefficient[d] * GRID_SIZE);
+				gridIntInfo[ip][jp][COST] = (int) AURGeoUtil.dist(fromX, fromY, gridPoints[ip][jp][0], gridPoints[ip][jp][1]);
 				que.add(ijToInt(ip, jp));
 			}
 		}
@@ -559,7 +559,7 @@ public class AURAreaGrid {
 						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
 				}
-				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + (int) (dij_9_costCoefficient[d] * GRID_SIZE);
+				gridIntInfo[ip][jp][COST] = (int) AURGeoUtil.dist(x, y, gridPoints[ip][jp][0], gridPoints[ip][jp][1]);
 				que.add(ijToInt(ip, jp));
 			}
 		}
@@ -650,7 +650,7 @@ public class AURAreaGrid {
 					|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
 				}
-				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + (int) (dij_8_costCoefficient[d] * GRID_SIZE);
+				gridIntInfo[ip][jp][COST] = (int) AURGeoUtil.dist(fromNode.x, fromNode.y, gridPoints[ip][jp][0], gridPoints[ip][jp][1]);
 				que.add(ijToInt(ip, jp));
 			}
 		}
@@ -748,7 +748,7 @@ public class AURAreaGrid {
 					|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
 				}
-				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + (int) (dij_8_costCoefficient[d] * GRID_SIZE);
+				gridIntInfo[ip][jp][COST] = (int) AURGeoUtil.dist(fromNode.x, fromNode.y, gridPoints[ip][jp][0], gridPoints[ip][jp][1]);
 				que.add(ijToInt(ip, jp));
 			}
 		}
@@ -925,7 +925,8 @@ public class AURAreaGrid {
 						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
 				}
-				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + (int) (dij_9_costCoefficient[d] * GRID_SIZE);
+				
+				gridIntInfo[ip][jp][COST] = (int) AURGeoUtil.dist(fromNode.x, fromNode.y, gridPoints[ip][jp][0], gridPoints[ip][jp][1]);
 				que.add(ijToInt(ip, jp));
 			}
 		}
