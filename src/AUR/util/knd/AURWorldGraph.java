@@ -338,7 +338,7 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		ArrayList<AURAreaGraph> ags = getAreaGraph(changes);
 		for (AURAreaGraph ag : ags) {
-			ag.seen = true;
+			ag.setSeen();
 		}
 
 	}
@@ -403,7 +403,7 @@ public class AURWorldGraph extends AbstractModule {
 	public ArrayList<AURAreaGraph> getUnseens(Collection<EntityID> list) {
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : areas.values()) {
-			if (ag.seen == false) {
+			if (ag.seen() == false) {
 				if (list.contains(ag.area.getID())) {
 					result.add(ag);
 				}

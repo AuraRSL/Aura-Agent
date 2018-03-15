@@ -44,7 +44,7 @@ public class AURAreaGraph {
 	public boolean vis;
 	public boolean needUpdate;
 	public boolean onFireProbability;
-	public boolean seen;
+	private boolean seen;
 	public boolean burnt;
 	public boolean fireChecked;
 	public int ownerAgent = -1;
@@ -71,6 +71,15 @@ public class AURAreaGraph {
 	
 	public ArrayList<AURBuilding> perceptibleAndExtinguishableBuildings;
 	public ArrayList<AURBuilding> sightableBuildings;
+	
+	public void setSeen() {
+		lastSeen = wsg.ai.getTime();
+		this.seen = true;
+	}
+	
+	public boolean seen() {
+		return this.seen;
+	}
 	
 	
 	public int getX() {
@@ -317,7 +326,7 @@ public class AURAreaGraph {
 		return minDist;
 	}
 
-	private int lastSeen = -1;
+	private int lastSeen = 0;
 
 	public int noSeeTime() {
 		return wsg.ai.getTime() - lastSeen;

@@ -1,5 +1,6 @@
 package viewer;
 
+import viewer.layers.knd.K_AreaNoSeeTime;
 import viewer.layers.knd.*;
 import viewer.layers.AmboLayers.*;
 
@@ -38,6 +39,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MISC, K_SmallAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_MediumAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_BigAreas.class, false);
+		viewer.addLayer(TAB_MISC, K_AreaNoSeeTime.class, false);
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);
@@ -62,15 +64,15 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishableBuildings.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, true);
-		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, true);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, true);		
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);		
 		
 	}
 	

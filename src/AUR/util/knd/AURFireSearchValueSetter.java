@@ -244,7 +244,7 @@ public class AURFireSearchValueSetter {
 	private void add_InitialCluster(ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster,
 			double coefficient) {
 		for (AURValuePoint p : points) {
-			if (true && p.areaGraph.seen == false && p.areaGraph.burnt == false
+			if (true && p.areaGraph.seen() == false && p.areaGraph.burnt == false
 					&& initialCluster.contains(p.areaGraph.area.getID())) {
 				p.value += (1 * coefficient);
 			}
