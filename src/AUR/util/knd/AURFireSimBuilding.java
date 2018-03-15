@@ -73,7 +73,7 @@ public class AURFireSimBuilding {
 	public void update() {		
 		if(this.building.building.isTemperatureDefined()) {
 			double t = this.building.building.getTemperature();
-			if(Math.abs(this.lastRealTemperature - t) > 1e-8) {
+			if(Math.abs(this.lastRealTemperature - t) > 1e-8 || building.ag.noSeeTime() == 0) {
 				this.onRealTemperatureChange(t);
 				onRealFierynessChange(this.lastRealFieryness);
 				this.lastRealTemperature = t;
@@ -90,7 +90,7 @@ public class AURFireSimBuilding {
 					this.setWasEverWatered(false);
 				}
 			}
-			if(f != this.lastRealFieryness) {
+			if(f != this.lastRealFieryness || building.ag.noSeeTime() == 0) {
 				onRealFierynessChange(f);
 				this.lastRealFieryness = f;
 			}
