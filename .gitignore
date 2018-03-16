@@ -116,6 +116,7 @@ AgentGit.iml
 LICENSE
 build/
 compile.sh
+compile.bat
 launch.sh
 precompute.sh
 src/.DS_Store
@@ -128,5 +129,6 @@ build.xml
 manifest.mf
 library
 data
+
 
 
