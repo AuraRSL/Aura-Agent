@@ -33,6 +33,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, SelectedArea.class, true);
 		
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
+		viewer.addLayer(TAB_CLUSTERING, AgentClusterLayer.class, false);
 		
 		viewer.addLayer(TAB_MISC, K_RoadScore.class, false);
 		viewer.addLayer(TAB_MISC, K_BuildingCodes.class, false);
@@ -80,6 +81,16 @@ public class K_LayerAdder {
 
 		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, true);
 		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);
+		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, true);
+		viewer.addLayer(TAB_AMBULANCE, Transport.class, true);
+		viewer.addLayer(TAB_AMBULANCE, BestRefugeForCivilian.class, false);
+		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianRate.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianDeathTimeLayer.class, false);
+		viewer.addLayer(TAB_AMBULANCE, WorstCaseDeathTime.class, false);
+		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, true);
+		viewer.addLayer(TAB_AMBULANCE, RepresentCanNotRescueCivilian.class, true);
+		viewer.addLayer(TAB_AMBULANCE, SightPolygonLayer.class, false);
 		
 	}
 	
