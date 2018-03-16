@@ -168,19 +168,19 @@ public class AURFireValueSetter {
 	}
 	
 	private void calc_noName(ArrayList<AURValuePoint> points, double coefficient) {
-		double max = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.countUnburntsInGrid();
-			if (p.temp_value > max) {
-				max = p.temp_value;
-			}
-		}
-
-		if (max > 0) {
-			for (AURValuePoint p : points) {
-				p.value += ((p.temp_value / max)) * coefficient;
-			}
-		}
+//		double max = 0;
+//		for (AURValuePoint p : points) {
+//			p.temp_value = p.areaGraph.countUnburntsInGrid();
+//			if (p.temp_value > max) {
+//				max = p.temp_value;
+//			}
+//		}
+//
+//		if (max > 0) {
+//			for (AURValuePoint p : points) {
+//				p.value += ((p.temp_value / max)) * coefficient;
+//			}
+//		}
 	}
 
 	public void draw(Graphics2D g) {

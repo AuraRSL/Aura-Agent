@@ -3,6 +3,7 @@ package AUR.util.knd;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
+import AUR.util.aslan.AURPoliceArea;
 import java.awt.Graphics2D;
 import java.util.Collection;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class AURAreaGraph {
 	public Polygon polygon = null;
 	public double goundArea = 0;
 	public double perimeter = 0;
+        public AURPoliceArea pa = null;
 	
 	public int getForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
@@ -170,22 +172,22 @@ public class AURAreaGraph {
 		return AURGeoUtil.dist(b1.CenterNode.x, b1.CenterNode.y, b2.CenterNode.x, b2.CenterNode.y);
 	}
 	
-	public int countUnburntsInGrid() {
-		int result = 0;
-
-		int i = (int) ((this.getX() - wsg.gridDy) / wsg.worldGridSize);
-		int j = (int) ((this.getY() - wsg.gridDx) / wsg.worldGridSize);
-		if (wsg.areaGraphsGrid[i][j] != null) {
-
-			for(AURAreaGraph ag : wsg.areaGraphsGrid[i][j]) {
-				if(ag.isBuilding() && ag.burnt == false && ag.getBuilding().fireSimBuilding.isOnFire() == false) {
-					result++;
-				}
-			}
-		}
-		
-		return result;
-	}
+//	public int countUnburntsInGrid() {
+//		int result = 0;
+//
+//		int i = (int) ((this.getX() - wsg.gridDy) / wsg.worldGridSize);
+//		int j = (int) ((this.getY() - wsg.gridDx) / wsg.worldGridSize);
+//		if (wsg.areaGraphsGrid[i][j] != null) {
+//
+//			for(AURAreaGraph ag : wsg.areaGraphsGrid[i][j]) {
+//				if(ag.isBuilding() && ag.burnt == false && ag.isOnFire()) {
+//					result++;
+//				}
+//			}
+//		}
+//		
+//		return result;
+//	}
 		
 	public int getWaterNeeded() {
 		if (isBuilding() == false) {
@@ -217,6 +219,10 @@ public class AURAreaGraph {
 		if(isBuilding()) {
 			this.building = new AURBuilding(this.wsg, this);
 		}
+                
+                // Added by Amir Aslan Aslani - Mar 2018
+                if(wsg.ai.me().getStandardURN().equals(StandardEntityURN.POLICE_FORCE))
+                        this.pa = new AURPoliceArea(area,this,wsg);
 	}
 	
 	public final AURBuilding getBuilding() {

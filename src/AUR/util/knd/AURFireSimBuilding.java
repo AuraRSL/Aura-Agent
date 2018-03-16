@@ -65,9 +65,9 @@ public class AURFireSimBuilding {
 //			this.ignite();
 //		}
 		
-		if(this.building.building.getID().getValue() == 959) {
-			this.ignite();
-		}
+//		if(this.building.building.getID().getValue() == 51234) {
+//			this.ignite();
+//		}
 	}
 
 	public void update() {		
@@ -132,10 +132,6 @@ public class AURFireSimBuilding {
 			setWaterQuantity(0);
 		}
 		this.setEstimatedEnergy(newTemperature * getCapacity());
-		
-		for (int[] nextCell : getAirCells()) {
-			this.building.wsg.fireSimulator.airCells.getCells()[nextCell[0]][nextCell[1]][0] = (float) newTemperature;
-		}
 	}
 	
 	public void precomputeRadiation(PrecomputeData pd) {
@@ -343,8 +339,7 @@ public class AURFireSimBuilding {
 		if (this.estimatedFuel <= 1e-8) {
 			return 0;
 		}
-		double r = 0.142;
-		//double r = burnRate.nextValue();
+		double r = burnRate.nextValue();
 		float tf = (float) (getEstimatedTemperature() / 1000f);
 		float lf = (float) getEstimatedFuel() / (float) getInitialFuel();
 		
@@ -566,18 +561,12 @@ public class AURFireSimBuilding {
 	
 	public boolean isOnFire() {
 		int f = getEstimatedFieryness();
-		
-		if(getEstimatedTemperature() >= getIgnitionPoint() * 0.75 && f != 8) {
-			return true;
-		}
-		
 		return f > 0 && f < 4;
 	}
 	
 	public int getWaterNeeded() {
 		if(isOnFire() == true) {
-			return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
-			
+			return (ag.wsg.si.getFireExtinguishMaxSum() / 1) * 1;
 		} else {
 			return 0;
 		}
