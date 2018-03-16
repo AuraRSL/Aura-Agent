@@ -3,6 +3,7 @@ package AUR.util.knd;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
+import AUR.util.aslan.AURPoliceArea;
 import java.awt.Graphics2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
@@ -49,6 +50,7 @@ public class AURAreaGraph {
 	public Polygon polygon = null;
 	public double goundArea = 0;
 	public double perimeter = 0;
+        public AURPoliceArea pa = null;
 	
 	public int getForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
@@ -204,6 +206,10 @@ public class AURAreaGraph {
 		if(isBuilding()) {
 			this.building = new AURBuilding(this.wsg, this);
 		}
+                
+                // Added by Amir Aslan Aslani - Mar 2018
+                if(wsg.ai.me().getStandardURN().equals(StandardEntityURN.POLICE_FORCE))
+                        this.pa = new AURPoliceArea(area,this,wsg);
 	}
 	
 	public final AURBuilding getBuilding() {

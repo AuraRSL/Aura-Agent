@@ -3,6 +3,8 @@ package AUR.util.aslan;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import java.util.ArrayList;
+import java.util.Random;
+import org.uncommons.maths.random.MersenneTwisterRNG;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.worldmodel.EntityID;
@@ -18,6 +20,8 @@ public class AURPoliceArea {
         
         public double baseScore = 1;
         public double secondaryScore = 1;
+        
+        public Random random = new MersenneTwisterRNG();
 
         public AURPoliceArea(Area area,AURAreaGraph ag,AURWorldGraph wsg) {
                 this.area = area;
@@ -31,13 +35,10 @@ public class AURPoliceArea {
         
         public double getBlockadeExistancePossibilityScore(){
                 double score = 1;
-                double errorScore = 0.8;
+                if(ag.isBuilding())
+                        return score;
                 for(Building building : getNeighbourBuildings()){
-                        score *= building.isFloorsDefined() ? building.getFloors() : errorScore;
-                        score *= building.isBrokennessDefined() ? building.getBrokenness() : errorScore;
-                        score *= building.isGroundAreaDefined() ? building.getGroundArea() : errorScore;
-                        score *= building.isFloorsDefined() ? building.getFloors() : errorScore;
-                        
+                        AURBuildingCollapseEstimator bce = new AURBuildingCollapseEstimator(building, random ,100);
                 }
                 return score;
         }

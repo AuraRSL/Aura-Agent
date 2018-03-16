@@ -5,15 +5,10 @@ import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.Random;
 import org.uncommons.maths.random.MersenneTwisterRNG;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
-import rescuecore2.worldmodel.EntityID;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 

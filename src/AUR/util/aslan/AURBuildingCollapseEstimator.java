@@ -1,5 +1,6 @@
 package AUR.util.aslan;
 
+import AUR.util.knd.AURConstants;
 import java.util.Random;
 import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.maths.random.ContinuousUniformGenerator;
@@ -11,21 +12,23 @@ import rescuecore2.standard.entities.Building;
  */
 public class AURBuildingCollapseEstimator {
         
-        public final double FLOOR_HEIGHT = 7;
-        public final double MAX_COLLAPSE = 100;
-        public final double WALL_COLLAPSE_EXTENT_MIN = 0.6;
-        public final double WALL_COLLAPSE_EXTENT_MAX = 1;
         
         public final Building building;
         public double collapsedRatio = 0;
-        public final double floorHeight = FLOOR_HEIGHT * 1000;
+        public final double floorHeight = AURConstants.CollapseEstimator.FLOOR_HEIGHT * 1000;
         
         public NumberGenerator<Double> extent;
+        public int estimatedDamage = 0;
+
+        public AURBuildingCollapseEstimator(Building building, Random rnd, int estimatedDamage) {
+                this(building, rnd);
+                this.estimatedDamage = estimatedDamage;
+        }
 
         public AURBuildingCollapseEstimator(Building building, Random rnd) {
                 this.extent = new ContinuousUniformGenerator(
-                        WALL_COLLAPSE_EXTENT_MIN,
-                        WALL_COLLAPSE_EXTENT_MAX,
+                        AURConstants.CollapseEstimator.WALL_COLLAPSE_EXTENT_MIN,
+                        AURConstants.CollapseEstimator.WALL_COLLAPSE_EXTENT_MAX,
 //                        new MersenneTwisterRNG(new BigInteger("3", 16).toByteArray())
                         rnd
                 );
@@ -34,7 +37,11 @@ public class AURBuildingCollapseEstimator {
         }
         
         public double d(){
-                return getRemainingFloors() * (getDamage() /  MAX_COLLAPSE) * extent.nextValue();
+                return getRemainingFloors() * (getDamage() / AURConstants.CollapseEstimator.MAX_COLLAPSE) * extent.nextValue();
+        }
+        
+        public double getStaticD(double damage){
+                return getRemainingFloors() * (damage / AURConstants.CollapseEstimator.MAX_COLLAPSE) * (AURConstants.CollapseEstimator.WALL_COLLAPSE_EXTENT_MIN + AURConstants.CollapseEstimator.WALL_COLLAPSE_EXTENT_MAX) * 2 / 3;
         }
 
         public double getRemainingFloors() {

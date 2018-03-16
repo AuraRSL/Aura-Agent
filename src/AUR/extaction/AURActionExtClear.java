@@ -6,7 +6,6 @@ import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURDijkstra;
 import AUR.util.aslan.AURGeoMetrics;
 import AUR.util.aslan.AURGeoTools;
-import AUR.util.aslan.AURNoBlockadesAreaCostComparator;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
@@ -61,11 +60,11 @@ import rescuecore2.worldmodel.EntityID;
  */
 
 public class AURActionExtClear extends ExtAction {
-        private int clearDistance;
-        private int clearRad;
-        private int distanceLimit;
-        private int forcedMove;
-        private int thresholdRest;
+        private final int clearDistance;
+        private final int clearRad;
+        private final int distanceLimit;
+        private final int forcedMove;
+        private final int thresholdRest;
         private int kernelTime;
 
         private EntityID target;
@@ -73,15 +72,15 @@ public class AURActionExtClear extends ExtAction {
         private int oldClearY;
         private int count;
 
-        private double agentSize = AURConstants.Agent.RADIUS;
-        private double repairRate = 2;
+        private final double agentSize = AURConstants.Agent.RADIUS;
+        private final double repairRate = 2;
 
         private AURWorldGraph wsg = null;
-        private AURWalkWatcher walkWatcher = null;
+        private final AURWalkWatcher walkWatcher;
         private PathPlanning pathPlanning;
         
-        private AURClearWatcher cw = null;
-        private Point2D lastHomeComing = null;
+        private final AURClearWatcher cw;
+        private final Point2D lastHomeComing = null;
         
         private int[] agentPosition;
 
@@ -737,7 +736,7 @@ public class AURActionExtClear extends ExtAction {
                         ArrayList<AURAreaGraph> closeRefuges = wsg.getAreaGraph(refuges);
                         closeRefuges.sort(new AURAreaCostComparator());
                         ArrayList<AURAreaGraph> closeRefugesNoBlockades = wsg.getAreaGraph(refuges);
-                        closeRefugesNoBlockades.sort(new AURNoBlockadesAreaCostComparator());
+                        closeRefugesNoBlockades.sort(new AURAreaCostComparator());
                         
                         if(closeRefuges.get(0).getTravelTime() > closeRefugesNoBlockades.get(0).getNoBlockadeTravelTime() * 1.5){
                                 return new Pair(
