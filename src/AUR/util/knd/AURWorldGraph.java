@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import AUR.util.FibonacciHeap;
-import AUR.util.ambulance.Information.RescueInfo;
 import adf.agent.action.common.ActionMove;
 import adf.agent.communication.MessageManager;
 import adf.agent.develop.DevelopData;
@@ -56,8 +55,6 @@ public class AURWorldGraph extends AbstractModule {
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
 
 	public int agentOrder = -1;
-
-	public RescueInfo rescueInfo; // arman axh 2018
 	
 	public final static double colorCoe[][] = {
 		{1.0, 0.9, 0.8, 0.7},
@@ -702,6 +699,8 @@ public class AURWorldGraph extends AbstractModule {
 			return this;
 		}
 
+		this.fireSimulator.step();
+		
 		if (ai.getChanged() == null) {
 			changes = new ArrayList<>();
 		} else {
@@ -735,7 +734,7 @@ public class AURWorldGraph extends AbstractModule {
 		
 		this.dijkstra(this.ai.getPosition());
 		
-		this.fireSimulator.step();
+		
 		
 		for (EntityID entID : changes) {
 			AURAreaGraph ag = getAreaGraph(entID);

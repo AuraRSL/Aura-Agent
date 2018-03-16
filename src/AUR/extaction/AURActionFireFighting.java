@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import AUR.util.knd.AURAreaGraph;
+import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURValuePoint;
 import AUR.util.knd.AURWalkWatcher;
 import AUR.util.knd.AURWorldGraph;
@@ -302,7 +303,7 @@ public class AURActionFireFighting extends ExtAction {
 		}
 		// System.out.println("\t" + ((double) (fcount + bcount + dcount) /
 		// allBuildings));
-		return ((double) (fcount + bcount + 0) / allBuildings) >= 0.75;
+		return ((double) (fcount + bcount + 0) / allBuildings) >= 0.7;
 	}
 	
 	public int badCount = 0;
@@ -356,6 +357,20 @@ public class AURActionFireFighting extends ExtAction {
 			return this;
 		}
 		
+		for(StandardEntity sent : wsg.wi.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE)) {
+			FireBrigade fb = (FireBrigade) sent;
+			if(fb.isXDefined() && fb.isYDefined() && fb.isPositionDefined()) {
+				if(fb.getID().getValue() < ai.me().getID().getValue()) {
+					
+					double dist = AURGeoUtil.dist(ai.getX(), ai.getY(), fb.getX(), fb.getY());
+					
+					if(dist < 1000 * 7) { // fb.getPosition().equals(ai.getPosition())
+						return this;
+					}
+				}
+			}
+		}
+		
 		if (badCount < 5 && ai.getPosition().equals(beforeLastBadSituationPos) == false && badSituation()) {
 			beforeLastBadSituationPos = lastBadSituationPos;
 			lastBadSituationPos = ai.getPosition();
@@ -394,8 +409,12 @@ public class AURActionFireFighting extends ExtAction {
 			int w = (int) ((double) ag.getWaterNeeded() * 1.0);
 			w = Math.min(w, this.maxExtinguishPower);
 			w = Math.min(w, agent.getWater() - 1);
-			wsg.getAreaGraph(target).getBuilding().fireSimBuilding.addWater(w);
+			if(wsg.si.getKernelAgentsIgnoreuntil() <= wsg.ai.getTime()) {
+				wsg.getAreaGraph(target).getBuilding().fireSimBuilding.addWater(w);
+			}
+			
 			return new ActionExtinguish(target, w);
+			//return null;
 		} else {
 			exCount = 0;
 			return this.getMoveAction(pathPlanning, agentPosition, target);
