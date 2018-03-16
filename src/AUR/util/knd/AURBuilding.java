@@ -17,10 +17,13 @@ import rescuecore2.standard.entities.StandardEntityURN;
 
 public class AURBuilding {
 	
-	private Polygon perceptibleArea = null;
+	private Polygon sightAreaPolygon = null;
+	private Polygon perceptibleAreaPolygon = null;
+	private Polygon perceptibleAndExtinguishableAreaPolygon = null;
 	public AURAreaGraph ag = null;
 	public AURWorldGraph wsg = null;
-	public AUREdgeToStand edgeToPereceptiblePolygon = null;
+	public AUREdgeToStand edgeToPereceptAndExtinguish = null;
+	public AUREdgeToStand edgeToSeeInside = null;
 	public boolean commonWall[] = null;
 	public AURFireSimBuilding fireSimBuilding = null;
 	public Building building = null;
@@ -37,7 +40,21 @@ public class AURBuilding {
 			commonWall[i] = false;
 		}
 	}
-
+	
+	public int getPerceptCost() {
+		if(this.edgeToPereceptAndExtinguish == null) {
+			return AURConstants.Math.INT_INF;
+		}
+		return this.edgeToPereceptAndExtinguish.standCost;
+	}
+	
+	public int getTravelTime() {
+		if(this.edgeToPereceptAndExtinguish == null) {
+			return AURConstants.Math.INT_INF;
+		}
+		return (int) (Math.ceil((double) this.getPerceptCost() / AURConstants.Agent.VELOCITY));
+	}
+	
 	public void setCommonWalls() {
 		
 		Polygon bp = ag.polygon;
@@ -98,11 +115,11 @@ public class AURBuilding {
 			}
 		}
 	}
-	
-	public ArrayList<AURAreaGraph> getPerceptibleAreas() {
+
+	public ArrayList<AURAreaGraph> getSightableAreas() {
 		
-		Polygon perceptibleAreaPolygon = getPerceptibleAreaPolygon();
-		Rectangle2D bounds = perceptibleAreaPolygon.getBounds();
+		Polygon sightPolygon = getSightAreaPolygon();
+		Rectangle2D bounds = sightPolygon.getBounds();
 		
 		Collection<StandardEntity> cands = wsg.wi.getObjectsInRectangle(
 			(int) bounds.getMinX(),
@@ -117,7 +134,32 @@ public class AURBuilding {
 			if(sent.getStandardURN().equals(StandardEntityURN.ROAD) == false && sent.getStandardURN().equals(StandardEntityURN.HYDRANT) == false) {
 				continue;
 			}
-			if(AURGeoUtil.intersectsOrContains(perceptibleAreaPolygon, (Polygon) ((Area) sent).getShape())) {
+			if(AURGeoUtil.intersectsOrContains(sightPolygon, (Polygon) ((Area) sent).getShape())) {
+				result.add(wsg.getAreaGraph(sent.getID()));
+			}
+		}
+		return result;
+	}
+	
+	public ArrayList<AURAreaGraph> getPerceptibleAndExtinguishableAreas() {
+		
+		Polygon perceptibleAndExtinguishablePolygon = getPerceptibleAndExtinguishableAreaPolygon();
+		Rectangle2D bounds = perceptibleAndExtinguishablePolygon.getBounds();
+		
+		Collection<StandardEntity> cands = wsg.wi.getObjectsInRectangle(
+			(int) bounds.getMinX(),
+			(int) bounds.getMinY(),
+			(int) bounds.getMaxX(),
+			(int) bounds.getMaxY()
+		);
+	
+		ArrayList<AURAreaGraph> result = new ArrayList<>();
+		
+		for(StandardEntity sent : cands) {
+			if(sent.getStandardURN().equals(StandardEntityURN.ROAD) == false && sent.getStandardURN().equals(StandardEntityURN.HYDRANT) == false) {
+				continue;
+			}
+			if(AURGeoUtil.intersectsOrContains(perceptibleAndExtinguishablePolygon, (Polygon) ((Area) sent).getShape())) {
 				result.add(wsg.getAreaGraph(sent.getID()));
 			}
 		}
@@ -132,11 +174,25 @@ public class AURBuilding {
 		this.fireSimBuilding.update();
 	}
 
-	public Polygon getPerceptibleAreaPolygon() {
-		if(this.perceptibleArea == null) {
-			this.perceptibleArea = AURPerceptibleArea.getPerceptibleArea(this);
+	public Polygon getSightAreaPolygon() {
+		if(this.sightAreaPolygon == null) {
+			this.sightAreaPolygon = AURSightAreaPolygon.get(this);
 		}
-		return this.perceptibleArea;
+		return this.sightAreaPolygon;
+	}
+	
+	public Polygon getPerceptibleAreaPolygon() {
+		if(this.perceptibleAreaPolygon == null) {
+			this.perceptibleAreaPolygon = AURPerceptibleArea.get(this);
+		}
+		return this.perceptibleAreaPolygon;
+	}
+	
+	public Polygon getPerceptibleAndExtinguishableAreaPolygon() {
+		if(this.perceptibleAndExtinguishableAreaPolygon == null) {
+			this.perceptibleAndExtinguishableAreaPolygon = AURPerceptibleAndExtinguishablePolygon.get(this);
+		}
+		return this.perceptibleAndExtinguishableAreaPolygon;
 	}
 	
 }

@@ -31,8 +31,9 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 
 		wsg.dijkstra(wsg.ai.getPosition());
 
-		AUREdgeToStand etp = selected_ag.getBuilding().edgeToPereceptiblePolygon;
-		if (etp == null) {			return;
+		AUREdgeToStand etp = selected_ag.getBuilding().edgeToPereceptAndExtinguish;
+		if (etp == null) {
+			return;
 		}
 		int lastX = kst.xToScreen(etp.standX);
 		int lastY = kst.yToScreen(etp.standY);
@@ -41,7 +42,7 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 		node.pre = etp.fromNode;
 		
 		g2.setColor(Color.pink);
-		g2.setStroke(new BasicStroke(2));
+		g2.setStroke(new BasicStroke(3));
 		
 		while (node.pre != wsg.startNullNode) {
 
@@ -80,7 +81,7 @@ public class K_ShortestPathToCheckFire extends K_ViewerLayer {
 		String result = "";
 		Collection<EntityID> targets = new ArrayList<>();
 		targets.add(selected_ag.area.getID());
-		ActionMove am = wsg.getMoveActionToSee___New(wsg.ai.getPosition(), selected_ag.area.getID());
+		ActionMove am = wsg.getMoveActionToPercept(wsg.ai.getPosition(), selected_ag.area.getID());
 		if(am == null) {
 				result += "null";
 				result += "\n";

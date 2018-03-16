@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
 import AUR.util.aslan.AURPoliceArea;
 import java.awt.Graphics2D;
+import java.util.Collection;
+import java.util.Set;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
@@ -43,7 +45,7 @@ public class AURAreaGraph {
 	public boolean vis;
 	public boolean needUpdate;
 	public boolean onFireProbability;
-	public boolean seen;
+	private boolean seen;
 	public boolean burnt;
 	public boolean fireChecked;
 	public int ownerAgent = -1;
@@ -69,7 +71,18 @@ public class AURAreaGraph {
 	
 	private AURBuilding building = null;
 	
-	public ArrayList<AURBuilding> perceptibleBuildings;
+	public ArrayList<AURBuilding> perceptibleAndExtinguishableBuildings;
+	public ArrayList<AURBuilding> sightableBuildings;
+	
+	public void setSeen() {
+		lastSeen = wsg.ai.getTime();
+		this.seen = true;
+	}
+	
+	public boolean seen() {
+		return this.seen;
+	}
+	
 	
 	public int getX() {
 		return this.area.getX();
@@ -281,6 +294,17 @@ public class AURAreaGraph {
 		}
 		return instanceAreaGrid.getEdgesToPerceptiblePolygons(this, x, y);
 	}
+	
+	public ArrayList<AUREdgeToStand> getEdgesToSightPolygons(int x, int y) {
+		ArrayList<AUREdgeToStand> result = new ArrayList<>();
+		if (area.getShape().contains(x, y) == false) {
+			if (area.getShape().intersects(x - 10, y - 10, 20, 20) == false) {
+				result.clear();
+				return result;
+			}
+		}
+		return instanceAreaGrid.getEdgesToSightPolygon(this, x, y);
+	}
 
 	public ArrayList<AURNode> getEdgeToAllBorderCenters(double x, double y) {
 		ArrayList<AURNode> result = new ArrayList<>();
@@ -308,7 +332,7 @@ public class AURAreaGraph {
 		return minDist;
 	}
 
-	private int lastSeen = -1;
+	private int lastSeen = 0;
 
 	public int noSeeTime() {
 		return wsg.ai.getTime() - lastSeen;
@@ -441,8 +465,8 @@ public class AURAreaGraph {
 	public double getScore() {
 		double perceptScore = 0;
 		int p = 1;
-		if(perceptibleBuildings != null) {
-			perceptScore = (double) Math.pow(perceptibleBuildings.size(), p) / Math.pow(wsg.getMaxPerceptibleBuildings(), p);
+		if(perceptibleAndExtinguishableBuildings != null) {
+			perceptScore = (double) Math.pow(perceptibleAndExtinguishableBuildings.size(), p) / Math.pow(wsg.getMaxPerceptibleBuildings(), p);
 		}
 		
 		double aScore = 1 - (Math.pow(AURGeoUtil.getArea((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadArea(), p));

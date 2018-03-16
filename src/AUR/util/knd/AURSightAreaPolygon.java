@@ -23,11 +23,11 @@ public class AURSightAreaPolygon {
 	private static final int RAY_PER_EDGE = 13;
 	private static final int R = 1500;
 	
-	public static Polygon getSightAreaPolygon(AURBuilding building) {
-		return getSightAreaPolygonAndPaint(building, null, null);
+	public static Polygon get(AURBuilding building) {
+		return getAndPaint(building, null, null);
 	}
 	
-	public static Polygon getSightAreaPolygonAndPaint(AURBuilding building, Graphics2D g2, K_ScreenTransform kst) {
+	public static Polygon getAndPaint(AURBuilding building, Graphics2D g2, K_ScreenTransform kst) {
 		
 		boolean paint = (g2 != null && kst != null);
 		

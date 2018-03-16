@@ -20,25 +20,34 @@ public class CivilianLayer extends K_ViewerLayer {
 
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
+
 		WorldInfo wi = wsg.wi;
 		g2.setStroke(new BasicStroke(1));
-		g2.setColor(Color.green);
 		for (StandardEntity e : wi.getAllEntities()) {
 			if (e.getStandardURN().equals(StandardEntityURN.CIVILIAN)) {
 				Civilian c = (Civilian) e;
 				if (c.isXDefined() == false || c.isYDefined() == false) {
 					continue;
 				}
-				int r = 250; // civilian radius
+				int r = 5;
+				if(c.isHPDefined()) {
+					if(c.getHP() == 0 ){
+						g2.setColor(new Color(87, 34, 7));
+					}else {
+						g2.setColor(new Color(0, (255 * c.getHP()) / 10000, 0));
+					}
+				}else{
+					g2.setColor(Color.green);
+				}
 				g2.fillOval(
-						kst.xToScreen(c.getX() - r),
-						kst.yToScreen(c.getY() + r),
-						(int) (2 * r * kst.zoom),
-						(int) (2 * r * kst.zoom)
+						kst.xToScreen(c.getX()) - r ,
+						kst.yToScreen(c.getY()) - r ,
+						(int) (2 * r ),//* kst.zoom
+						(int) (2 * r )//* kst.zoom
 				);
 
 			}
 		}
 	}
-	
+
 }

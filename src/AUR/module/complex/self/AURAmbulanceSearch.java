@@ -15,7 +15,7 @@ import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.misc.geometry.Vector2D;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
-import AUR.util.ambo.*;
+import AUR.util.ambulance.ClusterIndex;
 
 import java.util.*;
 

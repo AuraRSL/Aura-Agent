@@ -257,7 +257,7 @@ public class AURActionFireFighting extends ExtAction {
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
-					&& ag.lastDijkstraEntranceNode != null) {
+					&& ag.getBuilding().edgeToPereceptAndExtinguish != null) {
 				result.add(ag);
 			}
 		}
