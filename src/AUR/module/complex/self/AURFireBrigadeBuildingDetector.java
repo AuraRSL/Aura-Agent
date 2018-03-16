@@ -70,22 +70,6 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		}
 		return result;
 	}
-
-	public ArrayList<AURAreaGraph> getReachableUnburntBuildingIDs() {
-		wsg.dijkstra(ai.getPosition());
-		ArrayList<AURAreaGraph> result = new ArrayList<>();
-		for (AURAreaGraph ag : wsg.areas.values()) {
-			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
-					&& ag.lastDijkstraEntranceNode != null) {
-				result.add(ag);
-			}
-		}
-		return result;
-	}
-
-
-
-	
 	
 	@Override
 	public BuildingDetector calc() {

@@ -17,7 +17,7 @@ import rescuecore2.standard.entities.StandardEntityURN;
 public class AURPerceptibleArea {
 	
 	// the main idea is the same as the SensibleArea of SOS (2014)
-	public static Polygon getPerceptibleArea(AURBuilding building) {
+	public static Polygon get(AURBuilding building) {
 		
 		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS;
 		
@@ -90,7 +90,7 @@ public class AURPerceptibleArea {
 		double r = 0;
 		double dr = (2 * Math.PI) / 64;
 		
-		double smallINF = 1e5;
+		double smallINF = 1e10;
 		
 		double p[] = new double[2];
 		double ray[] = new double[4];

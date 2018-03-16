@@ -130,7 +130,6 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
     @Override
     public Action think(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, MessageManager messageManager, DevelopData developData)
     {
-	    
         this.messageTool.reflectMessage(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendRequestMessages(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendInformationMessages(agentInfo, worldInfo, scenarioInfo, messageManager);

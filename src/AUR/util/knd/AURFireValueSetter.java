@@ -133,22 +133,21 @@ public class AURFireValueSetter {
 
 	private void calc_EstimatedFieryness(ArrayList<AURValuePoint> points, double coefficient) {
 		for (AURValuePoint p : points) {
-			Building b = (Building) (p.areaGraph.area);
-			switch (b.getFierynessEnum()) {
-			case HEATING: {
-				p.value += 1 * coefficient;
-				break;
+			AURFireSimBuilding b = p.areaGraph.getBuilding().fireSimBuilding;
+			switch (b.getEstimatedFieryness()) {
+				case 1: {
+					p.value += 1 * coefficient;
+					break;
+				}
+				case 2: {
+					p.value += 0.5 * coefficient;
+					break;
+				}
+				case 3: {
+					p.value += 0.001 * coefficient;
+					break;
+				}
 			}
-			case BURNING: {
-				p.value += 0.5 * coefficient;
-				break;
-			}
-			case INFERNO: {
-				p.value += 0.001 * coefficient;
-				break;
-			}
-			}
-
 		}
 	}
 

@@ -1,5 +1,6 @@
 package AUR.extaction;
 
+import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWalkWatcher;
 import adf.agent.action.Action;
 import adf.agent.action.ambulance.ActionLoad;
@@ -42,7 +43,7 @@ public class AURActionTransport extends ExtAction {
     public AURActionTransport(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
         this.target = null;
-        this.thresholdRest = developData.getInteger("ActionTransport.rest", 100);
+        this.thresholdRest = RescueInfo.thresholdRestDmg;
         this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
         switch (scenarioInfo.getMode()) {
             case PRECOMPUTATION_PHASE:
@@ -135,11 +136,11 @@ public class AURActionTransport extends ExtAction {
             }
         }
         if (this.needRest(agent)) {
-            EntityID areaID = this.convertArea(this.target);
-            ArrayList<EntityID> targets = new ArrayList<>();
-            if (areaID != null) {
-                targets.add(areaID);
-            }
+//            EntityID areaID = this.convertArea(this.target);
+//            ArrayList<EntityID> targets = new ArrayList<>();
+//            if (areaID != null) {
+//                targets.add(areaID);
+//            }
             this.result = this.calcRefugeAction(false);
             if (this.result != null) {
                 return this;
@@ -182,14 +183,15 @@ public class AURActionTransport extends ExtAction {
                 }
             }
             return null;
-        }
-        if (targetEntity.getStandardURN() == BLOCKADE) {
+        }else if (targetEntity.getStandardURN() == BLOCKADE) {
+
             Blockade blockade = (Blockade) targetEntity;
             if (blockade.isPositionDefined()) {
                 targetEntity = this.worldInfo.getEntity(blockade.getPosition());
             }
-        }
-        if (targetEntity instanceof Area) {
+
+        }else if (targetEntity instanceof Area) {
+
             this.pathPlanning.setFrom(agentPosition);
             this.pathPlanning.setDestination(targetEntity.getID());
             List<EntityID> path = this.pathPlanning.calc().getResult();
@@ -199,10 +201,10 @@ public class AURActionTransport extends ExtAction {
             }
         }
         return null;
+
     }
 
     private Action calcUnload(Human transportHuman, EntityID targetID) {
-        final int gasStationExplosionRange = 50000 ;
         final int distanceAzRefuge = 18000 ;
         if (transportHuman == null) {
             return null;
@@ -222,7 +224,7 @@ public class AURActionTransport extends ExtAction {
                 if (gasStation.isFierynessDefined() && gasStation.getFieryness() == 8  ) continue;
                 Pair<Integer, Integer> loc = worldInfo.getLocation(entity);
                 if (loc != null)
-                    if (getDistance(agentInfo.getX(), agentInfo.getY(), loc.first().doubleValue(), loc.second().doubleValue()) < gasStationExplosionRange) {
+                    if (getDistance(agentInfo.getX(), agentInfo.getY(), loc.first().doubleValue(), loc.second().doubleValue()) < RescueInfo.gasStationExplosionRange) {
                         unloadInRoad = false;
                     }
             }
@@ -239,6 +241,9 @@ public class AURActionTransport extends ExtAction {
                     && agentInfo.getPositionArea() instanceof Road) {
                 return new ActionUnload();
             }
+            /* TODO behene be shekli ke age zood tarin zaman marg az 300 bishtar bashe
+            dar in sorat mishe gof damage sabet hast va damage afzayesh nadare
+             */
 
         Action action = this.calcRefugeAction(true);
         if (action != null) {

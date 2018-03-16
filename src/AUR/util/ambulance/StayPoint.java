@@ -1,4 +1,4 @@
-package AUR.util.ambo;
+package AUR.util.ambulance;
 
 
 import adf.agent.info.WorldInfo;
@@ -18,7 +18,7 @@ public  class StayPoint {
         this.worldInfo = wi ;
     }
 
-    public  Point2D calc( Area entity , Edge edge){
+    public Point2D calc(Area entity , Edge edge){
         Point2D point = null ;
 
         point = this.checkGridPoint(entity , edge );
@@ -36,7 +36,7 @@ public  class StayPoint {
         return null;
     }
 
-    private  Point2D checkGridPoint(Area entity ,Edge edge){
+    private Point2D checkGridPoint(Area entity , Edge edge){
         final int gredSize = 400 ;
         final int numEdgeGredD2 = (int)this.getDistance(edge.getStartX() , edge.getStartY() , edge.getEndX() , edge.getEndY())/gredSize/2 ;
         long midx = (edge.getStartX()+edge.getEndX())/2 ;
@@ -60,7 +60,7 @@ public  class StayPoint {
     }
 
 
-    private  Point2D cheakPerpendicularPoint(Area entity , Edge edge ,int scale){
+    private Point2D cheakPerpendicularPoint(Area entity , Edge edge , int scale){
         final int distanceFromEdge = 300 ;
         int x1, x2 , y1 ,y2 , midX , midY ;
         x1 = edge.getStartX() ;

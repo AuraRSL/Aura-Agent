@@ -1,4 +1,4 @@
-package AUR.util.ambo;
+package AUR.util.ambulance;
 
 import adf.agent.info.AgentInfo;
 import adf.agent.info.WorldInfo;
@@ -6,7 +6,10 @@ import adf.component.module.algorithm.Clustering;
 import adf.component.module.algorithm.PathPlanning;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
-import java.util.*;
+
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by armanaxh in 2017

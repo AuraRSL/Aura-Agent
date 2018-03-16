@@ -111,9 +111,9 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 
 	@Override
 	public ExtAction calc() {
-		ActionMove actMove = wsg.getMoveActionToSee___New(ai.getPosition(), target);
+		ActionMove actMove = wsg.getMoveActionToPercept(ai.getPosition(), target);
 		if (result == null || false) {
-			actMove = wsg.getNoBlockadeMoveAction(ai.getPosition(), target);
+			//actMove = wsg.getNoBlockadeMoveAction(ai.getPosition(), target);
 		}
 		this.result = walkWatcher.check(actMove);
 		return this;

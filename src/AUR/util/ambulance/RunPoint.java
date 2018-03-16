@@ -1,4 +1,4 @@
-package AUR.util.ambo;
+package AUR.util.ambulance;
 
 import adf.agent.info.AgentInfo;
 import adf.agent.info.WorldInfo;
