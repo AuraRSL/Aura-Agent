@@ -17,6 +17,7 @@ public class K_LayerAdder {
 	public final static String TAB_FIRE = "Fire";
 	public final static String TAB_CLUSTERING = "Clustering";
 	public final static String TAB_MISC = "Misc";
+	public final static String TAB_AMBULANCE ="Ambulance";
 	
 	public static void addTo(K_Viewer viewer) {
 		
@@ -28,6 +29,8 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, K_LayerWalls.class, true);
 		viewer.addLayer(TAB_MAP, CivilianLayer.class, true);
 		viewer.addLayer(TAB_MAP, K_AgentsLayer.class, true);
+		viewer.addLayer(TAB_MAP, RefugeLayer.class, true);
+		viewer.addLayer(TAB_MAP, SelectedArea.class, true);
 		
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
 		
@@ -72,7 +75,11 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, true);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);		
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);
+
+
+		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);
 		
 	}
 	
