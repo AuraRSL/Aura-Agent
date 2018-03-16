@@ -44,7 +44,7 @@ public class AURFireSearchValueSetter {
 		add_FireProbability(this.points, 1.9);
                 
 		calc_noName(this.points, 1.0);
-		mul_Color(wsg, this.points, 1.5);
+		mul_Color(wsg, this.points, 1.1);
 		add_NoSeeTime(this.points, 1.08);
 		mul_lastTarget(lastTarget, this.points, 1);
 		Collections.sort(this.points, new Comparator<AURValuePoint>() {
@@ -76,19 +76,19 @@ public class AURFireSearchValueSetter {
 	}
 	
 	private void calc_noName(ArrayList<AURValuePoint> points, double coefficient) {
-		double max = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.countUnburntsInGrid();
-			if (p.temp_value > max) {
-				max = p.temp_value;
-			}
-		}
-
-		if (max > 0) {
-			for (AURValuePoint p : points) {
-				p.value += ((p.temp_value / max)) * coefficient;
-			}
-		}
+//		double max = 0;
+//		for (AURValuePoint p : points) {
+//			p.temp_value = p.areaGraph.countUnburntsInGrid();
+//			if (p.temp_value > max) {
+//				max = p.temp_value;
+//			}
+//		}
+//
+//		if (max > 0) {
+//			for (AURValuePoint p : points) {
+//				p.value += ((p.temp_value / max)) * coefficient;
+//			}
+//		}
 	}
 
 	public void calcNoBlockade(AURWorldGraph wsg, ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster) {
@@ -252,8 +252,6 @@ public class AURFireSearchValueSetter {
 		}
 	}
 
-	
-	
 	/*
 	 * public void draw(Graphics2D g) { convexHullInstance.draw(g); int a = 5;
 	 * g.setFont(new Font("TimesRoman", Font.PLAIN, 1500)); for(K_ValuePoint

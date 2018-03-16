@@ -1,6 +1,5 @@
 package AUR.util.knd;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import viewer.K_ScreenTransform;
@@ -27,8 +26,8 @@ public class AURWorldAirCells {
 	public AURWorldAirCells(AURWorldGraph wsg) {
 		this.wsg = wsg;
 		this.worldBounds = wsg.wi.getBounds();
-		int rows = (int) Math.ceil(worldBounds.getHeight() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE) + 1;
-		int cols = (int) Math.ceil(worldBounds.getWidth() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE) + 1;
+		int rows = (int) Math.ceil(worldBounds.getHeight() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
+		int cols = (int) Math.ceil(worldBounds.getWidth() / AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
 		this.worldBounds.setRect(
 			worldBounds.getMinX(),
 			worldBounds.getMinY(),
@@ -71,24 +70,6 @@ public class AURWorldAirCells {
 			for (int j = 0; j < cells[i].length; j++) {
 				Rectangle2D cell = kst.getTransformedRectangle(j * a + mx, i * a + my, a, a);
 				g2.draw(cell);
-			}
-		}
-	}
-	
-	public void paint(Graphics2D g2, K_ScreenTransform kst) {
-		int a = AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
-		int mx = (int) (worldBounds.getMinX());
-		int my = (int) (worldBounds.getMinY());
-		for (int i = 0; i < cells.length; i++) {
-			for (int j = 0; j < cells[i].length; j++) {
-				
-				int c = (int) ((cells[i][j][0] / 400 * 255));
-				g2.setColor(new Color(255, 0, 0, Math.min(c, 255)));
-				Rectangle2D cell = kst.getTransformedRectangle(j * a + mx, i * a + my, a, a);
-				g2.fill(cell);
-				
-				
-				
 			}
 		}
 	}
