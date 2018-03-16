@@ -56,16 +56,16 @@ public class K_LayerAdder {
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);
-		viewer.addLayer(TAB_FIRE, K_RealFieryBuildings.class, true);
-		viewer.addLayer(TAB_FIRE, K_EstimatedFieryness.class, true);
-		viewer.addLayer(TAB_FIRE, K_FireSimBuildingInfo.class, true);
+		viewer.addLayer(TAB_FIRE, K_RealFieryBuildings.class, false);
+		viewer.addLayer(TAB_FIRE, K_EstimatedFieryness.class, false);
+		viewer.addLayer(TAB_FIRE, K_FireSimBuildingInfo.class, false);
 		viewer.addLayer(TAB_FIRE, K_InflammableBuildings.class, false);
 		viewer.addLayer(TAB_FIRE, K_ConnectedBuildings.class, false);
 		viewer.addLayer(TAB_FIRE, K_AreaExtinguishableRange.class, false);
 		
 		viewer.addLayer(TAB_SCENARIO, K_AgentExtinguishRange.class, false);
 		viewer.addLayer(TAB_SCENARIO, K_AgentPerceptionRange.class, false);
-		viewer.addLayer(TAB_SCENARIO, K_FireScenarioInfo.class, true);
+		viewer.addLayer(TAB_SCENARIO, K_FireScenarioInfo.class, false);
 		
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerWorldGraph.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeWorldGraph.class, false);
@@ -76,14 +76,14 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishableBuildings.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
 
-		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		
 		viewer.addLayer(TAB_MAP, A_AreasEntityID.class, false);
 		viewer.addLayer(TAB_MAP, A_BlockadesEntityID.class, false);
@@ -93,22 +93,22 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_POLICE, A_WorldBlockadeEstimator.class, false);
 
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, true);
-		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);
 
 
-		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, true);
+		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);
-		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, true);
+		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, false);
 		viewer.addLayer(TAB_AMBULANCE, Transport.class, true);
 		viewer.addLayer(TAB_AMBULANCE, BestRefugeForCivilian.class, false);
-		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, true);
-		viewer.addLayer(TAB_AMBULANCE, CivilianRate.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, false);
+		viewer.addLayer(TAB_AMBULANCE, CivilianRate.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianDeathTimeLayer.class, false);
 		viewer.addLayer(TAB_AMBULANCE, WorstCaseDeathTime.class, false);
-		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, true);
-		viewer.addLayer(TAB_AMBULANCE, RepresentCanNotRescueCivilian.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, false);
+		viewer.addLayer(TAB_AMBULANCE, RepresentCanNotRescueCivilian.class, false);
 		viewer.addLayer(TAB_AMBULANCE, SightPolygonLayer.class, false);
 		
 
