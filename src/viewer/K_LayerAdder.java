@@ -17,6 +17,7 @@ public class K_LayerAdder {
 	public final static String TAB_FIRE = "Fire";
 	public final static String TAB_CLUSTERING = "Clustering";
 	public final static String TAB_MISC = "Misc";
+	public final static String TAB_AMBULANCE ="Ambulance";
 	
 	public static void addTo(K_Viewer viewer) {
 		
@@ -28,8 +29,11 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, K_LayerWalls.class, true);
 		viewer.addLayer(TAB_MAP, CivilianLayer.class, true);
 		viewer.addLayer(TAB_MAP, K_AgentsLayer.class, true);
+		viewer.addLayer(TAB_MAP, RefugeLayer.class, true);
+		viewer.addLayer(TAB_MAP, SelectedArea.class, true);
 		
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
+		viewer.addLayer(TAB_CLUSTERING, AgentClusterLayer.class, false);
 		
 		viewer.addLayer(TAB_MISC, K_RoadScore.class, false);
 		viewer.addLayer(TAB_MISC, K_BuildingCodes.class, false);
@@ -72,7 +76,21 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, true);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);		
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);
+
+
+		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);
+		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, true);
+		viewer.addLayer(TAB_AMBULANCE, Transport.class, true);
+		viewer.addLayer(TAB_AMBULANCE, BestRefugeForCivilian.class, false);
+		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianRate.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianDeathTimeLayer.class, false);
+		viewer.addLayer(TAB_AMBULANCE, WorstCaseDeathTime.class, false);
+		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, true);
+		viewer.addLayer(TAB_AMBULANCE, RepresentCanNotRescueCivilian.class, true);
+		viewer.addLayer(TAB_AMBULANCE, SightPolygonLayer.class, false);
 		
 	}
 	

@@ -1,8 +1,8 @@
 package AUR.extaction;
 
-import AUR.util.ambo.RunPoint;
+import AUR.util.ambulance.RunPoint;
 import AUR.util.knd.AURWalkWatcher;
-import AUR.util.ambo.StayPoint;
+import AUR.util.ambulance.StayPoint;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.action.common.ActionRest;

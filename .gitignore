@@ -3,6 +3,7 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+*.iml
 
 # Icon must end with two \r
 Icon
@@ -115,6 +116,7 @@ AgentGit.iml
 LICENSE
 build/
 compile.sh
+compile.bat
 launch.sh
 precompute.sh
 src/.DS_Store
@@ -127,5 +129,6 @@ build.xml
 manifest.mf
 library
 data
+
 
 
