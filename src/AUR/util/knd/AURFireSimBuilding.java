@@ -61,7 +61,7 @@ public class AURFireSimBuilding {
 		this.estimatedFuel = getInitialFuel();
 //		this.ignite = false;
 
-//		if(Math.random() < 0.7) {
+//		if(Math.random() < 0.08) {
 //			this.ignite();
 //		}
 		
@@ -566,7 +566,7 @@ public class AURFireSimBuilding {
 	
 	public int getWaterNeeded() {
 		if(isOnFire() == true) {
-			return ag.wsg.si.getFireExtinguishMaxSum();
+			return (ag.wsg.si.getFireExtinguishMaxSum() / 1) * 1;
 		} else {
 			return 0;
 		}
