@@ -84,7 +84,8 @@ public class AURHumanDetector extends HumanDetector
 
         this.wsg.updateInfo(messageManager);
         this.clustering.updateInfo(messageManager);
-        this.rescueInfo.updateInformation();//2
+        this.rescueInfo.updateInformation();
+
         return this;
     }
 
@@ -105,56 +106,14 @@ public class AURHumanDetector extends HumanDetector
             return this;
         }
 
-        if (this.result != null)
-        {
-            Human target = (Human) this.worldInfo.getEntity(this.result);
-            if (target != null)
-            {
-                if (!target.isHPDefined() || target.getHP() == 0)
-                {
-                    this.result = null;
-                }
-                else if (!target.isPositionDefined())
-                {
-                    this.result = null;
-                }
-                else
-                {
-                    StandardEntity position = this.worldInfo.getPosition(target);
-                    if (position != null)
-                    {
-                        StandardEntityURN positionURN = position.getStandardURN();
-                        if (positionURN == REFUGE || positionURN == AMBULANCE_TEAM)
-                        {
-                            this.result = null;
-                        }
-
-                        //TODO
-                        if (position instanceof Building){
-                            Building b = (Building)position;
-                            if(b.isOnFire()) {
-                                this.result = null;
-                            }
-                        }
-
-                        if(!position.getID().equals(agentInfo.getPosition())){
-                            this.result = null;
-                        }
-                    }
-                }
-            }
+        if (this.nullResult()) {
+            this.result = null;
         }
+
         if (this.result == null)
         {
-            if (clustering == null)
-            {
-                this.result = this.calcTargetInWorld();
-                return this;
-            }
-            this.result = this.calcTargetInCluster(clustering);
-            if (this.result == null)
-            {
-                this.result = this.calcTargetInWorld();
+            if(this.result == null) {
+                this.result = this.calcTarget();
             }
         }
 
@@ -168,13 +127,66 @@ public class AURHumanDetector extends HumanDetector
     }
 
 
-    private EntityID calcTargetInCluster(Clustering clustering)
+    private boolean nullResult() {
+
+        if (this.result != null) {
+            Human target = (Human) this.worldInfo.getEntity(this.result);
+            if (target != null) {
+                if (!target.isHPDefined() || target.getHP() == 0) {
+                    return true;
+                } else if (!target.isPositionDefined()) {
+                    return true;
+                } else if(rescueInfo.civiliansInfo.get(result) == null){
+                    return true;
+                }
+                else {
+                    StandardEntity position = this.worldInfo.getPosition(target);
+                    if (position != null) {
+                        StandardEntityURN positionURN = position.getStandardURN();
+                        if (positionURN.equals(REFUGE) || positionURN.equals(AMBULANCE_TEAM)) {
+                            return true;
+                        }
+                    }
+
+                    if (position instanceof Building) {
+                        Building b = (Building) position;
+                        if (b.isOnFire()) {
+                            // TODO FIRE
+                            return true;
+                        }
+                    }
+                    //TODO
+                    if(!position.getID().equals(agentInfo.getPosition())){
+                        return true;
+                    }
+
+                }
+
+                if (target instanceof AmbulanceTeam
+                        || target instanceof FireBrigade
+                        || target instanceof PoliceForce) {
+                    if (target.isBuriednessDefined() && target.getBuriedness() == 0) {
+                        return true;
+                    }
+                }
+
+            }
+        }
+
+        return false;
+    }
+
+    private boolean changeCivilianView() {
+
+        return false;
+    }
+
+    private EntityID calcTarget()
     {
 
         List<CivilianInfo> civilians = new LinkedList<>();
         civilians.addAll(rescueInfo.civiliansInfo.values());
         Collections.sort(civilians , AmbulanceUtil.RateSorter);
-
 
         // TODO HaHa:D
         this.removeCantRescue(civilians);
@@ -222,6 +234,10 @@ public class AURHumanDetector extends HumanDetector
         return null;
     }
 
+
+
+
+    // preprate & precompute **************************************************************************
     @Override
     public EntityID getTarget()
     {

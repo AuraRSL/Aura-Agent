@@ -254,6 +254,7 @@ public class AURAmbulanceSearch extends Search {
             this.DoNotRouteinCluster = true;
             this.unsearchedBuildingIDs.clear();
         }
+
         return this;
     }
 

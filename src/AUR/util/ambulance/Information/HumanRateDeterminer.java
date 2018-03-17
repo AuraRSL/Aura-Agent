@@ -3,6 +3,7 @@ package AUR.util.ambulance.Information;
 
 import AUR.util.ambulance.AmbulanceUtil;
 import AUR.util.knd.AURWorldGraph;
+import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
@@ -33,9 +34,9 @@ public class HumanRateDeterminer {
             return;
         }
         //Base Rate
-        rate += effectAreaType(0);
+        rate += effectAreaType(0.01);
         rate += effectReverseSaveCycle(2.3);
-        rate += effectDamage(0);
+        rate += effectDamage(0.5);
 
         if(rate > 1) {
             //chose rate
@@ -55,6 +56,9 @@ public class HumanRateDeterminer {
     public boolean ignoreCivilian(){
         //TODO Fuck
         if(civilian.saveTime <= 0){
+            return true;
+        }
+        if(wsg.wi.getEntity(civilian.getPosition()) instanceof AmbulanceTeam){
             return true;
         }
 

@@ -13,7 +13,7 @@ import rescuecore2.standard.entities.StandardEntityURN;
 
 /**
  * Created by armanaxh on 12/20/17.
- * modified by Alireza on Feb. 7, 2018
+ *
  */
 
 public class CivilianID extends K_ViewerLayer {

@@ -1,6 +1,7 @@
 package AUR.util.ambulance.Information;
 
 
+import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
@@ -8,9 +9,13 @@ import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
+import rescuecore2.misc.geometry.Line2D;
+import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
 
+import javax.sound.sampled.Line;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -84,8 +89,9 @@ public class RescueInfo extends AbstractModule {
     // Update ***********************************************************************************
     public void updateInformation(){
 
-        this.updateChanges();
         this.updateCycle();
+        this.updateChanges();
+
 
     }
 
@@ -95,15 +101,79 @@ public class RescueInfo extends AbstractModule {
         }
     }
     private void updateChanges(){
-
-        for(EntityID id: worldInfo.getChanged().getChangedEntities()){
+        Set<EntityID> changes = worldInfo.getChanged().getChangedEntities();
+        for(EntityID id: changes){
             StandardEntity entity = worldInfo.getEntity(id);
-            if(entity.getStandardURN().equals(StandardEntityURN.CIVILIAN)){
+            if(entity.getStandardURN().equals(StandardEntityURN.CIVILIAN)) {
                 Civilian civilian = (Civilian) entity;
                 updateCivilianInfo(civilian);
                 //TODO
             }
         }
+        updateViwe();
+
+    }
+
+
+    public ArrayList<Line2D> testLine = new ArrayList<>();//For debug
+    public ArrayList<Edge> areasInter = new ArrayList<>();//For debug
+
+    private void updateViwe(){
+//TODO BUGFIX
+
+        testLine.clear();
+        areasInter.clear();
+
+        Set<EntityID> change = worldInfo.getChanged().getChangedEntities();
+        Set<EntityID> temp = new HashSet<>();
+        for(CivilianInfo ci : this.civiliansInfo.values()){
+            if(change.contains(ci.getPosition())
+                    && !change.contains(ci.me.getID())
+                    && worldInfo.getDistance(ambo.me, ci.me) <= scenarioInfo.getPerceptionLosMaxDistance() ){
+
+                testLine.add(new Line2D(new Point2D(ambo.me.getX(), ambo.me.getY()) , new Point2D(ci.me.getX(), ci.me.getY()) ));
+                boolean intersect = false;
+                for(StandardEntity entity : worldInfo.getObjectsInRange( ambo.me , scenarioInfo.getPerceptionLosMaxDistance()) ) {
+
+                    if (entity instanceof Area) {
+                        Area area = (Area) entity;
+
+
+                        if(entity instanceof Road){
+                            continue;
+                        }
+                        for (Edge e : area.getEdges()) {
+                            double[] d = new double[2];
+                            if (e.isPassable()) {
+                                continue;
+                            }
+                            if (AURGeoUtil.getIntersection(
+                                    e.getStartX(), e.getStartY(),
+                                    e.getEndX(), e.getEndY(),
+                                    ambo.me.getX(), ambo.me.getY(),
+                                    ci.me.getX(), ci.me.getY(),
+                                    d)) {
+                                intersect = true;
+                                areasInter.add(e);
+                                break;
+                            }
+                        }
+                        if(intersect == true) {
+                            break;
+                        }
+                    }
+
+                }
+                if (intersect == false) {
+                    temp.add(ci.getID());
+                }
+            }
+        }
+
+        for(EntityID id : temp) {
+            civiliansInfo.remove(id);
+        }
+
     }
 
     private void updateCivilianInfo(Civilian civilian){

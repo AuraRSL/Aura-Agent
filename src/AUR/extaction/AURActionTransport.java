@@ -170,7 +170,8 @@ public class AURActionTransport extends ExtAction {
             if (agentPosition.equals(targetPosition) ) {
                 if (human.isBuriednessDefined() && human.getBuriedness() > 0) {
                     return new ActionRescue(human);
-                } else if (human.getStandardURN() == CIVILIAN) {
+                } else if (human.getStandardURN() == CIVILIAN
+                                && this.calcLoad() ) {
                     return new ActionLoad(human.getID());
                 }
             } else {
@@ -183,14 +184,16 @@ public class AURActionTransport extends ExtAction {
                 }
             }
             return null;
-        }else if (targetEntity.getStandardURN() == BLOCKADE) {
+        }
+        if (targetEntity.getStandardURN() == BLOCKADE) {
 
             Blockade blockade = (Blockade) targetEntity;
             if (blockade.isPositionDefined()) {
                 targetEntity = this.worldInfo.getEntity(blockade.getPosition());
             }
 
-        }else if (targetEntity instanceof Area) {
+        }
+        if (targetEntity instanceof Area) {
 
             this.pathPlanning.setFrom(agentPosition);
             this.pathPlanning.setDestination(targetEntity.getID());
@@ -203,6 +206,31 @@ public class AURActionTransport extends ExtAction {
         return null;
 
     }
+
+    private boolean calcLoad(){
+        if(agentInfo.me() instanceof AmbulanceTeam) {
+            AmbulanceTeam loadAmbulance = (AmbulanceTeam) agentInfo.me();
+            for (EntityID entityID : worldInfo.getChanged().getChangedEntities()) {
+                StandardEntity entity = worldInfo.getEntity(entityID);
+                if (entity instanceof AmbulanceTeam) {
+                    if(entityID.getValue() < loadAmbulance.getID().getValue()){
+                        loadAmbulance = (AmbulanceTeam)entity;
+                    }
+                }
+            }
+
+            if(loadAmbulance.getID().equals(agentInfo.getID())) {
+                return true;
+            }else {
+                if ( loadAmbulance.isHPDefined() && loadAmbulance.getHP() != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
 
     private Action calcUnload(Human transportHuman, EntityID targetID) {
         final int distanceAzRefuge = 18000 ;
@@ -251,6 +279,7 @@ public class AURActionTransport extends ExtAction {
         }
         return null;
     }
+
 
     private boolean needRest(Human agent) {
         int hp = agent.getHP();

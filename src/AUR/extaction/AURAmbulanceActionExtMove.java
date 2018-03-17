@@ -195,7 +195,9 @@ public class AURAmbulanceActionExtMove extends ExtAction {
                     if (!this.edgeView.contains(edge)) {
                         Point2D distinationPoint = this.stayPoint.calc(this.roadTarget, edge);
                         if (distinationPoint != null) {
-                            ActionMove action = walkWatcher.check(new ActionMove(path, (int) distinationPoint.getX(), (int) distinationPoint.getY()));
+                            ActionMove action = (new ActionMove(path, (int) distinationPoint.getX(), (int) distinationPoint.getY()));
+                            //walkWatcher.check
+                            //  TODO ActionMove action = walkWatcher.check(new ActionMove(path, (int) distinationPoint.getX(), (int) distinationPoint.getY()));
                             this.result = action;
                             break;
                         }
