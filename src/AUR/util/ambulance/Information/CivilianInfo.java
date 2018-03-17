@@ -5,7 +5,10 @@ import AUR.util.ambulance.DeathTime.SimpleDeathTime;
 import AUR.util.ambulance.DeathTime.ZJUParticleFilter;
 import AUR.util.knd.AURWorldGraph;
 import maps.convert.legacy2gml.BuildingInfo;
+import rescuecore2.standard.entities.AmbulanceTeam;
+import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Civilian;
+import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.worldmodel.EntityID;
 
 import java.util.ArrayList;
@@ -168,7 +171,18 @@ public class CivilianInfo {
 //            double distance = wsg.getAreaGraph(me.getPosition()).getLastDijkstraCost();
 //            double distance = wsg.wi.getDistance(wsg.ai.getPosition(), me.getPosition());
 //            int tempT = (int)(distance/RescueInfo.moveDistance);
-            int tempT = wsg.getAreaGraph(me.getPosition()).getTravelTime();
+            int tempT = RescueInfo.maxTravelTime;
+            StandardEntity pos = wsg.wi.getEntity(me.getPosition());
+            if(pos instanceof Area) {
+                if(wsg.getAreaGraph(me.getPosition()) != null) {
+                    tempT = wsg.getAreaGraph(me.getPosition()).getTravelTime();
+                }
+            }else if(pos instanceof AmbulanceTeam){
+                AmbulanceTeam amtPos = (AmbulanceTeam)pos;
+                if(wsg.getAreaGraph(amtPos.getPosition()) != null) {
+                    tempT = wsg.getAreaGraph(amtPos.getPosition()).getTravelTime();
+                }
+            }
 //            if(tempT == 0){
 //                if(!me.getPosition().equals(wsg.ai.getPosition())){
 //                    tempT =  1;

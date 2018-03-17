@@ -204,6 +204,7 @@ public class AURHumanDetector extends HumanDetector
 
     private List<CivilianInfo> removeCantRescue(List<CivilianInfo> civilians){
 
+        rescueInfo.canNotRescueCivilian.clear();
         Collection<CivilianInfo> temp = new LinkedList<>();
         for(CivilianInfo civilian : civilians){
             if(civilian.saveTime <= 0){

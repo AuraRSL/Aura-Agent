@@ -186,7 +186,7 @@ public class SampleTacticsAmbulanceTeam extends TacticsAmbulanceTeam
         if (action != null)
         {
             this.sendActionMessage(messageManager, agent, action);
-//            return action;
+            return action;
         }
         target = this.search.calc().getTarget();
         action = this.actionExtMove.setTarget(target).calc().getAction();

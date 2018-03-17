@@ -13,8 +13,6 @@ import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
-
-import javax.sound.sampled.Line;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -127,6 +125,9 @@ public class RescueInfo extends AbstractModule {
         Set<EntityID> change = worldInfo.getChanged().getChangedEntities();
         Set<EntityID> temp = new HashSet<>();
         for(CivilianInfo ci : this.civiliansInfo.values()){
+            if(!ci.me.isPositionDefined() || !ci.me.isXDefined() || !ci.me.isYDefined()){
+                continue;
+            }
             if(change.contains(ci.getPosition())
                     && !change.contains(ci.me.getID())
                     && worldInfo.getDistance(ambo.me, ci.me) <= scenarioInfo.getPerceptionLosMaxDistance() ){
