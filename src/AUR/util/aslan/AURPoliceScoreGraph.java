@@ -16,8 +16,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
+import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.Area;
-import rescuecore2.standard.entities.StandardEntityURN;
+import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.worldmodel.EntityID;
 
 /**
@@ -26,7 +27,7 @@ import rescuecore2.worldmodel.EntityID;
  */
 public class AURPoliceScoreGraph extends AbstractModule {
         public HashMap<EntityID, AURAreaGraph> areas = new HashMap<>();
-        public ArrayList<EntityID> list;
+        public ArrayList<AURAreaGraph> list;
         private Clustering clustering;
         public AgentInfo ai;
         public WorldInfo wi;
@@ -37,6 +38,11 @@ public class AURPoliceScoreGraph extends AbstractModule {
         
         public Collection<EntityID> clusterEntityIDs;
         int cluseterIndex;
+        double myClusterCenter[] = new double[2];
+        StandardEntity myClusterCenterEntity = null;
+        double maxDistToCluster = 0;
+        
+        double maxDisFromAgentStartPoint = 0;
         
         public AURPoliceScoreGraph(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
@@ -50,21 +56,62 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.cluseterIndex = this.clustering.getClusterIndex(ai.me());
                 this.clusterEntityIDs = this.clustering.getClusterEntityIDs(cluseterIndex);
                 
-//                setScores();
-//                fillLists();
+                setScores();
+                fillLists();
         }
 
         private void fillLists(){
                 this.areas = wsg.areas;
                 
-                Collection<EntityID> entitiesOfType = wi.getEntityIDsOfType(StandardEntityURN.ROAD, StandardEntityURN.BUILDING, StandardEntityURN.HYDRANT, StandardEntityURN.GAS_STATION, StandardEntityURN.REFUGE);
-                this.list = new ArrayList<>(entitiesOfType.size());
-                for(EntityID entity : entitiesOfType){
-                        if(worldInfo.getEntity(entity) instanceof Area){
+                // ---
+                
+                int counter = 0;
+                for(StandardEntity se : this.clustering.getClusterEntities(cluseterIndex)){
+                        if(se instanceof Area){
+                                myClusterCenter[0] += ((Area) se).getX();
+                                myClusterCenter[1] += ((Area) se).getY();
+                                counter ++;
+                        }
+                }
+                myClusterCenter[0] /= counter;
+                myClusterCenter[1] /= counter;
+                double dis = Double.MAX_VALUE;
+                
+                for(StandardEntity se : this.clustering.getClusterEntities(cluseterIndex)){
+                        if(se instanceof Area && Math.hypot(myClusterCenter[0] - ((Area) se).getX(), myClusterCenter[1] - ((Area) se).getY()) < dis){
+                                dis = Math.hypot(myClusterCenter[0] - ((Area) se).getX(), myClusterCenter[1] - ((Area) se).getY());
+                                myClusterCenterEntity = se;
+                        }
+                }
+                myClusterCenter[0] = ((Area) myClusterCenterEntity).getX();
+                myClusterCenter[1] = ((Area) myClusterCenterEntity).getY();
+                
+                // ---
+                
+                this.list = new ArrayList<>(wsg.areas.values().size());
+                for(AURAreaGraph entity : wsg.areas.values()){
+                        if(entity.area instanceof Area){
+                                if( Math.hypot(entity.getX() - myClusterCenter[0], entity.getY() - myClusterCenter[1]) > maxDistToCluster)
+                                        maxDistToCluster = Math.hypot(entity.getX() - myClusterCenter[0], entity.getY() - myClusterCenter[1]);
                                 list.add(entity);
                         }
                 }
+                maxDistToCluster += 50;
                 
+                // --
+                
+                Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> worldBounds = wi.getWorldBounds();
+                
+                int[][] bound = new int[][]{
+                        {worldBounds.first().first(),worldBounds.first().second()},
+                        {worldBounds.second().first(),worldBounds.second().second()},
+                        {worldBounds.first().first(),worldBounds.second().second()},
+                        {worldBounds.second().first(),worldBounds.first().second()}
+                };
+                for(int[] point : bound){
+                        if(Math.hypot(point[0] - agentInfo.getX(), point[1] - agentInfo.getY()) > maxDisFromAgentStartPoint)
+                                maxDisFromAgentStartPoint = Math.hypot(point[0] - agentInfo.getX(), point[1] - agentInfo.getY());
+                }
         }
         
         @Override
@@ -100,10 +147,11 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         addHydrandScore(area, 0.05);
                         addWSGRoadScores(area, 0.075);
                         addClusterScore(area, 0.4);
+                        addDistanceToAgentScore(area, 0.05);
                         
-                        blockadeExistancePossibilityScore(area, 0.05);
-                        humansBlockedPossibilityScore(area, 0.05);
-                        
+//                        blockadeExistancePossibilityScore(area, 0.075);
+//                        humansBlockedPossibilityScore(area, 0.05);
+//                        
                         pQueue.add(area);
                 }
                 
@@ -140,7 +188,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         private void addClusterScore(AURAreaGraph area, double score) {
                 if(! clusterEntityIDs.contains(area.area.getID())){
-                        double distanceFromCluster = 0; // TODO Fill
+                        double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
                         score *= (1 - distanceFromCluster);
                 }
                 area.baseScore += score;
@@ -175,6 +223,11 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(! area.isHydrant()){
                         score = 0;
                 }
+                area.baseScore += score;
+        }
+
+        private void addDistanceToAgentScore(AURAreaGraph area, double score) {
+                score *= Math.hypot(area.getX() - agentInfo.getX(), area.getY() - agentInfo.getY()) / maxDisFromAgentStartPoint;
                 area.baseScore += score;
         }
 

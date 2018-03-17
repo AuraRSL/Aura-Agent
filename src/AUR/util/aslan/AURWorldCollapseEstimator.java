@@ -1,7 +1,6 @@
 package AUR.util.aslan;
 
 import AUR.util.knd.AURConstants;
-import collapse.CollapseSimulator;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -11,7 +10,6 @@ import org.uncommons.maths.Maths;
 import org.uncommons.maths.number.NumberGenerator;
 import org.uncommons.maths.random.GaussianGenerator;
 import org.uncommons.maths.random.MersenneTwisterRNG;
-import rescuecore2.config.Config;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityConstants;
