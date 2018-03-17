@@ -495,4 +495,12 @@ public class AURAreaGraph {
 
 	}
 	
+        
+        // Added by Amir Aslan Aslani - Mar 2018
+        public double baseScore = 1;
+        public double secondaryScore = 1;
+        
+        public double getFinalScore(){
+                return baseScore * secondaryScore;
+        }
 }
