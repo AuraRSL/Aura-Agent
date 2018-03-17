@@ -263,6 +263,7 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+        this.rescueInfo.initCalc();
 
         return this;
     }
@@ -276,6 +277,7 @@ public class AURHumanDetector extends HumanDetector
             return this;
         }
         clustering.preparate();
+        rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());
         rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
         return this;

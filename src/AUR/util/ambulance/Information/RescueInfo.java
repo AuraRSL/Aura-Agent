@@ -38,8 +38,9 @@ public class RescueInfo extends AbstractModule {
     public static final int maxDistanceFromFire = Integer.MAX_VALUE;
     public static final int maxBrokness = 100;
     public static final int maxTemperature = 47;
-    public final int losDamge;
-    public final int losHp;
+    public  int losDamge;
+    public  int losHp;
+    private boolean initB = false;
 
     public AURWorldGraph wsg;
     public AmbulanceInfo ambo;
@@ -61,13 +62,10 @@ public class RescueInfo extends AbstractModule {
         this.refugesInfo = new HashMap<>();
         this.civiliansInfo = new HashMap<>();
         this.clusterEntity = new HashSet<>();
-        this.losDamge = wsg.si.getPerceptionLosPrecisionDamage();
-        this.losHp = wsg.si.getPerceptionLosPrecisionHp();
         this.canNotRescueCivilian = new HashSet<>();
         this.buildingInfo = new HashMap<>();
         this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
         this.wsg.rescueInfo = this;
-        init();
     }
 
 
@@ -75,6 +73,8 @@ public class RescueInfo extends AbstractModule {
 
     private void init(){
         this.agentSpeed = 30000;
+        this.losDamge = wsg.si.getPerceptionLosPrecisionDamage();
+        this.losHp = wsg.si.getPerceptionLosPrecisionHp();
         this.initRefuge();
         this.initBulding();
     }
@@ -109,12 +109,22 @@ public class RescueInfo extends AbstractModule {
         }
 
     }
-    public void preprate(){
 
+    public RescueInfo initCalc(){
+        if(!initB) {
+            init();
+            initB = true;
+        }
+        return this;
     }
 
     // Update ***********************************************************************************
     public void updateInformation(){
+
+        if(agentInfo.getTime() > 1 && !this.initB){
+            init();
+            initB = true;
+        }
 
         this.updateCycle();
         this.updateChanges();

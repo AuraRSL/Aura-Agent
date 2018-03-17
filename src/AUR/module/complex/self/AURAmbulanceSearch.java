@@ -153,6 +153,7 @@ public class AURAmbulanceSearch extends Search
             return this;
         }
         this.worldInfo.requestRollback();
+        this.rescueInfo.initCalc();
         return this;
     }
 
@@ -164,7 +165,9 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
+
         this.worldInfo.requestRollback();
+        this.rescueInfo.initCalc();
         return this;
     }
 }
