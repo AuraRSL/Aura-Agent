@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class RefugeInfo {
 
-    public Refuge refuge;
+    public final Refuge refuge;
     private AURWorldGraph wsg;
     public int copacity;
     public int numOfCivInside;

@@ -21,16 +21,17 @@ public class RepresentCanNotRescueCivilian extends K_ViewerLayer {
         g2.setColor(new Color(255, 0, 0 , 90 ));
 
         int r = 5;
-        Collection<CivilianInfo> canNotRescues = wsg.rescueInfo.canNotRescueCivilian;
-        for(CivilianInfo ciInfo : canNotRescues ){
+        if(wsg.rescueInfo != null) {
+            Collection<CivilianInfo> canNotRescues = wsg.rescueInfo.canNotRescueCivilian;
+            for (CivilianInfo ciInfo : canNotRescues) {
 
-            if(ciInfo.me.isXDefined() && ciInfo.me.isYDefined()) {
-                g2.drawRect(kst.xToScreen(ciInfo.me.getX()) - r , kst.yToScreen(ciInfo.me.getY()) - r, 2 * r , 2 * r );
-                g2.fillRect(kst.xToScreen(ciInfo.me.getX()) - r  , kst.yToScreen(ciInfo.me.getY()) - r , 2 * r , 2 * r );
+                if (ciInfo.me.isXDefined() && ciInfo.me.isYDefined()) {
+                    g2.drawRect(kst.xToScreen(ciInfo.me.getX()) - r, kst.yToScreen(ciInfo.me.getY()) - r, 2 * r, 2 * r);
+                    g2.fillRect(kst.xToScreen(ciInfo.me.getX()) - r, kst.yToScreen(ciInfo.me.getY()) - r, 2 * r, 2 * r);
+                }
+
             }
-
         }
-
         g2.setStroke(new BasicStroke(1));
     }
 

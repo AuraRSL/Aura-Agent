@@ -20,17 +20,18 @@ public class WorkOnIt extends K_ViewerLayer {
         g2.setColor(new Color(255, 251, 13, 230));
 
         int r = 5;
-        if(wsg.rescueInfo.ambo != null) {
-            CivilianInfo workOnIt = wsg.rescueInfo.ambo.workOnIt;
-            if (workOnIt != null) {
-                if (workOnIt.me.isXDefined() && workOnIt.me.isYDefined()) {
-                    g2.drawOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r + 1, 2 * r + 1);
-                    g2.setColor(new Color(255, 251, 13, 163));
-                    g2.fillOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r, 2 * r);
+        if(wsg.rescueInfo != null) {
+            if (wsg.rescueInfo.ambo != null) {
+                CivilianInfo workOnIt = wsg.rescueInfo.ambo.workOnIt;
+                if (workOnIt != null) {
+                    if (workOnIt.me.isXDefined() && workOnIt.me.isYDefined()) {
+                        g2.drawOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r + 1, 2 * r + 1);
+                        g2.setColor(new Color(255, 251, 13, 163));
+                        g2.fillOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r, 2 * r);
+                    }
                 }
             }
         }
-
         g2.setStroke(new BasicStroke(1));
     }
 

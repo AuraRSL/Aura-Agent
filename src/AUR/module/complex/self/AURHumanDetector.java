@@ -1,7 +1,6 @@
 package AUR.module.complex.self;
 
 import AUR.util.ambulance.AmbulanceUtil;
-import AUR.util.ambulance.Information.BuldingInfo;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURWorldGraph;
@@ -57,7 +56,7 @@ public class AURHumanDetector extends HumanDetector
         }
         this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
         this.rescueInfo = moduleManager.getModule("ambulance.RescueInfo", "AUR.util.ambulance.Information.RescueInfo");
-        this.wsg.rescueInfo = rescueInfo;
+
 
         registerModule(this.clustering);
 
@@ -264,6 +263,7 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+        this.rescueInfo.initCalc();
 
         return this;
     }
@@ -277,6 +277,7 @@ public class AURHumanDetector extends HumanDetector
             return this;
         }
         clustering.preparate();
+        rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());
         rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
         return this;

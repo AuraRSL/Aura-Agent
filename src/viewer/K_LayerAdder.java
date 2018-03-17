@@ -1,5 +1,6 @@
 package viewer;
 
+import rescuecore2.standard.entities.Building;
 import viewer.layers.knd.K_AreaNoSeeTime;
 import viewer.layers.knd.*;
 import viewer.layers.AmboLayers.*;

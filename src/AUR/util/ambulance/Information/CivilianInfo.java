@@ -21,7 +21,7 @@ import java.util.Collection;
 
 public class CivilianInfo {
 
-    public Civilian me = null;
+    public final Civilian me;
     private RescueInfo rescueInfo;
     private AURWorldGraph wsg;
     private boolean isDead = false;
@@ -139,6 +139,8 @@ public class CivilianInfo {
         }
         return null;//TODO
     }
+
+    // Calc *******************************************************************************************
     public int calcTravelTimeToRefuge(RefugeInfo refuge){
         if(refuge == null || refuge.refuge == null){
             return RescueInfo.maxTravelTime;
