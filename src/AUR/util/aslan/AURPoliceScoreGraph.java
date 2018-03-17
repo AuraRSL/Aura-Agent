@@ -50,8 +50,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.cluseterIndex = this.clustering.getClusterIndex(ai.me());
                 this.clusterEntityIDs = this.clustering.getClusterEntityIDs(cluseterIndex);
                 
-                setScores();
-                fillLists();
+//                setScores();
+//                fillLists();
         }
 
         private void fillLists(){

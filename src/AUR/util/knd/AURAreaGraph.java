@@ -503,4 +503,5 @@ public class AURAreaGraph {
         public double getFinalScore(){
                 return baseScore * secondaryScore;
         }
+        // End of section added by Amir Aslan Aslani
 }

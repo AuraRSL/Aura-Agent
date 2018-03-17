@@ -1019,7 +1019,7 @@ public class AURActionExtClear extends ExtAction {
         private Pair<ArrayList<Area>, ArrayList<Blockade>> getAreasAndBlockadesInBound(Rectangle bound, Area start){
                 ArrayList<Area> areasList = new ArrayList<>();
                 ArrayList<Blockade> blocksList = new ArrayList<>();
-
+                
                 Queue<Area> areas = new ArrayDeque<>();
                 areas.add(start);
                 areasList.add(start);
