@@ -117,18 +117,7 @@ public class A_BuildingsEntrancePerpendicularLine extends K_ViewerLayer {
                                                         lines[i][1][1],
                                                         intersect
                                                 );
-//
-//                                                Line2D.linesIntersect(
-//                                                        edge.getLine().getOrigin().getX(),
-//                                                        edge.getLine().getOrigin().getY(),
-//                                                        edge.getLine().getEndPoint().getX(),
-//                                                        edge.getLine().getEndPoint().getY(),
-//                                                        lines[i][0][0],
-//                                                        lines[i][0][1],
-//                                                        lines[i][1][0],
-//                                                        lines[i][1][1]
-//                                                );
-
+                                                
                                                 if(intersect[0] != -1 && linesIntersect){
                                                         if(AURGeoUtil.length(intersect[0], intersect[1], p1[0], p1[1]) < AURGeoUtil.length(intersect[0], intersect[1], p2[0], p2[1])){
                                                                 double hypot = Math.hypot(intersect[0] - mids[i][0],intersect[1] - mids[i][1]);

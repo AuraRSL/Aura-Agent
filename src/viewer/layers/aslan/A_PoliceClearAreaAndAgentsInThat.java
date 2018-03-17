@@ -40,8 +40,6 @@ public class A_PoliceClearAreaAndAgentsInThat extends K_ViewerLayer {
                 agentPosition,
                 wsg.si.getClearRepairDistance() - AURConstants.Agent.RADIUS
         );
-        
-        System.out.println("X drawen!");
 
         g2.fill(kst.getTransformedPolygon(agentPolygon));
                         
@@ -51,7 +49,6 @@ public class A_PoliceClearAreaAndAgentsInThat extends K_ViewerLayer {
                 StandardEntity se = wsg.wi.getEntity(o);
                 
                 if(se instanceof Human && ! se.getID().equals(wsg.ai.getID())){
-                        System.out.println("Human Found!! " + o);
                         Human h = (Human) se;
                         int[] humanPosition = new int[]{(int)h.getX(), (int)h.getY()};
                         Polygon agentSPolygon = AURGeoTools.getCircle(

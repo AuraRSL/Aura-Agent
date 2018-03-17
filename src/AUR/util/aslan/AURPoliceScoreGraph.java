@@ -33,7 +33,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public ScenarioInfo si;
         public AURWorldGraph wsg;
         
-        public PriorityQueue<AURPoliceArea> pQueue = new PriorityQueue<>(new AURPoliceAreaScoreComparator());
+        public PriorityQueue<AURAreaGraph> pQueue = new PriorityQueue<>(new AURPoliceAreaScoreComparator());
         
         public Collection<EntityID> clusterEntityIDs;
         int cluseterIndex;
@@ -46,8 +46,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 
-                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURKMeans");
-                this.cluseterIndex = this.clustering.getClusterIndex(ai.getID());
+                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURBuildingClusterer");
+                this.cluseterIndex = this.clustering.getClusterIndex(ai.me());
                 this.clusterEntityIDs = this.clustering.getClusterEntityIDs(cluseterIndex);
                 
                 setScores();
@@ -75,7 +75,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
                 // Set dynamic scores
-                HashSet<AURPoliceArea> changedAreas = new HashSet<>();
+                HashSet<AURAreaGraph> changedAreas = new HashSet<>();
                 changedAreas.addAll(decreasePoliceAreasScore(0.8));
                 
                 for(EntityID changed : wi.getChanged().getChangedEntities()){
@@ -104,7 +104,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         blockadeExistancePossibilityScore(area, 0.05);
                         humansBlockedPossibilityScore(area, 0.05);
                         
-                        pQueue.add(area.pa);
+                        pQueue.add(area);
                 }
                 
         }
@@ -115,19 +115,19 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         private void addScoreToCollection(ArrayList<EntityID> collection, double score) {
                 for(EntityID eid : collection){
-                        areas.get(eid).pa.baseScore += score;
+                        areas.get(eid).baseScore += score;
                 }
         }
 
         private void addWSGRoadScores(AURAreaGraph area, double score) {
-                area.pa.baseScore += area.getScore() * score;
+                area.baseScore += area.getScore() * score;
         }
 
         private void addRefugeScore(AURAreaGraph area, double score) {
                 if(! area.isRefuge()){
                         score = 0;
                 }
-                area.pa.baseScore += score;
+                area.baseScore += score;
         }
 
         private void blockadeExistancePossibilityScore(AURAreaGraph area, double score) {
@@ -143,24 +143,24 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         double distanceFromCluster = 0; // TODO Fill
                         score *= (1 - distanceFromCluster);
                 }
-                area.pa.baseScore += score;
+                area.baseScore += score;
         }
         
         HashSet<EntityID> visitedAreas = new HashSet<>();
-        private Collection<AURPoliceArea> decreasePoliceAreasScore(double score) {
+        private Collection<AURAreaGraph> decreasePoliceAreasScore(double score) {
                 if(! visitedAreas.contains(ai.getPosition())){
-                        this.areas.get(ai.getPosition()).pa.secondaryScore += 0.2 * score;
+                        this.areas.get(ai.getPosition()).secondaryScore += 0.2 * score;
                         visitedAreas.add(ai.getPosition());
-                        return Lists.newArrayList(this.areas.get(ai.getPosition()).pa);
+                        return Lists.newArrayList(this.areas.get(ai.getPosition()));
                 }
                 return Lists.newArrayList();
         }
 
-        private Collection<AURPoliceArea> setAliveBlockadesScore(AURAreaGraph area, double d) {
+        private Collection<AURAreaGraph> setAliveBlockadesScore(AURAreaGraph area, double d) {
                 return Lists.newArrayList();
         }
         
-        private Collection<AURPoliceArea> blockedHumansScore(AURAreaGraph area, double d) {
+        private Collection<AURAreaGraph> blockedHumansScore(AURAreaGraph area, double d) {
                 return Lists.newArrayList();
         }
 
@@ -168,14 +168,14 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(! area.isGasStation()){
                         score = 0;
                 }
-                area.pa.baseScore += score;
+                area.baseScore += score;
         }
 
         private void addHydrandScore(AURAreaGraph area, double score) {
                 if(! area.isHydrant()){
                         score = 0;
                 }
-                area.pa.baseScore += score;
+                area.baseScore += score;
         }
 
 }

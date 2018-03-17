@@ -114,9 +114,7 @@ public class AURClearWatcher {
                    currentBlockadeList.size() > 0 &&
                    this.lastAction != this.NULL 
                 ){
-                        System.out.println("Checking blockades...");
                         if(isBlockadeListsEqual(lastBlockadeList,currentBlockadeList)){
-                                System.out.println("blockades ok...");
                                 this.lastAction = CLEAR_FROM_WATCHER;
                                 return new ActionClear(currentBlockadeList.get(0));
                         }
