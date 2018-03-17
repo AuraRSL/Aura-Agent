@@ -110,6 +110,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, false);
 		viewer.addLayer(TAB_AMBULANCE, RepresentCanNotRescueCivilian.class, false);
 		viewer.addLayer(TAB_AMBULANCE, SightPolygonLayer.class, false);
+		viewer.addLayer(TAB_AMBULANCE, ViewMistake.class, false);
 		
 
 	}

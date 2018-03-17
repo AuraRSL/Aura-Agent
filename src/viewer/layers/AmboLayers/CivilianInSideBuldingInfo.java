@@ -44,9 +44,9 @@ public class CivilianInSideBuldingInfo extends K_ViewerLayer {
         String rate = "";
 
 
-        double areaType = civilian.rateDeterminer.effectAreaType(0);
+        double areaType = civilian.rateDeterminer.effectAreaType(0.01);
         double saveTime = civilian.rateDeterminer.effectReverseSaveCycle(2.3);
-        double damage = civilian.rateDeterminer.effectDamage(0);
+        double damage = civilian.rateDeterminer.effectDamage(0.5);
 
         double hp = civilian.rateDeterminer.effectHp(0.5);
         double burid = civilian.rateDeterminer.effectBuridness(0.5);
@@ -59,7 +59,7 @@ public class CivilianInSideBuldingInfo extends K_ViewerLayer {
         rate += "\nsaveTime :"+saveTime+"  > " + (double)(civilian.saveTime) ;
         rate += "\nburid :"+burid + "  > " + civilian.getBuriedness();
         rate += "\ntravelTime :"+travelTime + " > "+civilian.travelTimeToMe;
-        rate += "\ntravelTimetoRefuge :"+travelTimetoRefuge + " > "+civilian.travelTimeToRefuge + " --> " + calcTravelTimeToRefuge(civilian.me, civilian.bestRefuge, wsg) + " == " + wsg.wi.getDistance(civilian.me.getPosition(), civilian.bestRefuge.refuge.getID());
+        rate += "\ntravelTimetoRefuge :"+travelTimetoRefuge + " > "+civilian.travelTimeToRefuge;
         rate += "\ndamage :"+damage + "  > "+ civilian.getDmg();
         rate += "\nhp :"+hp + "  > "+ civilian.getHp() ;
 
@@ -91,16 +91,5 @@ public class CivilianInSideBuldingInfo extends K_ViewerLayer {
 
         return rate;
     }
-    public int calcTravelTimeToRefuge(Civilian me, RefugeInfo refuge, AURWorldGraph wsg){
-        if(me.getPosition().equals(refuge.refuge.getID())){
-            return 0;
-        }
-        if(refuge != null && me.isPositionDefined()){
-            wsg.dijkstra(me.getPosition());
-            //TODO double distance = wsg.getAreaGraph(refuge.refuge.getID()).getLastDijkstraCost();
-            double distance = 10;
-            return (int)distance;
-        }
-        return 20;
-    }
+
 }
