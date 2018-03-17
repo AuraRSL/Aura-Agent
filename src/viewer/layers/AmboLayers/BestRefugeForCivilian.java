@@ -23,17 +23,18 @@ public class BestRefugeForCivilian extends K_ViewerLayer {
         int ttttt = 0;
         if(selected_ag != null){
             Area area = selected_ag.area;
-            for(CivilianInfo ci : wsg.rescueInfo.civiliansInfo.values()){
-                if(ci.getPosition().equals(area.getID())){
-                    RefugeInfo refuge = ci.bestRefuge;
-                    if(refuge != null) {
-                        Polygon polygon = kst.getTransformedPolygon(refuge.refuge.getShape());
-                        g2.drawString(ci.getID()+"", kst.xToScreen(refuge.refuge.getX() - 5), kst.yToScreen(refuge.refuge.getY()) + 5 + ttttt);
-                        g2.drawPolygon(polygon);
-                        ttttt+=10;
+            if(wsg.rescueInfo != null) {
+                for(CivilianInfo ci : wsg.rescueInfo.civiliansInfo.values()) {
+                    if (ci.getPosition().equals(area.getID())) {
+                        RefugeInfo refuge = ci.bestRefuge;
+                        if (refuge != null) {
+                            Polygon polygon = kst.getTransformedPolygon(refuge.refuge.getShape());
+                            g2.drawString(ci.getID() + "", kst.xToScreen(refuge.refuge.getX() - 5), kst.yToScreen(refuge.refuge.getY()) + 5 + ttttt);
+                            g2.drawPolygon(polygon);
+                            ttttt += 10;
+                        }
                     }
                 }
-
             }
        }
 

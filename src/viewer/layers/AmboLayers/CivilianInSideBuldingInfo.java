@@ -26,17 +26,18 @@ public class CivilianInSideBuldingInfo extends K_ViewerLayer {
 
     public String getString(AURWorldGraph wsg, AURAreaGraph selected_ag){
         String s = "";
-        if(selected_ag != null){
+        if(selected_ag != null) {
             Area area = selected_ag.area;
-            for(CivilianInfo ci : wsg.rescueInfo.civiliansInfo.values()){
-                if(ci.getPosition().equals(area.getID())) {
-                    s += calc(wsg,ci);
+            if (wsg.rescueInfo != null) {
+                for (CivilianInfo ci : wsg.rescueInfo.civiliansInfo.values()) {
+                    if (ci.getPosition().equals(area.getID())) {
+                        s += calc(wsg, ci);
 
-                    s += "\n==============================\n";
+                        s += "\n==============================\n";
+                    }
                 }
             }
         }
-
         return s;
     }
 

@@ -1,5 +1,6 @@
 package viewer;
 
+import rescuecore2.standard.entities.Building;
 import viewer.layers.knd.K_AreaNoSeeTime;
 import viewer.layers.knd.*;
 import viewer.layers.AmboLayers.*;
@@ -84,8 +85,10 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, true);
 		viewer.addLayer(TAB_AMBULANCE, Transport.class, true);
 		viewer.addLayer(TAB_AMBULANCE, BestRefugeForCivilian.class, false);
-		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, false);
+		viewer.addLayer(TAB_AMBULANCE, BuildingInfoLayer.class, true);
 		viewer.addLayer(TAB_AMBULANCE, CivilianRate.class, true);
+		viewer.addLayer(TAB_AMBULANCE, BuildingRate.class, true);
 		viewer.addLayer(TAB_AMBULANCE, CivilianDeathTimeLayer.class, false);
 		viewer.addLayer(TAB_AMBULANCE, WorstCaseDeathTime.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, true);

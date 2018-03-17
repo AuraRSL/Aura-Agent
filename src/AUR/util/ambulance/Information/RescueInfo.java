@@ -13,10 +13,12 @@ import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import sun.applet.resources.MsgAppletViewer;
+
+import java.util.*;
+
+import static rescuecore2.standard.entities.StandardEntityURN.*;
+import static rescuecore2.standard.entities.StandardEntityURN.POLICE_OFFICE;
 
 /**
  * Created by armanaxh on 3/3/18.
@@ -24,31 +26,37 @@ import java.util.Set;
 public class RescueInfo extends AbstractModule {
 
 
+    // const *****************************
     public static final int simulationTime = 420;
     public static final int maxBuriedness = 100;
     public static final int maxDamage = 500;
     public static final int maxHp = 10000;
     public static final int thresholdRestDmg = 60;
     public static final int gasStationExplosionRange = 50000;
-    public static int maxTravelTime = 20;
+    public static int maxTravelTime = 50;
     public static int moveDistance = 40000;
+    public static final int maxDistanceFromFire = Integer.MAX_VALUE;
+    public static final int maxBrokness = 100;
+    public static final int maxTemperature = 47;
     public final int losDamge;
     public final int losHp;
-
 
     public AURWorldGraph wsg;
     public AmbulanceInfo ambo;
     public int agentSpeed;
 
-
+    //Detector
     public Set<StandardEntity> clusterEntity;
     public HashMap<EntityID, CivilianInfo> civiliansInfo;
     public HashMap<EntityID, RefugeInfo> refugesInfo;
     public Set<CivilianInfo> canNotRescueCivilian;
 
+    //Search
+    public Map<EntityID, BuildingInfo> buildingInfo;
+
+
     public RescueInfo(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData){
         super(ai, wi, si, moduleManager, developData);
-        this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
         this.ambo = new AmbulanceInfo((AmbulanceTeam)ai.me());
         this.refugesInfo = new HashMap<>();
         this.civiliansInfo = new HashMap<>();
@@ -56,18 +64,39 @@ public class RescueInfo extends AbstractModule {
         this.losDamge = wsg.si.getPerceptionLosPrecisionDamage();
         this.losHp = wsg.si.getPerceptionLosPrecisionHp();
         this.canNotRescueCivilian = new HashSet<>();
-
-
+        this.buildingInfo = new HashMap<>();
+        this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
+        this.wsg.rescueInfo = this;
         init();
     }
+
 
     // init *************************************************************************************
 
     private void init(){
         this.agentSpeed = 30000;
         this.initRefuge();
+        this.initBulding();
     }
 
+    private void initBulding(){
+
+        for(StandardEntity entity : worldInfo.getEntitiesOfType(
+                BUILDING,
+                GAS_STATION,
+                AMBULANCE_CENTRE,
+                FIRE_STATION,
+                POLICE_OFFICE ))
+        {
+            if(entity instanceof Building) {
+
+                Building b = (Building)entity;
+
+                this.buildingInfo.put(entity.getID(), new BuildingInfo(wsg, this , b));
+
+            }
+        }
+    }
 
     private void initRefuge(){
 
@@ -89,8 +118,14 @@ public class RescueInfo extends AbstractModule {
 
         this.updateCycle();
         this.updateChanges();
+        this.updateBuildingInfo();
 
+    }
 
+    private void updateBuildingInfo(){
+        for(BuildingInfo b : this.buildingInfo.values()){
+            b.updateInformation();
+        }
     }
 
     private void updateCycle(){
