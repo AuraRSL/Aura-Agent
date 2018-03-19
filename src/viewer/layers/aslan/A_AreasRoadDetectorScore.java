@@ -32,7 +32,7 @@ public class A_AreasRoadDetectorScore extends K_ViewerLayer {
         public String getString(AURWorldGraph wsg, AURAreaGraph selected_ag) {
                 String result = "\n";
                 if (selected_ag != null) {
-                        result += " Base Score: " + selected_ag.baseScore + " \n Secondary Score: " + selected_ag.secondaryScore + " \n";
+                        result += " Base Score: " + selected_ag.baseScore + " \n Secondary Score: " + selected_ag.secondaryScore + " \n Dist Score: " + selected_ag.distanceScore + " \n ";
                 }
                 return result;
         }

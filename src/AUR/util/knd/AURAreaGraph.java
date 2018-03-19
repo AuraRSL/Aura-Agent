@@ -499,9 +499,10 @@ public class AURAreaGraph {
         // Added by Amir Aslan Aslani - Mar 2018
         public double baseScore = 0;
         public double secondaryScore = 1;
+        public double distanceScore = 0;
         
         public double getFinalScore(){
-                return baseScore * secondaryScore;
+                return baseScore * secondaryScore + distanceScore;
         }
         // End of section added by Amir Aslan Aslani
 }

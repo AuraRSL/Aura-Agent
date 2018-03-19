@@ -1,6 +1,7 @@
 package AUR.util.aslan;
 
 import AUR.util.knd.AURAreaGraph;
+import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.communication.MessageManager;
 import adf.agent.develop.DevelopData;
@@ -10,7 +11,6 @@ import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.Clustering;
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import rescuecore2.worldmodel.EntityID;
  */
 public class AURPoliceScoreGraph extends AbstractModule {
         public HashMap<EntityID, AURAreaGraph> areas = new HashMap<>();
-        public ArrayList<AURAreaGraph> list;
         private Clustering clustering;
         public AgentInfo ai;
         public WorldInfo wi;
@@ -53,11 +52,11 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 
                 this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURBuildingClusterer");
-                this.cluseterIndex = this.clustering.getClusterIndex(ai.me());
+                this.cluseterIndex = this.clustering.calc().getClusterIndex(ai.me());
                 this.clusterEntityIDs = this.clustering.getClusterEntityIDs(cluseterIndex);
                 
-                setScores();
                 fillLists();
+                setScores();
         }
 
         private void fillLists(){
@@ -88,16 +87,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 // ---
                 
-                this.list = new ArrayList<>(wsg.areas.values().size());
                 for(AURAreaGraph entity : wsg.areas.values()){
-                        if(entity.area instanceof Area){
-                                if( Math.hypot(entity.getX() - myClusterCenter[0], entity.getY() - myClusterCenter[1]) > maxDistToCluster)
-                                        maxDistToCluster = Math.hypot(entity.getX() - myClusterCenter[0], entity.getY() - myClusterCenter[1]);
-                                list.add(entity);
+                        if( Math.hypot(entity.getX() - myClusterCenter[0], entity.getY() - myClusterCenter[1]) > maxDistToCluster){
+                                maxDistToCluster = Math.hypot(entity.getX() - myClusterCenter[0], entity.getY() - myClusterCenter[1]);
                         }
                 }
                 maxDistToCluster += 50;
-                
                 // --
                 
                 Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> worldBounds = wi.getWorldBounds();
@@ -121,33 +116,33 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
-                // Set dynamic scores
-                HashSet<AURAreaGraph> changedAreas = new HashSet<>();
-                changedAreas.addAll(decreasePoliceAreasScore(0.8));
+                pQueue.clear();
                 
-                for(EntityID changed : wi.getChanged().getChangedEntities()){
-                        if(wi.getEntity(changed) instanceof  Area){
-                                AURAreaGraph areaGraph = wsg.getAreaGraph(changed);
-
-                                changedAreas.addAll(setAliveBlockadesScore(areaGraph, 0.0));
-                                changedAreas.addAll(blockedHumansScore(areaGraph, 1.2));
-                        }
+                // Set dynamic scores
+                wsg.NoBlockadeDijkstra(ai.getPosition());
+                decreasePoliceAreasScore(0.8);
+                
+                for(AURAreaGraph area : wsg.areas.values()){
+                        setDistanceScore(area, 0.1);
+                        setAliveBlockadesScore(area, 0.0);
+                        blockedHumansScore(area, 1.2);
                 }
-                pQueue.removeAll(changedAreas);
-                pQueue.addAll(changedAreas);
+                pQueue.addAll(wsg.areas.values());
                 return this;
         }
 
         private void setScores() {
+                wsg.NoBlockadeDijkstra(ai.getPosition());
+                
                 addAreasConflictScore(0.02);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
+                        setDistanceScore(area, 0.1);
                         addRefugeScore(area, 0.15);
                         addGasStationScore(area, 0.075);
                         addHydrandScore(area, 0.05);
                         addWSGRoadScores(area, 0.075);
                         addClusterScore(area, 0.4);
-                        addDistanceToAgentScore(area, 0.05);
                         
 //                        blockadeExistancePossibilityScore(area, 0.075);
 //                        humansBlockedPossibilityScore(area, 0.05);
@@ -187,7 +182,11 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void addClusterScore(AURAreaGraph area, double score) {
-                if(! clusterEntityIDs.contains(area.area.getID())){
+                if(clusterEntityIDs.contains(area.area.getID())){
+                        
+                }
+                else{
+                        
                         double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
                         score *= (1 - distanceFromCluster);
                 }
@@ -195,21 +194,19 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
         
         HashSet<EntityID> visitedAreas = new HashSet<>();
-        private Collection<AURAreaGraph> decreasePoliceAreasScore(double score) {
+        private void decreasePoliceAreasScore(double score) {
                 if(! visitedAreas.contains(ai.getPosition())){
                         this.areas.get(ai.getPosition()).secondaryScore += 0.2 * score;
                         visitedAreas.add(ai.getPosition());
-                        return Lists.newArrayList(this.areas.get(ai.getPosition()));
                 }
-                return Lists.newArrayList();
         }
 
-        private Collection<AURAreaGraph> setAliveBlockadesScore(AURAreaGraph area, double d) {
-                return Lists.newArrayList();
+        private void setAliveBlockadesScore(AURAreaGraph area, double d) {
+                
         }
         
-        private Collection<AURAreaGraph> blockedHumansScore(AURAreaGraph area, double d) {
-                return Lists.newArrayList();
+        private void blockedHumansScore(AURAreaGraph area, double d) {
+                
         }
 
         private void addGasStationScore(AURAreaGraph area, double score) {
@@ -226,9 +223,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 area.baseScore += score;
         }
 
-        private void addDistanceToAgentScore(AURAreaGraph area, double score) {
-                score *= Math.hypot(area.getX() - agentInfo.getX(), area.getY() - agentInfo.getY()) / maxDisFromAgentStartPoint;
-                area.baseScore += score;
+        private void setDistanceScore(AURAreaGraph area, double score) {
+                area.distanceScore = (AURConstants.Agent.VELOCITY / (double) area.getNoBlockadeTravelCost()) * score;
         }
 
 }
