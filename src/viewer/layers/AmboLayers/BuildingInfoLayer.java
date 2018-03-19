@@ -27,11 +27,12 @@ public class BuildingInfoLayer extends K_ViewerLayer {
 
     public String getString(AURWorldGraph wsg, AURAreaGraph selected_ag){
         String s = "";
+
         if(selected_ag != null) {
             Area area = selected_ag.area;
             if(wsg.rescueInfo != null) {
-                if (wsg.rescueInfo.buildingInfo != null) {
-                    for (BuildingInfo b : wsg.rescueInfo.buildingInfo.values()) {
+                if (wsg.rescueInfo.buildingsInfo != null) {
+                    for (BuildingInfo b : wsg.rescueInfo.buildingsInfo.values()) {
                         if (b.me.getID().equals(area.getID())) {
                             s += calc(wsg, b);
 
@@ -48,21 +49,21 @@ public class BuildingInfoLayer extends K_ViewerLayer {
         String rate = "";
 
         RescueInfo rescueInfo = wsg.rescueInfo;
-        double clusterEffect = BuildingRateDeterminer.clusterEffect(wsg, rescueInfo, building, 0.8);
-        double TravelTime =  BuildingRateDeterminer.TravelTimeToBuildingEffect(wsg, rescueInfo, building, 0.6);
-        double distanceFromFire =  BuildingRateDeterminer.distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
-        double brokness =   BuildingRateDeterminer.broknessEffect(wsg, rescueInfo, building, 0.2);
-        double teperature =  BuildingRateDeterminer.buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
-
-
+        double clusterEffect = BuildingRateDeterminer.clusterEffect(wsg, rescueInfo, building, 1);
+        double TravelTime =  BuildingRateDeterminer.TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.7);
+        double distanceFromFire =  BuildingRateDeterminer.distanceFromFireEffect(wsg, rescueInfo, building, 0.3);
+        double brokness =   BuildingRateDeterminer.broknessEffect(wsg, rescueInfo, building, 0.35);
+        double teperature =  BuildingRateDeterminer.buildingTemperatureEffect(wsg, rescueInfo, building, 0.3);
+        double disFormRefuge = BuildingRateDeterminer.distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
+        double disFormRefugeSearch = BuildingRateDeterminer.distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.3);
 
         rate += "\nclusterEffect :"+clusterEffect;
-        rate += "\nTravelTime :"+TravelTime+"  > " +building.travelTimeTobulding ;
+        rate += "\nTravelTime :"+TravelTime+"  > " +building.travelCostTobulding ;
         rate += "\ndistanceFromFire :"+distanceFromFire + "  > "  ;
         rate += "\nbrokness :"+brokness + " > " + (building.me.isBrokennessDefined() ? building.me.getBrokenness() : 0);
         rate += "\nteperature :"+teperature + " > "+ (building.me.isTemperatureDefined() ? building.me.getTemperature() : 0 );
-
-
+        rate += "\ndistance form Refuge : " + disFormRefuge + " > " + building.distanceFromRefuge;
+        rate += "\ndistance form Refuge : " + disFormRefugeSearch + " > " ;
 
         rate += " \n Rate :: " + building.rate;
 

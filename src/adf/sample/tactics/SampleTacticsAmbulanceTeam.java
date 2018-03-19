@@ -193,8 +193,6 @@ public class SampleTacticsAmbulanceTeam extends TacticsAmbulanceTeam
         if (action != null)
         {
             this.sendActionMessage(messageManager, agent, action);
-            System.out.println("target Search :" + target);
-            System.out.println(action);
             return action;
         }
 

@@ -43,4 +43,9 @@ public class AgentBig extends K_ViewerLayer {
         
     }
 
+    @Override
+    public String getString(AURWorldGraph wsg, AURAreaGraph selected_ag){
+        return "action " + wsg.rescueInfo.temptest;
+    }
+
 }

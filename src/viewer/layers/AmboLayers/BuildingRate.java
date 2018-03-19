@@ -23,7 +23,7 @@ public class BuildingRate extends K_ViewerLayer {
         g2.setFont(new Font("Arial", 0, 13));
         g2.setColor(Color.black);
         if(wsg.rescueInfo != null) {
-            Collection<BuildingInfo> ZJUdeathTime = wsg.rescueInfo.buildingInfo.values();
+            Collection<BuildingInfo> ZJUdeathTime = wsg.rescueInfo.buildingsInfo.values();
             for (BuildingInfo bInfo : ZJUdeathTime) {
                 String rate = "" + (((int) (bInfo.rate * 100))) / 100D;
 

@@ -1,7 +1,9 @@
 package AUR.util.ambulance.Information;
 
 import AUR.util.knd.AURWorldGraph;
+import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
+import rescuecore2.worldmodel.EntityID;
 
 /**
  * Created by armanaxh on 3/17/18.
@@ -17,16 +19,22 @@ public class BuildingRateDeterminer {
         }
 
 
-
-        rate += clusterEffect(wsg, rescueInfo, building, 0.8);
-        rate += TravelTimeToBuildingEffect(wsg, rescueInfo, building, 0.6);
-        rate += distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
-        rate += broknessEffect(wsg, rescueInfo, building, 0.2);
+        rate += clusterEffect(wsg, rescueInfo, building, 1);
+        rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.4);
+        rate += distanceFromFireEffect(wsg, rescueInfo, building, 0.3);
+        rate += broknessEffect(wsg, rescueInfo, building, 0.35);
         rate += buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
+        rate += distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
 
-        if(rate > 1){
-
+        if(rate >= 1){
+            rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.6);
+            rate += distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.3);
         }
+        // more effectess
+        // distance from Cluster without
+        // distance form Refuge
+        // distance form Gas Station
+        // Civilian Rally
 
 
         return rate;
@@ -43,41 +51,65 @@ public class BuildingRateDeterminer {
                 ||  (building.me.isBrokennessDefined() && building.me.getBrokenness() == 0)){
             return true;
         }
+        if(rescueInfo.visitedList.contains(building)){
+            return true;
+        }
+        if(TravelCostToBuildingEffect(wsg, rescueInfo, building, 1) < 0 ){
+            return true;
+        }
 
         return false;
     }
     public static double clusterEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
 
-        if(rescueInfo.clusterEntity.contains(building.me)){
-            return 1 * coefficient;
+        for(StandardEntity entity : rescueInfo.clusterEntity){
+            if(entity.getID().equals(building.me.getID())){
+                return 1* coefficient;
+            }
         }
         return 0;
     }
 
-    public static double TravelTimeToBuildingEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
-        double tempRate = RescueInfo.maxTravelTime - building.travelTimeTobulding;
-        return (tempRate/ RescueInfo.maxTravelTime)*coefficient;
+    public static double TravelCostToBuildingEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
+        double tempRate = Math.pow(rescueInfo.maxTravelCost - building.travelCostTobulding , 2);
+        return (tempRate / Math.pow(rescueInfo.maxTravelCost, 2) )*coefficient;
     }
 
     public static double distanceFromFireEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
-        double tempRate = RescueInfo.maxDistanceFromFire;
-        return (tempRate/ RescueInfo.maxDistanceFromFire)*coefficient;
+        double tempRate = rescueInfo.maxTravelCost;
+        return (tempRate/ rescueInfo.maxTravelCost)*coefficient;
     }
 
     public static double broknessEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
         if(building.me.isBrokennessDefined()) {
-            double tempRate = RescueInfo.maxBrokness - building.me.getBrokenness();
-            return (tempRate / RescueInfo.maxBrokness) * coefficient;
+            double tempRate = Math.pow(RescueInfo.maxBrokness - building.me.getBrokenness() , 2);
+            return (tempRate / Math.pow(RescueInfo.maxBrokness, 2) ) * coefficient;
         }
-        return 0;
+        return 0.35 * coefficient;
     }
 
     public static double buildingTemperatureEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
         if(building.me.isTemperatureDefined()) {
-            double tempRate = RescueInfo.maxTemperature - building.me.getTemperature();
-            return (tempRate / RescueInfo.maxTemperature) * coefficient;
+            double tempRate = Math.pow(RescueInfo.maxTemperature - building.me.getTemperature(),2);
+            return (tempRate / Math.pow(RescueInfo.maxTemperature,2) ) * coefficient;
         }
-        return 0;
+        return 0.35 * coefficient;
     }
-
+    public static double distanceFromRefugeEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
+        double tempRate = rescueInfo.maxDistance - building.distanceFromRefuge ;
+        return (tempRate/ rescueInfo.maxDistance)*coefficient;
+    }
+    public static double distanceFromRefugeInSearchEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
+        int maxD = 0;
+        for(BuildingInfo b : rescueInfo.searchList){
+            if(b.distanceFromRefuge > maxD){
+                maxD = b.distanceFromRefuge;
+            }
+        }
+        if(maxD == 0){
+            return 0;
+        }
+        double tempRate = maxD - building.distanceFromRefuge ;
+        return (tempRate/ maxD)*coefficient;
+    }
 }

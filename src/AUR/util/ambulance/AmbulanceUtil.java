@@ -1,6 +1,7 @@
 package AUR.util.ambulance;
 
 
+import AUR.util.ambulance.Information.BuildingInfo;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.Civilian;
@@ -52,11 +53,19 @@ public class AmbulanceUtil {
         return false;
     }
 
-    public static Comparator<CivilianInfo> RateSorter = new Comparator<CivilianInfo>() {
+    public static Comparator<CivilianInfo> CivilianRateSorter = new Comparator<CivilianInfo>() {
 
         public int compare(CivilianInfo a, CivilianInfo b) {
             return Double.compare(b.rate ,a.rate);// a > b
         }
 
     };
+    public static Comparator<BuildingInfo> BuilidingRateSorter = new Comparator<BuildingInfo>() {
+
+        public int compare(BuildingInfo a, BuildingInfo b) {
+            return Double.compare(b.rate ,a.rate);// a > b
+        }
+
+    };
+
 }
