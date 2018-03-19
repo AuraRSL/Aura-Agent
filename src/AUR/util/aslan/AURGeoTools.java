@@ -256,4 +256,47 @@ public class AURGeoTools {
                 }
                 return result;
         }
+        
+        public static double getEdgeDistanceToOppositeSideEdge(Polygon p, double[] e){
+                double[] result = new double[2];
+                double rP[] = new double[]{
+                        (e[0] + e[2]) / 2,
+                        (e[1] + e[3]) / 2,
+                };
+                
+                double v[] = AURGeoMetrics.getVectorNormal(new double[]{
+                        e[0] - e[2],
+                        e[1] - e[3]
+                });
+                Rectangle bounds = p.getBounds();
+                double sqrt = Math.sqrt(bounds.height * bounds.height + bounds.width * bounds.width);
+                double[] p1 = AURGeoMetrics.getPointsPlus(
+                        rP,
+                        AURGeoMetrics.getVectorScaled(v, sqrt)
+                );
+                double[] p2 = AURGeoMetrics.getPointsPlus(
+                        rP,
+                        AURGeoMetrics.getVectorScaled(v, - sqrt)
+                );
+                for(int i = 1;i < p.npoints;i ++){
+                        if( ! (AURGeoUtil.equals(p.xpoints[i],p.ypoints[i],e[0],e[1]) && AURGeoUtil.equals(p.xpoints[i - 1],p.ypoints[i - 1],e[2],e[3])) &&
+                            ! (AURGeoUtil.equals(p.xpoints[i - 1],p.ypoints[i - 1],e[0],e[1]) && AURGeoUtil.equals(p.xpoints[i],p.ypoints[i],e[2],e[3]))){
+                                if(AURGeoUtil.getIntersection(
+                                        p.xpoints[i],
+                                        p.ypoints[i], 
+                                        p.xpoints[i - 1],
+                                        p.ypoints[i - 1], 
+                                        p1[0],
+                                        p1[1],
+                                        p2[0],
+                                        p2[1],
+                                        result)
+                                ){
+                                        return Math.hypot(result[0] - rP[0], result[1] - rP[1]);
+                                }
+                        }
+                }
+                
+                return -1;
+        }
 }

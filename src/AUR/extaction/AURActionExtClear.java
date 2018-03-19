@@ -6,6 +6,7 @@ import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURDijkstra;
 import AUR.util.aslan.AURGeoMetrics;
 import AUR.util.aslan.AURGeoTools;
+import AUR.util.aslan.AURPoliceScoreGraph;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
@@ -75,8 +76,8 @@ public class AURActionExtClear extends ExtAction {
         private final double agentSize = AURConstants.Agent.RADIUS;
         private final double repairRate = 2;
 
+        private final AURPoliceScoreGraph psg;
         private AURWorldGraph wsg = null;
-        private final AURWalkWatcher walkWatcher;
         private PathPlanning pathPlanning;
         
         private final AURClearWatcher cw;
@@ -104,7 +105,7 @@ public class AURActionExtClear extends ExtAction {
                 this.count = 0;
 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
-                this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
+                this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
                 
                 this.cw = new AURClearWatcher(ai);
                 this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi, cw);

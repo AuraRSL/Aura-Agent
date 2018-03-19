@@ -500,9 +500,10 @@ public class AURAreaGraph {
         public double baseScore = 0;
         public double secondaryScore = 1;
         public double distanceScore = 0;
+        public double targetScore = 0;
         
         public double getFinalScore(){
-                return baseScore * secondaryScore + distanceScore;
+                return baseScore * secondaryScore + distanceScore + targetScore;
         }
         // End of section added by Amir Aslan Aslani
 }

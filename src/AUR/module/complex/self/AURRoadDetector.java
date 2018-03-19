@@ -70,6 +70,7 @@ public class AURRoadDetector extends RoadDetector {
 
                 if (this.result == null) {
                         EntityID targetID =  psg.pQueue.poll().area.getID();
+                        psg.setTargetScore(targetID, 0.1);
                         if (targetID == null) {
                                 return this;
                         }

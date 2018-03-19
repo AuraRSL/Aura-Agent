@@ -39,7 +39,7 @@ public class AURBuildingsEntrancePerpendicularLine {
         }
         
         public Action setChangesOfBuildingsEntrancePerpendicularLine() {
-                if(AURConstants.PoliceExtClear.USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE){
+                if(! AURConstants.PoliceExtClear.USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE){
                         return null;
                 }
                 
