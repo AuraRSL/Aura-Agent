@@ -83,8 +83,8 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
-
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTimeFrom.class, false);
 		
 		viewer.addLayer(TAB_MAP, A_AreasEntityID.class, false);
 		viewer.addLayer(TAB_MAP, A_BlockadesEntityID.class, false);
