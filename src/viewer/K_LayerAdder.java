@@ -57,9 +57,9 @@ public class K_LayerAdder {
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);
-		viewer.addLayer(TAB_FIRE, K_RealFieryBuildings.class, false);
-		viewer.addLayer(TAB_FIRE, K_EstimatedFieryness.class, false);
-		viewer.addLayer(TAB_FIRE, K_FireSimBuildingInfo.class, false);
+		viewer.addLayer(TAB_FIRE, K_RealFieryBuildings.class, true);
+		viewer.addLayer(TAB_FIRE, K_EstimatedFieryness.class, true);
+		viewer.addLayer(TAB_FIRE, K_FireSimBuildingInfo.class, true);
 		viewer.addLayer(TAB_FIRE, K_InflammableBuildings.class, false);
 		viewer.addLayer(TAB_FIRE, K_ConnectedBuildings.class, false);
 		viewer.addLayer(TAB_FIRE, K_AreaExtinguishableRange.class, false);

@@ -702,6 +702,8 @@ public class AURWorldGraph extends AbstractModule {
 			return this;
 		}
 
+		this.fireSimulator.step();
+		
 		if (ai.getChanged() == null) {
 			changes = new ArrayList<>();
 		} else {
@@ -734,8 +736,6 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		
 		this.dijkstra(this.ai.getPosition());
-		
-		this.fireSimulator.step();
 		
 		for (EntityID entID : changes) {
 			AURAreaGraph ag = getAreaGraph(entID);
