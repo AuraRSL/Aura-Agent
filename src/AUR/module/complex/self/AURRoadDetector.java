@@ -31,7 +31,6 @@ import rescuecore2.worldmodel.EntityID;
 public class AURRoadDetector extends RoadDetector {
 
         private Set<Area> openedAreas = new HashSet<>();
-        private Set<Area> areasShouldOpen = new HashSet<>();
                 
         private Clustering clustering;
         private PathPlanning pathPlanning;

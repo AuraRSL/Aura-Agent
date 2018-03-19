@@ -18,7 +18,9 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.StandardEntity;
+import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
 
 /**
@@ -121,6 +123,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 // Set dynamic scores
                 wsg.NoBlockadeDijkstra(ai.getPosition());
                 decreasePoliceAreasScore(0.8);
+                setDeadPoliceClusterScore(0.3 / this.clustering.getClusterNumber() * 2);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, 0.1);
@@ -150,9 +153,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         
                         /* Cluster Score 0.3 */
                         addClusterScore(area, 0.3);
-//                        
-                        pQueue.add(area);
                 }
+                pQueue.addAll(wsg.areas.values());
                 
         }
         
@@ -230,6 +232,19 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         private void setDistanceScore(AURAreaGraph area, double score) {
                 area.distanceScore = (AURConstants.Agent.VELOCITY / (double) area.getNoBlockadeTravelCost()) * score;
+        }
+
+        HashSet<EntityID> visitedDeadPoliceForces = new HashSet<>();
+        private void setDeadPoliceClusterScore(double score) {
+                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
+                        if(! visitedDeadPoliceForces.contains(se.getID()) && ((PoliceForce) se).isHPDefined() && ((PoliceForce) se).getHP() < 100 && ! se.getID().equals(ai.getID())){
+                                visitedDeadPoliceForces.add(se.getID());
+                                int clusterIndex = this.clustering.getClusterIndex(se);
+                                for(AURAreaGraph area : wsg.getAreaGraph(clustering.getClusterEntityIDs(clusterIndex))){
+                                        area.baseScore += score;
+                                }
+                        }         
+                }
         }
         
 
