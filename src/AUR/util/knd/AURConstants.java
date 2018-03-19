@@ -7,15 +7,16 @@ package AUR.util.knd;
 
 public class AURConstants {
 	
-	public final static int DEFAULT_FORGET_TIME = 30;
-	public final static int POLICE_FORGET_TIME = 30;
-	public final static int AMBULANCE_FORGET_TIME = 30;
-	public final static int FIREBRIGADE_FORGET_TIME = 30;
+	public static class PathPlanning {
+		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 30;
+		public final static int POLICE_BLOCKADE_FORGET_TIME = 30;
+		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 30;
+		public final static int FIREBRIGADE_BLOCKADE_FORGET_TIME = 30;
+	}
 	
 	public static class Agent {
 		public final static int RADIUS = 500;
 		public final static int VELOCITY = 40000;
-		
 	}
 	
 	public static class Math {

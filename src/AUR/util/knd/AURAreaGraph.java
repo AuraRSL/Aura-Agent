@@ -22,7 +22,6 @@ import viewer.K_ScreenTransform;
 public class AURAreaGraph {
 	
 	public Area area = null;
-	public int areaCostFactor = 1;
 	public ArrayList<AURBorder> borders = new ArrayList<>();
 	public ArrayList<AURAreaGraph> neighbours = new ArrayList<>();
 	public AURWorldGraph wsg = null;
@@ -52,19 +51,19 @@ public class AURAreaGraph {
 	public double goundArea = 0;
 	public double perimeter = 0;
 	
-	public int getForgetTime() {
+	public int getBlockadeForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
 			case POLICE_FORCE: {
-				return AURConstants.POLICE_FORGET_TIME;
+				return AURConstants.PathPlanning.POLICE_BLOCKADE_FORGET_TIME;
 			}
 			case AMBULANCE_TEAM: {
-				return AURConstants.AMBULANCE_FORGET_TIME;
+				return AURConstants.PathPlanning.AMBULANCE_BLOCKADE_FORGET_TIME;
 			}
 			case FIRE_BRIGADE: {
-				return AURConstants.FIREBRIGADE_FORGET_TIME;
+				return AURConstants.PathPlanning.FIREBRIGADE_BLOCKADE_FORGET_TIME;
 			}
 		}
-		return AURConstants.DEFAULT_FORGET_TIME;
+		return AURConstants.PathPlanning.DEFAULT_BLOCKADE_FORGET_TIME;
 	}
 	
 	private AURBuilding building = null;
@@ -341,47 +340,11 @@ public class AURAreaGraph {
 			updateTime = wsg.ai.getTime();
 			this.needUpdate = true;
 		}
-		if (this.needUpdate || longTimeNoSee()) {
-			/*
-			 * if(longTimeNoSee()) { addedBlockaeds.clear(); }
-			 */
-			areaCostFactor = 5;
+		this.needUpdate = this.needUpdate || (longTimeNoSee() && hasBlockade());
+		if (this.needUpdate) {
 			for (AURBorder border : borders) {
 				border.reset();
 			}
-			if (this.needUpdate == true) {
-
-				if (isOnFire()) {
-					areaCostFactor = 10;
-				}
-				updateTime = wsg.ai.getTime();
-				if (area.getBlockades() != null) {
-					/*
-					 * if(true &&
-					 * wsg.ai.me().getStandardURN().equals(StandardEntityURN.
-					 * FIRE_BRIGADE)) { // #toDo int a = (int)
-					 * (wsg.si.getPerceptionLosMaxDistance() / 4.1); // #toDo
-					 * Rectangle bvrb = new Rectangle( (int) (wsg.ai.getX() -
-					 * a), (int) (wsg.ai.getY() - a), (int) (2 * a), (int) (2 *
-					 * a) ); Polygon bPolygon; for(EntityID entId :
-					 * area.getBlockades()) { Blockade b = (Blockade)
-					 * wsg.wi.getEntity(entId); bPolygon = (Polygon)
-					 * (b.getShape()); if(false||
-					 * addedBlockaeds.contains(b.getID()) ||
-					 * bPolygon.intersects(bvrb) ||
-					 * bvrb.contains(bPolygon.getBounds())) {
-					 * areaBlockadePolygons.add(bPolygon);
-					 * addedBlockaeds.add(b.getID()); } } } else {
-					 */
-//					for (EntityID entId : area.getBlockades()) {
-//						Blockade b = (Blockade) wsg.wi.getEntity(entId);
-//						areaBlockadePolygons.add((Polygon) (b.getShape()));
-//					}
-					// }
-
-				}
-			}
-			this.needUpdate = true;
 		}
 		
 		if(isBuilding()) {
@@ -405,9 +368,23 @@ public class AURAreaGraph {
 		}
 	}
 
-	// toDo
-	public ArrayList<Polygon> getBlockades() {
+//	public ArrayList<Polygon> getBlockades() {
+//		ArrayList<Polygon>  result = new ArrayList<>();
+//		if(this.area.isBlockadesDefined() == false) {
+//			return result;
+//		}
+//		for (EntityID entId : this.area.getBlockades()) {
+//			Blockade b = (Blockade) wsg.wi.getEntity(entId);
+//			result.add((Polygon) (b.getShape()));
+//		}
+//		return result;
+//	}
+	
+	public ArrayList<Polygon> getAliveBlockades() {
 		ArrayList<Polygon>  result = new ArrayList<>();
+		if(longTimeNoSee()) {
+			return result;
+		}
 		if(this.area.isBlockadesDefined() == false) {
 			return result;
 		}
@@ -475,13 +452,7 @@ public class AURAreaGraph {
 	}
 
 	public boolean longTimeNoSee() {
-		if (this.needUpdate == true) {
-			return false;
-		}
-		if (this.hasBlockade() == false) {
-			return false;
-		}
-		return (wsg.ai.getTime() - updateTime) > getForgetTime();
+		return (wsg.ai.getTime() - updateTime) > getBlockadeForgetTime();
 	}
 	
 	public void paint(Graphics2D g2, K_ScreenTransform kst) {
