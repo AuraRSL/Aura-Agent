@@ -14,15 +14,20 @@ import viewer.K_ViewerLayer;
  * @author Alireza Kandeh - 2018
  */
 
-public class K_TravelTime extends K_ViewerLayer {
+public class K_TravelTimeFrom extends K_ViewerLayer {
 
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
+		
+		if(selected_ag == null) {
+			return;
+		}
+		
 		g2.setStroke(new BasicStroke(2));
 		g2.setFont(new Font("Arial", 0, 9));
 		g2.setColor(Color.white);
 
-		wsg.dijkstra(wsg.ai.getPosition());
+		wsg.dijkstra(selected_ag.area.getID());
 		
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			String cost = "inf";

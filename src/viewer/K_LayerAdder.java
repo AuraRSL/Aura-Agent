@@ -4,6 +4,7 @@ import rescuecore2.standard.entities.Building;
 import viewer.layers.knd.K_AreaNoSeeTime;
 import viewer.layers.knd.*;
 import viewer.layers.AmboLayers.*;
+import viewer.layers.aslan.*;
 
 /**
  *
@@ -18,10 +19,13 @@ public class K_LayerAdder {
 	public final static String TAB_FIRE = "Fire";
 	public final static String TAB_CLUSTERING = "Clustering";
 	public final static String TAB_MISC = "Misc";
+
+	public final static String TAB_POLICE = "Police";
+
 	public final static String TAB_AMBULANCE ="Ambulance";
+
 	
 	public static void addTo(K_Viewer viewer) {
-		
 		viewer.addLayer(TAB_MAP, K_AreaPropery.class, true);
 		viewer.addLayer(TAB_MAP, K_LayerRoads.class, true);
 		viewer.addLayer(TAB_MAP, K_LayerBuildings.class, true);
@@ -30,8 +34,13 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, K_LayerWalls.class, true);
 		viewer.addLayer(TAB_MAP, CivilianLayer.class, true);
 		viewer.addLayer(TAB_MAP, K_AgentsLayer.class, true);
+
+                
+		viewer.addLayer(TAB_MAP, A_SelectedArea.class, true);
+
 		viewer.addLayer(TAB_MAP, RefugeLayer.class, true);
 		viewer.addLayer(TAB_MAP, SelectedArea.class, true);
+
 		
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
 		viewer.addLayer(TAB_CLUSTERING, AgentClusterLayer.class, false);
@@ -57,7 +66,7 @@ public class K_LayerAdder {
 		
 		viewer.addLayer(TAB_SCENARIO, K_AgentExtinguishRange.class, false);
 		viewer.addLayer(TAB_SCENARIO, K_AgentPerceptionRange.class, false);
-		viewer.addLayer(TAB_SCENARIO, K_FireScenarioInfo.class, true);
+		viewer.addLayer(TAB_SCENARIO, K_FireScenarioInfo.class, false);
 		
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerWorldGraph.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeWorldGraph.class, false);
@@ -75,14 +84,24 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTimeFrom.class, false);
+		
+		viewer.addLayer(TAB_MAP, A_AreasEntityID.class, false);
+		viewer.addLayer(TAB_MAP, A_BlockadesEntityID.class, false);
+		viewer.addLayer(TAB_POLICE, A_PoliceClearAreaAndAgentsInThat.class, false);
+		viewer.addLayer(TAB_POLICE, A_BuildingsEntrancePerpendicularLine.class, false);
+		viewer.addLayer(TAB_POLICE, A_BuildingBlockadeEstimator.class, false);
+		viewer.addLayer(TAB_POLICE, A_WorldBlockadeEstimator.class, false);
+
+		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);
 
 
-		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, true);
+		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);
-		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, true);
+		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, false);
 		viewer.addLayer(TAB_AMBULANCE, Transport.class, true);
 		viewer.addLayer(TAB_AMBULANCE, BestRefugeForCivilian.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, false);
@@ -93,11 +112,12 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_AMBULANCE, VisetedBuiliding.class, true);
 		viewer.addLayer(TAB_AMBULANCE, CivilianDeathTimeLayer.class, false);
 		viewer.addLayer(TAB_AMBULANCE, WorstCaseDeathTime.class, false);
-		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, true);
-		viewer.addLayer(TAB_AMBULANCE, RepresentCanNotRescueCivilian.class, true);
+		viewer.addLayer(TAB_AMBULANCE, CivilianSaveTimeLayer.class, false);
+		viewer.addLayer(TAB_AMBULANCE, RepresentCanNotRescueCivilian.class, false);
 		viewer.addLayer(TAB_AMBULANCE, SightPolygonLayer.class, false);
 		viewer.addLayer(TAB_AMBULANCE, ViewMistake.class, false);
 		
+
 	}
 	
 }

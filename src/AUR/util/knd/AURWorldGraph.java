@@ -702,6 +702,8 @@ public class AURWorldGraph extends AbstractModule {
 			return this;
 		}
 
+		this.fireSimulator.step();
+		
 		if (ai.getChanged() == null) {
 			changes = new ArrayList<>();
 		} else {
@@ -734,8 +736,6 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		
 		this.dijkstra(this.ai.getPosition());
-		
-		this.fireSimulator.step();
 		
 		for (EntityID entID : changes) {
 			AURAreaGraph ag = getAreaGraph(entID);
@@ -840,8 +840,16 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		fromAg.lastDijkstraEntranceNode = startNullNode;
 		
+		int fx = (int) this.ai.getX();
+		int fy = (int) this.ai.getY();
+		
+		if(fromID.equals(this.ai.getPosition()) == false) {
+			fx = fromAg.getX();
+			fy = fromAg.getY();
+		}
+		
 		if(fromID.equals(this.ai.getPosition())) {
-			ArrayList<AUREdgeToStand> etps = fromAg.getEdgesToPerceptiblePolygons((int) ai.getX(), (int) ai.getY());
+			ArrayList<AUREdgeToStand> etps = fromAg.getEdgesToPerceptiblePolygons(fx, fy);
 			for(AUREdgeToStand etp : etps) {
 				etp.fromNode.pre = startNullNode;
 				etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish = etp;
@@ -849,15 +857,14 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		
 		if(fromID.equals(this.ai.getPosition())) {
-			ArrayList<AUREdgeToStand> etss = fromAg.getEdgesToSightPolygons((int) ai.getX(), (int) ai.getY());
+			ArrayList<AUREdgeToStand> etss = fromAg.getEdgesToSightPolygons(fx, fy);
 			for(AUREdgeToStand ets : etss) {
 				ets.fromNode.pre = startNullNode;
 				ets.toSeeAreaGraph.getBuilding().edgeToSeeInside = ets;
 			}
 		}
 		
-		
-		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(ai.getX(), ai.getY());
+		ArrayList<AURNode> startNodes = fromAg.getReachabeEdgeNodes(fx, fy);
 		if (startNodes.isEmpty()) {
 			return;
 		}
@@ -1045,7 +1052,16 @@ public class AURWorldGraph extends AbstractModule {
 			return;
 		}
 		fromAg.lastNoBlockadeDijkstraEntranceNode = startNullNode;
-		ArrayList<AURNode> startNodes = fromAg.getEdgeToAllBorderCenters(ai.getX(), ai.getY());
+		
+		int fx = (int) this.ai.getX();
+		int fy = (int) this.ai.getY();
+		
+		if(fromID.equals(this.ai.getPosition()) == false) {
+			fx = fromAg.getX();
+			fy = fromAg.getY();
+		}
+		
+		ArrayList<AURNode> startNodes = fromAg.getEdgeToAllBorderCenters(fx, fy);
 		if (startNodes.isEmpty()) {
 			return;
 		}
