@@ -1,6 +1,7 @@
 package AUR.module.complex.self;
 
 import AUR.util.ambulance.AmbulanceUtil;
+import AUR.util.ambulance.Information.AgentRateDeterminer;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURWorldGraph;
@@ -13,6 +14,7 @@ import adf.agent.module.ModuleManager;
 import adf.agent.precompute.PrecomputeData;
 import adf.component.module.algorithm.Clustering;
 import adf.component.module.complex.HumanDetector;
+import rescuecore2.components.Agent;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
 
@@ -111,15 +113,22 @@ public class AURHumanDetector extends HumanDetector
 
         if (this.result == null)
         {
+            this.result = this.calcTargetAgent();
+
             if(this.result == null) {
                 this.result = this.calcTarget();
             }
         }
 
+        StandardEntity st = worldInfo.getEntity(result);
+        if(st instanceof Human) {
+            this.rescueInfo.ambo.workOnIt = (Human)(st);
+        }
 
-        this.rescueInfo.ambo.workOnIt = rescueInfo.civiliansInfo.get(result);
         return this;
     }
+
+
 
     private boolean chackAmboWork(){
         return true;
@@ -185,7 +194,7 @@ public class AURHumanDetector extends HumanDetector
 
         List<CivilianInfo> civilians = new LinkedList<>();
         civilians.addAll(rescueInfo.civiliansInfo.values());
-
+        
 
         // TODO HaHa:D
         this.removeCantRescue(civilians);
@@ -201,6 +210,29 @@ public class AURHumanDetector extends HumanDetector
 
         return null;
     }
+
+    private EntityID calcTargetAgent() {
+
+        List<EntityID> agents = new LinkedList<>();
+        agents.addAll(rescueInfo.agentsRate.keySet());
+
+        EntityID maxAgent = null;
+        double maxValue = 0;
+        for(EntityID id : agents) {
+            if (rescueInfo.agentsRate.get(id).doubleValue() > 1) {
+                if (rescueInfo.agentsRate.get(id).doubleValue() > maxValue) {
+                    maxValue = rescueInfo.agentsRate.get(id);
+                    maxAgent = id;
+                }
+            }
+        }
+
+        if(maxAgent != null){
+            return maxAgent;
+        }
+        return null;
+    }
+
 
     private List<CivilianInfo> removeCantRescue(List<CivilianInfo> civilians){
 

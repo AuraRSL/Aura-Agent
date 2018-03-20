@@ -19,6 +19,7 @@ import adf.component.module.complex.Search;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.*;
+import rescuecore2.standard.view.BuildingLayer;
 import rescuecore2.worldmodel.EntityID;
 
 import java.util.*;
@@ -118,11 +119,35 @@ public class AURAmbulanceSearch extends Search
             return this;
         }
 
-        this.removeBulding();
+        this.removevisitedBulding();
+        this.removeBuringBulding();
         return this;
     }
 
-    public void removeBulding(){
+    private void removeBuringBulding() {
+
+        boolean flag = false;
+        for(EntityID id : worldInfo.getChanged().getChangedEntities()){
+            StandardEntity entity = worldInfo.getEntity(id);
+            if(entity instanceof Building){
+                Building b = (Building) entity;
+                if(b.isOnFire()){
+                    flag = true;
+                    break;
+                }
+            }
+        }
+        if(flag == true){
+            for(EntityID id : worldInfo.getChanged().getChangedEntities()){
+                StandardEntity entity = worldInfo.getEntity(id);
+                if(entity instanceof Building){
+                    this.rescueInfo.buildingsInfo.get(id).rate = 0;
+                }
+            }
+        }
+    }
+
+    public void removevisitedBulding(){
 
         boolean intersect = false;
         for(EntityID id : agentInfo.getChanged().getChangedEntities()) {
