@@ -30,7 +30,7 @@ import rescuecore2.worldmodel.EntityID;
  */
 public class AURPoliceScoreGraph extends AbstractModule {
         public HashMap<EntityID, AURAreaGraph> areas = new HashMap<>();
-        private Clustering clustering;
+        private final Clustering clustering;
         public AgentInfo ai;
         public WorldInfo wi;
         public ScenarioInfo si;
@@ -96,6 +96,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
                 }
                 maxDistToCluster += 50;
+                
                 // --
                 
                 Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> worldBounds = wi.getWorldBounds();
@@ -131,6 +132,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, 0.1);
                         setAliveBlockadesScore(area, 0.0);
+                        setBroknessScore(area, 0.1);
                 }
                 pQueue.addAll(wsg.areas.values());
                 return this;
@@ -175,10 +177,14 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void addRefugeScore(AURAreaGraph area, double score) {
-                if(! area.isRefuge()){
-                        score = 0;
+                for(AURAreaGraph ag : area.neighbours){
+                        if(ag.isRoad()){
+                                ag.baseScore += score;
+                        }
                 }
-                area.baseScore += score;
+                if(area.isRefuge()){
+                        area.baseScore += score;
+                }
         }
 
         private void addClusterScore(AURAreaGraph area, double score) {
@@ -252,6 +258,10 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                 }
                         }         
                 }
+        }
+
+        private void setBroknessScore(AURAreaGraph area, double d) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
         
 
