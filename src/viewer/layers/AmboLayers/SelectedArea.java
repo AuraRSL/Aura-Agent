@@ -18,7 +18,7 @@ public class SelectedArea extends K_ViewerLayer {
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
         g2.setStroke(new BasicStroke(2));
-        g2.setColor(Color.orange);
+        g2.setColor(Color.pink);
         if(selected_ag != null){
             Area area = selected_ag.area;
             Polygon polygon = kst.getTransformedPolygon(area.getShape());

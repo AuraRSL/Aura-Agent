@@ -19,7 +19,7 @@ public class ViewMistake extends K_ViewerLayer {
 
     @Override
     public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
-        g2.setStroke(new BasicStroke(4));
+        g2.setStroke(new BasicStroke(3));
         g2.setColor(new Color(255, 32, 156, 230));
         if(wsg.rescueInfo != null) {
             int r = 5;

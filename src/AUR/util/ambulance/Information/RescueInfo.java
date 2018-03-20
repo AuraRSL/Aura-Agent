@@ -3,6 +3,7 @@ package AUR.util.ambulance.Information;
 
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
+import adf.agent.action.common.ActionMove;
 import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
@@ -33,9 +34,11 @@ public class RescueInfo extends AbstractModule {
     public static final int maxHp = 10000;
     public static final int thresholdRestDmg = 60;
     public static final int gasStationExplosionRange = 50000;
-    public static int maxTravelTime = 50;
-    public static int moveDistance = 40000;
-    public static final int maxDistanceFromFire = Integer.MAX_VALUE;
+    public static final int maxTravelTime = 50;
+    public static final int moveDistance = 40000;
+    public int maxTravelCost = 1000000;
+    public int maxDistance = 1000000;
+    public static final int MAXDistance = 1000000;
     public static final int maxBrokness = 100;
     public static final int maxTemperature = 47;
     public  int losDamge;
@@ -44,6 +47,9 @@ public class RescueInfo extends AbstractModule {
 
     public AURWorldGraph wsg;
     public AmbulanceInfo ambo;
+
+
+    public ActionMove temptest;
     public int agentSpeed;
 
     //Detector
@@ -53,7 +59,9 @@ public class RescueInfo extends AbstractModule {
     public Set<CivilianInfo> canNotRescueCivilian;
 
     //Search
-    public Map<EntityID, BuildingInfo> buildingInfo;
+    public Map<EntityID, BuildingInfo> buildingsInfo;
+    public Set<BuildingInfo> searchList;
+    public Set<BuildingInfo> visitedList;
 
 
     public RescueInfo(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData){
@@ -63,7 +71,9 @@ public class RescueInfo extends AbstractModule {
         this.civiliansInfo = new HashMap<>();
         this.clusterEntity = new HashSet<>();
         this.canNotRescueCivilian = new HashSet<>();
-        this.buildingInfo = new HashMap<>();
+        this.buildingsInfo = new HashMap<>();
+        this.searchList = new HashSet<>();
+        this.visitedList = new HashSet<>();
         this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
         this.wsg.rescueInfo = this;
     }
@@ -75,14 +85,19 @@ public class RescueInfo extends AbstractModule {
         this.agentSpeed = 30000;
         this.losDamge = wsg.si.getPerceptionLosPrecisionDamage();
         this.losHp = wsg.si.getPerceptionLosPrecisionHp();
+        double maxX = worldInfo.getBounds().getMaxX();
+        double maxY = worldInfo.getBounds().getMaxY();
+        this.maxDistance = (int)( Math.sqrt( (maxX*maxX) + (maxY*maxY) ) );
         this.initRefuge();
         this.initBulding();
+
     }
 
     private void initBulding(){
 
         for(StandardEntity entity : worldInfo.getEntitiesOfType(
                 BUILDING,
+                REFUGE,
                 GAS_STATION,
                 AMBULANCE_CENTRE,
                 FIRE_STATION,
@@ -92,10 +107,19 @@ public class RescueInfo extends AbstractModule {
 
                 Building b = (Building)entity;
 
-                this.buildingInfo.put(entity.getID(), new BuildingInfo(wsg, this , b));
+                this.buildingsInfo.put(entity.getID(), new BuildingInfo(wsg, this , b));
 
             }
         }
+
+        int maxD = 0;
+        for(BuildingInfo b : this.buildingsInfo.values()){
+
+            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE - 1e4)){
+                maxD = b.travelCostTobulding;
+            }
+        }
+        this.maxTravelCost = maxD;
     }
 
     private void initRefuge(){
@@ -133,9 +157,15 @@ public class RescueInfo extends AbstractModule {
     }
 
     private void updateBuildingInfo(){
-        for(BuildingInfo b : this.buildingInfo.values()){
+        int maxD = 0;
+        for(BuildingInfo b : this.buildingsInfo.values()){
             b.updateInformation();
+            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE - 1e4) ){
+                maxD = b.travelCostTobulding;
+            }
         }
+        this.maxTravelCost = maxD;
+
     }
 
     private void updateCycle(){

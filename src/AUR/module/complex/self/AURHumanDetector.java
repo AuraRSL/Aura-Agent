@@ -185,13 +185,14 @@ public class AURHumanDetector extends HumanDetector
 
         List<CivilianInfo> civilians = new LinkedList<>();
         civilians.addAll(rescueInfo.civiliansInfo.values());
-        Collections.sort(civilians , AmbulanceUtil.RateSorter);
+
 
         // TODO HaHa:D
         this.removeCantRescue(civilians);
 
         this.removeLowRate(civilians);
 
+        Collections.sort(civilians , AmbulanceUtil.CivilianRateSorter);
         if(civilians.size() > 0 ){
 
             return civilians.get(0).getID();

@@ -1,5 +1,6 @@
 package viewer.layers.AmboLayers;
 
+import AUR.util.ambulance.Information.BuildingInfo;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
@@ -22,7 +23,9 @@ public class WorkOnIt extends K_ViewerLayer {
         int r = 5;
         if(wsg.rescueInfo != null) {
             if (wsg.rescueInfo.ambo != null) {
+
                 CivilianInfo workOnIt = wsg.rescueInfo.ambo.workOnIt;
+                BuildingInfo searchTarget = wsg.rescueInfo.ambo.searchTarget;
                 if (workOnIt != null) {
                     if (workOnIt.me.isXDefined() && workOnIt.me.isYDefined()) {
                         g2.drawOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r + 1, 2 * r + 1);
@@ -30,6 +33,15 @@ public class WorkOnIt extends K_ViewerLayer {
                         g2.fillOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r, 2 * r);
                     }
                 }
+                if (searchTarget != null){
+                    if (workOnIt == null || (workOnIt != null && !workOnIt.getPosition().equals(searchTarget.me.getID()) ) ) {
+                        Polygon polygon = kst.getTransformedPolygon(searchTarget.me.getShape());
+                        g2.setColor(new Color(255, 251, 13, 230));
+                        g2.drawPolygon(polygon);
+                        g2.setColor(new Color(255, 251, 13, 163));
+                        g2.fill(polygon);
+                    }
+                 }
             }
         }
         g2.setStroke(new BasicStroke(1));
