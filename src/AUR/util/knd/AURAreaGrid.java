@@ -73,50 +73,27 @@ public class AURAreaGrid {
 	};
 
 	public final static int dij_8[][] = {
-		{ -1, +1 },
-		{ +0, +1 },
-		{ +1, +1 },
-		{ -1, +0 },
-		{ +1, +0 },
-		{ -1, -1 },
-		{ +0, -1 },
-		{ +1, -1 }
-	};
-	
-//	public final static double dij_8_costCoefficient[] = {
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2
-//	};
-	
-	public final static int[][] dij_9 = {
-		{-1, +1},
 		{+0, +1},
-		{+1, +1},
 		{-1, +0},
-		{+0, +0},
 		{+1, +0},
-		{-1, -1},
 		{+0, -1},
+		{-1, +1},
+		{+1, +1},
+		{-1, -1},
 		{+1, -1}
 	};
-	
-//	public final static double dij_9_costCoefficient[] = {
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		0,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2,
-//	};
+
+	public final static int[][] dij_9 = {
+		{+0, +0},
+		{+0, +1},
+		{-1, +0},
+		{+1, +0},
+		{+0, -1},
+		{-1, +1},
+		{+1, +1},
+		{-1, -1},
+		{+1, -1}
+	};
 	
 	private void checkGridArraySize(int m, int n) {
 		if (currentSizeM >= m && currentSizeN >= n) {
