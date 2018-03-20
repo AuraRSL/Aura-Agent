@@ -50,7 +50,7 @@ public class CivilianInSideBuldingInfo extends K_ViewerLayer {
         double damage = civilian.rateDeterminer.effectDamage(0.5);
 
         double hp = civilian.rateDeterminer.effectHp(0.5);
-        double burid = civilian.rateDeterminer.effectBuridness(0.5);
+        double burid = civilian.rateDeterminer.effectBuriedness(0.5);
         double travelTime = civilian.rateDeterminer.effectTravelTime(0.25);
         double travelTimetoRefuge = civilian.rateDeterminer.effectTravelTimeToRefuge(0.25);
 

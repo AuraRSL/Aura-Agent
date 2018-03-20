@@ -21,7 +21,7 @@ public class BuildingRateDeterminer {
 
         rate += clusterEffect(wsg, rescueInfo, building, 1);
         rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.4);
-        rate += distanceFromFireEffect(wsg, rescueInfo, building, 0.3);
+        rate += distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
         rate += broknessEffect(wsg, rescueInfo, building, 0.35);
         rate += buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
         rate += distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
@@ -31,10 +31,12 @@ public class BuildingRateDeterminer {
             rate += distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.3);
         }
         // more effectess
+        // agent Position in Bulding
         // distance from Cluster without
         // distance form Refuge
         // distance form Gas Station
         // Civilian Rally
+        // Builidng hayii ke aval Sim tosh agent hast
 
 
         return rate;
@@ -52,6 +54,9 @@ public class BuildingRateDeterminer {
             return true;
         }
         if(rescueInfo.visitedList.contains(building)){
+            return true;
+        }
+        if(building.me.isOnFire() || (building.me.isFierynessDefined() && building.me.getFieryness() == 8) ){
             return true;
         }
         if(TravelCostToBuildingEffect(wsg, rescueInfo, building, 1) < 0 ){

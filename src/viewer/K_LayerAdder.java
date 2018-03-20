@@ -101,13 +101,15 @@ public class K_LayerAdder {
 
 		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);
-		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, false);
+		viewer.addLayer(TAB_AMBULANCE, WorkOnIt.class, true);
 		viewer.addLayer(TAB_AMBULANCE, Transport.class, true);
 		viewer.addLayer(TAB_AMBULANCE, BestRefugeForCivilian.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianInSideBuldingInfo.class, false);
+		viewer.addLayer(TAB_AMBULANCE, AgentInSideArea.class, false);
 		viewer.addLayer(TAB_AMBULANCE, BuildingInfoLayer.class, true);
 		viewer.addLayer(TAB_AMBULANCE, CivilianRate.class, true);
-		viewer.addLayer(TAB_AMBULANCE, BuildingRate.class, true);
+		viewer.addLayer(TAB_AMBULANCE, AgentRate.class, true);
+		viewer.addLayer(TAB_AMBULANCE, BuildingRate.class, false);
 		viewer.addLayer(TAB_AMBULANCE, SearchTargets.class, true);
 		viewer.addLayer(TAB_AMBULANCE, VisetedBuiliding.class, true);
 		viewer.addLayer(TAB_AMBULANCE, CivilianDeathTimeLayer.class, false);
