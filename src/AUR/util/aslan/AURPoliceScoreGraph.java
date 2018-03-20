@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.PriorityQueue;
 import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
@@ -119,16 +120,17 @@ public class AURPoliceScoreGraph extends AbstractModule {
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
                 pQueue.clear();
+                wsg.NoBlockadeDijkstra(ai.getPosition());
+                wsg.dijkstra(ai.getPosition());
                 
                 // Set dynamic scores
-                wsg.NoBlockadeDijkstra(ai.getPosition());
                 decreasePoliceAreasScore(0.8);
                 setDeadPoliceClusterScore(0.3 / this.clustering.getClusterNumber() * 2);
+                setBlockedHumansScore(0.4);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, 0.1);
                         setAliveBlockadesScore(area, 0.0);
-                        blockedHumansScore(area, 1.2);
                 }
                 pQueue.addAll(wsg.areas.values());
                 return this;
@@ -212,8 +214,13 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
         }
         
-        private void blockedHumansScore(AURAreaGraph area, double d) {
-                
+        private void setBlockedHumansScore(double score) {
+                for(StandardEntity agent : wi.getEntitiesOfType(StandardEntityURN.CIVILIAN, StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.FIRE_BRIGADE)){
+                        AURAreaGraph pos = wsg.getAreaGraph(((Human) agent).getPosition());
+                        if(pos.getTravelCost() == AURConstants.Math.INT_INF || pos.getNoBlockadeTravelCost() * 3 < pos.getTravelCost()){
+                                pos.secondaryScore += score;
+                        }
+                }
         }
 
         private void addGasStationScore(AURAreaGraph area, double score) {
