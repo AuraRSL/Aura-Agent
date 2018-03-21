@@ -41,7 +41,7 @@ public class AURWorldGraph extends AbstractModule {
 	public HashMap<EntityID, AURAreaGraph> areas = new HashMap<EntityID, AURAreaGraph>();
 	public AURAreaGrid instanceAreaGrid = new AURAreaGrid();
 	public Collection<EntityID> changes = null;
-	public ArrayList<AURWall> walls = new ArrayList<AURWall>();
+//	public ArrayList<AURWall> walls = new ArrayList<AURWall>();
 	public AURNode startNullNode = new AURNode(0, 0, null, null);
 	public EntityID lastDijkstraFrom = null;
 	public EntityID lastNoBlockadeDijkstraFrom = null;
@@ -509,7 +509,7 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		setNeighbours();
 		addBorders();
-		addWalls();
+
 		setCommonWalls();
 		addPerceptibleBuildings();
 		addSightableBuildings();
@@ -586,37 +586,6 @@ public class AURWorldGraph extends AbstractModule {
 	}
 	
 	public int maxAgentOrder = 0;
-
-	public void addWalls() {
-		for (AURAreaGraph ag : areas.values()) {
-			if (ag.isBuilding() == false) {
-				continue;
-			}
-			for (Edge edge : ag.area.getEdges()) {
-				if (edge.isPassable() == false) {
-					walls.add(new AURWall(ag, edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY()));
-				}
-			}
-		}
-		ArrayList<AURWall> dels = new ArrayList<>();
-		AURWall iWall;
-		AURWall jWall;
-		for (int i = 0; i < walls.size(); i++) {
-			iWall = walls.get(i);
-			if (iWall.vis == true) {
-				continue;
-			}
-			for (int j = i + 1; j < walls.size(); j++) {
-				jWall = walls.get(j);
-				if (iWall.equals(jWall)) {
-					dels.add(jWall);
-					jWall.vis = true;
-				}
-			}
-		}
-		walls.removeAll(dels);
-		walls.addAll(dels);
-	}
 
 	public void setNeighbours() {
 		for (AURAreaGraph area : areas.values()) {
