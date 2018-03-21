@@ -65,9 +65,9 @@ public class AURFireSimBuilding {
 //			this.ignite();
 //		}
 		
-		if(this.building.building.getID().getValue() == 959) {
-			this.ignite();
-		}
+//		if(this.building.building.getID().getValue() == 959) {
+//			this.ignite();
+//		}
 	}
 
 	public void update() {		
