@@ -178,6 +178,38 @@ public class AURGeoUtil {
 		return result;
 	}
 	
+	public static Polygon getSimplifiedPolygon(Polygon p, double d) {
+		Polygon result = new Polygon();
+		int lastX = p.xpoints[0];
+		int lastY = p.ypoints[0];
+		result.addPoint(lastX, lastY);
+		for(int i = 1; i < p.npoints; i++) {
+			double v1x = p.xpoints[i] - lastX;
+			double v1y = p.ypoints[i] - lastY;
+			double v2x = p.xpoints[(i + 1) % p.npoints] - p.xpoints[i];
+			double v2y = p.ypoints[(i + 1) % p.npoints] - p.ypoints[i];
+			double l1 = Math.hypot(v1x, v1y);
+			double l2 = Math.hypot(v2x, v2y);
+			if (Math.abs(l1) < AURGeoUtil.EPS || Math.abs(l2) < AURGeoUtil.EPS) {
+				continue;
+			}
+			v1x /= l1;
+			v1y /= l1;
+			v2x /= l2;
+			v2y /= l2;
+			double v3x = v2x - v1x;
+			double v3y = v2y - v1y;
+			double l3 = Math.hypot(v3x, v3y);
+			if (l3 < d) {
+				continue;
+			}
+			lastX = p.xpoints[i];
+			lastY = p.ypoints[i];
+			result.addPoint(lastX, lastY);
+		}
+		return result;
+	}
+	
 //	public static boolean hitRayAllEdges(Polygon p, double ray[]) {
 //		double ip[] = new double[2];
 //		boolean result = false;
