@@ -2,11 +2,12 @@ package viewer.layers.AmboLayers;
 
 
 import AUR.util.ambulance.Information.BuildingInfo;
-import AUR.util.ambulance.Information.BuildingRateDeterminer;
+import AUR.util.ambulance.ProbabilityDeterminant.BuildingRateDeterminer;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.StandardEntityURN;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 
@@ -65,9 +66,46 @@ public class BuildingInfoLayer extends K_ViewerLayer {
         rate += "\ndistance form Refuge : " + disFormRefuge + " > " + building.distanceFromRefuge;
         rate += "\ndistance form Refuge : " + disFormRefugeSearch + " > " ;
 
-        rate += " \n Rate :: " + building.rate;
+        rate += " \n Rate : " + building.rate;
+
+        rate += ignoreBulding( wsg, rescueInfo, building);
+        rate += "[[[[";
 
         return rate;
     }
+    public static String ignoreBulding( AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building){
+        String rate = " ";
+        if(rescueInfo == null || wsg == null || building == null){
+            return rate;
+        }
+        rate += "1";
+        if(building.me.getURN().equals(StandardEntityURN.REFUGE)
+                || building.me.isOnFire()
+                || (building.me.isFierynessDefined() && building.me.getFieryness() == 8)
+                ||  (building.me.isBrokennessDefined() && building.me.getBrokenness() == 0)){
+            return rate;
+        }
+        rate += "2";
+        if(rescueInfo.visitedList.contains(building)){
+            return rate;
+        }
+        rate += "2";
+        AURAreaGraph areaB = wsg.getAreaGraph(building.me.getID());
+        if(areaB.isBuilding()){
+            if(areaB.getBuilding().fireSimBuilding.isOnFire() || areaB.getBuilding().fireSimBuilding.getEstimatedFieryness() == 8 ){
+                return rate;
+            }
+        }
+        rate += "3";
+        if(building.me.isOnFire() || (building.me.isFierynessDefined() && building.me.getFieryness() == 8) ){
+            return rate;
+        }
+        rate += "4";
+        if(BuildingRateDeterminer.TravelCostToBuildingEffect(wsg, rescueInfo, building, 1) < 0 ){
+            return rate;
+        }
+        rate += "5\n";
 
+        return rate;
+    }
 }

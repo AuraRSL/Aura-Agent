@@ -189,11 +189,10 @@ public class SampleTacticsAmbulanceTeam extends TacticsAmbulanceTeam
 //            return action;
         }
         target = this.search.calc().getTarget();
+        target = new EntityID(20738);
         action = this.actionExtMove.setTarget(target).calc().getAction();
         if (action != null)
         {
-            System.out.println("target : " + target);
-            System.out.println(""+action);
             this.sendActionMessage(messageManager, agent, action);
             return action;
         }

@@ -2,6 +2,7 @@ package viewer.layers.AmboLayers;
 
 
 import AUR.util.ambulance.Information.*;
+import AUR.util.ambulance.ProbabilityDeterminant.AgentRateDeterminer;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.Area;

@@ -1,7 +1,6 @@
 package AUR.module.complex.self;
 
 import AUR.util.ambulance.AmbulanceUtil;
-import AUR.util.ambulance.Information.AgentRateDeterminer;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURWorldGraph;
@@ -14,7 +13,6 @@ import adf.agent.module.ModuleManager;
 import adf.agent.precompute.PrecomputeData;
 import adf.component.module.algorithm.Clustering;
 import adf.component.module.complex.HumanDetector;
-import rescuecore2.components.Agent;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
 

@@ -196,10 +196,9 @@ public class AURAmbulanceActionExtMove extends ExtAction
             }
         }
         if(this.result instanceof ActionMove){
-            System.out.println(result);
-            this.result = walkWatcher.check((ActionMove)result);//TODO BUG Paris first ambu //ActionMove [usePosition=true, posX=104400, posY=659700, path=[48211, 4388, 14665, 503]]
+
+//            this.result = walkWatcher.check((ActionMove)result);//TODO BUG Paris first ambu //ActionMove [usePosition=true, posX=104400, posY=659700, path=[48211, 4388, 14665, 503]]
 //            ActionMove [usePosition=true, posX=119436, posY=669433, path=[48211]]
-            System.out.println(result);
         }
 
         this.wsg.rescueInfo.temptest = (ActionMove) this.result;

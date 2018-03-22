@@ -1,6 +1,7 @@
 package AUR.util.ambulance.Information;
 
 
+import AUR.util.ambulance.ProbabilityDeterminant.AgentRateDeterminer;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.common.ActionMove;
@@ -65,6 +66,7 @@ public class RescueInfo extends AbstractModule {
 
 
 
+
     public RescueInfo(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData){
         super(ai, wi, si, moduleManager, developData);
         this.ambo = new AmbulanceInfo((AmbulanceTeam)ai.me());
@@ -110,6 +112,7 @@ public class RescueInfo extends AbstractModule {
                 Building b = (Building)entity;
 
                 this.buildingsInfo.put(entity.getID(), new BuildingInfo(wsg, this , b));
+
 
             }
         }
