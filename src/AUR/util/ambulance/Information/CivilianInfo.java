@@ -3,6 +3,7 @@ package AUR.util.ambulance.Information;
 import AUR.util.ambulance.DeathTime.FireDeathTime;
 import AUR.util.ambulance.DeathTime.SimpleDeathTime;
 import AUR.util.ambulance.DeathTime.ZJUParticleFilter;
+import AUR.util.ambulance.ProbabilityDeterminant.HumanRateDeterminer;
 import AUR.util.knd.AURWorldGraph;
 import maps.convert.legacy2gml.BuildingInfo;
 import rescuecore2.standard.entities.AmbulanceTeam;

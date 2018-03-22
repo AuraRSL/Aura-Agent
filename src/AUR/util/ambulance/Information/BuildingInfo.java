@@ -1,5 +1,6 @@
 package AUR.util.ambulance.Information;
 
+import AUR.util.ambulance.ProbabilityDeterminant.BuildingRateDeterminer;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.*;
 

@@ -1,6 +1,11 @@
-package AUR.util.ambulance.Information;
+package AUR.util.ambulance.ProbabilityDeterminant;
 
+import AUR.util.ambulance.Information.BuildingInfo;
+import AUR.util.ambulance.Information.RescueInfo;
+import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
+import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -25,10 +30,12 @@ public class BuildingRateDeterminer {
         rate += broknessEffect(wsg, rescueInfo, building, 0.35);
         rate += buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
         rate += distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
+        rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.7);
 
         if(rate >= 1){
-            rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.6);
-            rate += distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.3);
+            rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.7);
+            rate += distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.2);
+
         }
         // more effectess
         // agent Position in Bulding
@@ -55,6 +62,12 @@ public class BuildingRateDeterminer {
         }
         if(rescueInfo.visitedList.contains(building)){
             return true;
+        }
+        AURAreaGraph areaB = wsg.getAreaGraph(building.me.getID());
+        if(areaB.isBuilding()){
+            if(areaB.getBuilding().fireSimBuilding.isOnFire() || areaB.getBuilding().fireSimBuilding.getEstimatedFieryness() == 8 ){
+                return true;
+            }
         }
         if(building.me.isOnFire() || (building.me.isFierynessDefined() && building.me.getFieryness() == 8) ){
             return true;
@@ -90,7 +103,7 @@ public class BuildingRateDeterminer {
             double tempRate = Math.pow(RescueInfo.maxBrokness - building.me.getBrokenness() , 2);
             return (tempRate / Math.pow(RescueInfo.maxBrokness, 2) ) * coefficient;
         }
-        return 0.35 * coefficient;
+        return 0.5 * coefficient;
     }
 
     public static double buildingTemperatureEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
@@ -98,7 +111,7 @@ public class BuildingRateDeterminer {
             double tempRate = Math.pow(RescueInfo.maxTemperature - building.me.getTemperature(),2);
             return (tempRate / Math.pow(RescueInfo.maxTemperature,2) ) * coefficient;
         }
-        return 0.35 * coefficient;
+        return 0.6 * coefficient;
     }
     public static double distanceFromRefugeEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
         double tempRate = rescueInfo.maxDistance - building.distanceFromRefuge ;
@@ -116,5 +129,21 @@ public class BuildingRateDeterminer {
         }
         double tempRate = maxD - building.distanceFromRefuge ;
         return (tempRate/ maxD)*coefficient;
+    }
+    //TODO
+    public static double otherAgentPossionEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
+        for(StandardEntity entity : wsg.wi.getEntitiesOfType(
+                StandardEntityURN.AMBULANCE_TEAM,
+                StandardEntityURN.FIRE_BRIGADE,
+                StandardEntityURN.POLICE_FORCE)){
+            if(entity instanceof Human){
+                Human agent = (Human)entity;
+                if(agent.isPositionDefined() && agent.getPosition().equals(building.me.getID())){
+                    return 1D*coefficient;
+                }
+            }
+        }
+
+        return 0;
     }
 }

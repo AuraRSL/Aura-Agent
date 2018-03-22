@@ -1,5 +1,6 @@
-package AUR.util.ambulance.Information;
+package AUR.util.ambulance.ProbabilityDeterminant;
 
+import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
@@ -19,7 +20,7 @@ public class AgentRateDeterminer {
 
 
         rate += clusterEffect(wsg, rescueInfo, human, 1);
-        rate += travelTimeEffect(wsg, rescueInfo, human, 1.);
+        rate += travelTimeEffect(wsg, rescueInfo, human, 1);
         rate += distanceFromFireEffect(wsg, rescueInfo, human, 0.2);
         rate += buriednessEffect(wsg, rescueInfo, human, 0.35);
 
@@ -83,7 +84,7 @@ public class AgentRateDeterminer {
     }
     public static double buriednessEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human ,double coefficient){
         if(!human.isBuriednessDefined()){
-            return 0.3*coefficient ;
+            return 0;
         }
         if(human.getBuriedness() == 0){
             return 0;

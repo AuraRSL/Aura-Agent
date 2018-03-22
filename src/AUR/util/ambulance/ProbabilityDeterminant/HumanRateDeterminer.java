@@ -1,7 +1,9 @@
-package AUR.util.ambulance.Information;
+package AUR.util.ambulance.ProbabilityDeterminant;
 
 
 import AUR.util.ambulance.AmbulanceUtil;
+import AUR.util.ambulance.Information.CivilianInfo;
+import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Building;
