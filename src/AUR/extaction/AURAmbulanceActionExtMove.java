@@ -1,5 +1,6 @@
 package AUR.extaction;
 
+import AUR.util.knd.AURWalkWatcher;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
@@ -27,6 +28,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
 
     private int thresholdRest;
     private int kernelTime;
+    private AURWalkWatcher walkWatcher = null;
     private AURWorldGraph wsg;
 
     private EntityID target;
@@ -51,6 +53,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
                 break;
         }
         this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
+        this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
     }
 
     @Override
@@ -168,8 +171,10 @@ public class AURAmbulanceActionExtMove extends ExtAction
         }
 
         StandardEntity se = worldInfo.getEntity(this.target);
+
         if(se instanceof Building) {
             ActionMove actionMove = wsg.getMoveActionToSeeInside(agent.getPosition(), this.target);
+
             if (actionMove != null && actionMove.getPath().size() > 0) {
                 this.result = actionMove;
             }
@@ -189,6 +194,11 @@ public class AURAmbulanceActionExtMove extends ExtAction
             if(path != null && path.size() > 0){
                 this.result = new ActionMove(path, human.getX() , human.getY());
             }
+        }
+        if(this.result instanceof ActionMove){
+
+//            this.result = walkWatcher.check((ActionMove)result);//TODO BUG Paris first ambu //ActionMove [usePosition=true, posX=104400, posY=659700, path=[48211, 4388, 14665, 503]]
+//            ActionMove [usePosition=true, posX=119436, posY=669433, path=[48211]]
         }
 
         this.wsg.rescueInfo.temptest = (ActionMove) this.result;

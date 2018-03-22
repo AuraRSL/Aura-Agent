@@ -1,7 +1,9 @@
-package AUR.util.ambulance.Information;
+package AUR.util.ambulance.ProbabilityDeterminant;
 
 
 import AUR.util.ambulance.AmbulanceUtil;
+import AUR.util.ambulance.Information.CivilianInfo;
+import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Building;
@@ -41,12 +43,15 @@ public class HumanRateDeterminer {
         if(rate > 1) {
             //chose rate
             rate += effectHp(0.5);
-            rate += effectBuridness(0.5);
+            rate += effectBuriedness(0.5);
             rate += effectTravelTime(0.25);
             rate += effectTravelTimeToRefuge(0.25);
+            rate += clusterEffect(0.25);
             // MY cluster effect
             // Civilian Rally
             // distance of Fire // kamtar bashe behtare chon mohem tare vali bayad Save Time daghig bege key mimire
+            //age Raido bege civilian hast chimishe ?
+
         }
 
 
@@ -93,7 +98,10 @@ public class HumanRateDeterminer {
         return (tempRate/ RescueInfo.simulationTime)*coefficient;
     }
 
-    public double effectBuridness(double coefficient){
+    public double effectBuriedness(double coefficient){
+        if(!civilian.me.isBuriednessDefined()){
+            return 0;
+        }
         if(civilian.getBuriedness() == 0){
             return 0;
         }
@@ -123,5 +131,17 @@ public class HumanRateDeterminer {
     public double effectHp(double coefficient){
         double tempRate = RescueInfo.maxHp - civilian.getHp();
         return (tempRate/ RescueInfo.maxHp)*coefficient;
+    }
+
+    public double clusterEffect(double coefficient){
+
+        for(StandardEntity entity : wsg.rescueInfo.clusterEntity){
+            if(civilian.me.isPositionDefined()) {
+                if (entity.getID().equals(civilian.me.getPosition())) {
+                    return 1 * coefficient;
+                }
+            }
+        }
+        return 0;
     }
 }

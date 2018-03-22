@@ -1,6 +1,7 @@
 package AUR.util.ambulance.Information;
 
 
+import AUR.util.ambulance.ProbabilityDeterminant.AgentRateDeterminer;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.common.ActionMove;
@@ -14,7 +15,6 @@ import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
-import sun.applet.resources.MsgAppletViewer;
 
 import java.util.*;
 
@@ -60,8 +60,11 @@ public class RescueInfo extends AbstractModule {
 
     //Search
     public Map<EntityID, BuildingInfo> buildingsInfo;
+    public Map<EntityID, Double> agentsRate;
     public Set<BuildingInfo> searchList;
     public Set<BuildingInfo> visitedList;
+
+
 
 
     public RescueInfo(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData){
@@ -71,6 +74,7 @@ public class RescueInfo extends AbstractModule {
         this.civiliansInfo = new HashMap<>();
         this.clusterEntity = new HashSet<>();
         this.canNotRescueCivilian = new HashSet<>();
+        this.agentsRate = new HashMap<>();
         this.buildingsInfo = new HashMap<>();
         this.searchList = new HashSet<>();
         this.visitedList = new HashSet<>();
@@ -108,6 +112,7 @@ public class RescueInfo extends AbstractModule {
                 Building b = (Building)entity;
 
                 this.buildingsInfo.put(entity.getID(), new BuildingInfo(wsg, this , b));
+
 
             }
         }
@@ -181,11 +186,17 @@ public class RescueInfo extends AbstractModule {
                 Civilian civilian = (Civilian) entity;
                 updateCivilianInfo(civilian);
                 //TODO
+            }else if(      entity.getStandardURN().equals(StandardEntityURN.POLICE_FORCE)
+                        || entity.getStandardURN().equals(StandardEntityURN.AMBULANCE_TEAM)
+                        || entity.getStandardURN().equals(StandardEntityURN.FIRE_BRIGADE)){
+                Human human = (Human)entity;
+                updateAgentInfo(human);
             }
         }
         updateViwe();
 
     }
+
 
 
     public ArrayList<Line2D> testLine = new ArrayList<>();//For debug
@@ -267,6 +278,19 @@ public class RescueInfo extends AbstractModule {
             civilianInfo.updateInformation();
         }
 
+    }
+
+    private void updateAgentInfo(Human human) {
+        if(human.getID().equals(agentInfo.getID())){
+            return;
+        }
+        if(!agentsRate.containsKey(human.getID())){
+            Double rate = AgentRateDeterminer.calc(wsg, this, human);
+            agentsRate.put(human.getID(), rate);
+        }else{
+            Double rate = AgentRateDeterminer.calc(wsg, this, human);
+            agentsRate.put(human.getID(), rate);
+        }
     }
 
 

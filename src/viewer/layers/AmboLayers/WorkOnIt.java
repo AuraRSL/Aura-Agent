@@ -4,6 +4,7 @@ import AUR.util.ambulance.Information.BuildingInfo;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
+import rescuecore2.standard.entities.Human;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 
@@ -24,13 +25,13 @@ public class WorkOnIt extends K_ViewerLayer {
         if(wsg.rescueInfo != null) {
             if (wsg.rescueInfo.ambo != null) {
 
-                CivilianInfo workOnIt = wsg.rescueInfo.ambo.workOnIt;
+                Human workOnIt = wsg.rescueInfo.ambo.workOnIt;
                 BuildingInfo searchTarget = wsg.rescueInfo.ambo.searchTarget;
                 if (workOnIt != null) {
-                    if (workOnIt.me.isXDefined() && workOnIt.me.isYDefined()) {
-                        g2.drawOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r + 1, 2 * r + 1);
+                    if (workOnIt.isXDefined() && workOnIt.isYDefined()) {
+                        g2.drawOval(kst.xToScreen(workOnIt.getX()) - r, kst.yToScreen(workOnIt.getY()) - r, 2 * r + 1, 2 * r + 1);
                         g2.setColor(new Color(255, 251, 13, 163));
-                        g2.fillOval(kst.xToScreen(workOnIt.me.getX()) - r, kst.yToScreen(workOnIt.me.getY()) - r, 2 * r, 2 * r);
+                        g2.fillOval(kst.xToScreen(workOnIt.getX()) - r, kst.yToScreen(workOnIt.getY()) - r, 2 * r, 2 * r);
                     }
                 }
                 if (searchTarget != null){
