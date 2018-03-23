@@ -1,6 +1,5 @@
 package viewer;
 
-import rescuecore2.standard.entities.Building;
 import viewer.layers.knd.K_AreaNoSeeTime;
 import viewer.layers.knd.*;
 import viewer.layers.AmboLayers.*;
@@ -31,7 +30,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, K_LayerBuildings.class, true);
 		viewer.addLayer(TAB_MAP, K_LayerAliveBlockades.class, true);
 		viewer.addLayer(TAB_MAP, K_LayerAllBlockades.class, true);
-		viewer.addLayer(TAB_MAP, K_LayerWalls.class, true);
+		viewer.addLayer(TAB_MAP, K_LayerWalls.class, false);
 		viewer.addLayer(TAB_MAP, CivilianLayer.class, true);
 		viewer.addLayer(TAB_MAP, K_AgentsLayer.class, true);
 
@@ -54,6 +53,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MISC, K_MediumAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_BigAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_AreaNoSeeTime.class, false);
+		viewer.addLayer(TAB_MISC, K_CloseBuildings.class, true);
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);
@@ -63,6 +63,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_FIRE, K_InflammableBuildings.class, false);
 		viewer.addLayer(TAB_FIRE, K_ConnectedBuildings.class, false);
 		viewer.addLayer(TAB_FIRE, K_AreaExtinguishableRange.class, false);
+		viewer.addLayer(TAB_FIRE, K_FireZones.class, true);
 		
 		viewer.addLayer(TAB_SCENARIO, K_AgentExtinguishRange.class, false);
 		viewer.addLayer(TAB_SCENARIO, K_AgentPerceptionRange.class, false);

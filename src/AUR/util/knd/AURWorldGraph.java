@@ -55,6 +55,8 @@ public class AURWorldGraph extends AbstractModule {
 	public AURFireSimulator fireSimulator = null;
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
 
+	public AURFireZonesCalculator fireZonesCalculator = null;
+	
 	public int agentOrder = -1;
 
 	public RescueInfo rescueInfo; // arman axh 2018
@@ -533,6 +535,8 @@ public class AURWorldGraph extends AbstractModule {
 		
 		this.fireSimulator = new AURFireSimulator(this);
                 
+		this.fireZonesCalculator = new AURFireZonesCalculator(this);
+		
 		updateInfo(null);
 
 //		System.out.println("walls: " + walls.size());
@@ -713,6 +717,9 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		calcFireProbability();
+		
+		
+		this.fireZonesCalculator.update();
 		
 		if(AURConstants.Viewer.LAUNCH == true) {
 			K_Viewer.getInstance().update(this);

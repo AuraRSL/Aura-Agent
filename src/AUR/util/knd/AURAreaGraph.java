@@ -4,11 +4,13 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Set;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
+import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityConstants.Fieryness;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -325,6 +327,27 @@ public class AURAreaGraph {
 		return minDist;
 	}
 
+	public ArrayList<AURBuilding> getCloseBuildings() {
+		Rectangle2D bounds = this.polygon.getBounds();
+		int a = AURConstants.Misc.CLOSE_BUILDING_THRESHOLD;
+		Collection<StandardEntity> cands = wsg.wi.getObjectsInRectangle(
+			(int) bounds.getMinX() - a,
+			(int) bounds.getMinY() - a,
+			(int) bounds.getMaxX() + a,
+			(int) bounds.getMaxY() + a
+		);
+		ArrayList<AURBuilding> result = new ArrayList<>();
+		for(StandardEntity sent : cands) {
+			if(AURUtil.isBuilding(sent)) {
+				AURAreaGraph ag_ = this.wsg.getAreaGraph(sent.getID());
+				if(ag_ != null && ag_.isBuilding()) {
+					result.add(ag_.getBuilding());
+				}
+			}
+		}
+		return result;
+	}
+	
 	private int lastSeen = 0;
 
 	public int noSeeTime() {

@@ -57,7 +57,7 @@ public class AURPerceptibleAndExtinguishablePolygon {
 		Rectangle bounds4 = new Rectangle((int) cx, (int) cy - r_, r_, r_);
 		
 		for(StandardEntity sent : cands) {
-			if(isBuilding(sent) == false) {
+			if(AURUtil.isBuilding(sent) == false) {
 				continue;
 			}
 			Polygon p = (Polygon) ((Building) sent).getShape();
@@ -119,18 +119,6 @@ public class AURPerceptibleAndExtinguishablePolygon {
 		}
 		
 		return AURGeoUtil.getSimplifiedPolygon(result, 0.2);
-	}
-	
-	private static boolean isBuilding(StandardEntity sent) {
-		StandardEntityURN urn = sent.getStandardURN();
-		return (false
-			|| urn.equals(StandardEntityURN.BUILDING)
-			|| urn.equals(StandardEntityURN.GAS_STATION)
-			|| urn.equals(StandardEntityURN.REFUGE)
-			|| urn.equals(StandardEntityURN.POLICE_OFFICE)
-			|| urn.equals(StandardEntityURN.AMBULANCE_CENTRE)
-			|| urn.equals(StandardEntityURN.FIRE_STATION)
-		);
 	}
 
 }

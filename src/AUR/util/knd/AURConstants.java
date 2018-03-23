@@ -7,6 +7,10 @@ package AUR.util.knd;
 
 public class AURConstants {
 
+	public static class Misc {
+		public final static int CLOSE_BUILDING_THRESHOLD = 19 * 1000;
+	}
+	
 	public static class PathPlanning {
 		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 30;
 		public final static int POLICE_BLOCKADE_FORGET_TIME = 30;

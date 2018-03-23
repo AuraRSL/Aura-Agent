@@ -36,9 +36,9 @@ public class AURFireValueSetter {
 			p.value = 0;
 		}
 
-		calc_ConvexHull(this.points, 1.5);
-
-		calc_Capacity(this.points, 0.0);
+//		calc_ConvexHull(this.points, 1.5);
+//
+//		calc_Capacity(this.points, 0.0);
 		calc_EstimatedFieryness(this.points, 1.7);
 		calc_GasStation(this.points, 1.6);
 		calc_noName(this.points, 1.6);
@@ -83,53 +83,53 @@ public class AURFireValueSetter {
 		}
 	}
 
-	private void calc_Capacity(ArrayList<AURValuePoint> points, double coefficient) {
-		convexHullInstance.calc(points);
-		double max_ = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.getBuilding().fireSimBuilding.getCapacity();
-			if (p.temp_value > max_) {
-				max_ = p.temp_value;
-			}
-		}
-		if (max_ > 0) {
-			for (AURValuePoint p : points) {
-				p.temp_value /= max_;
-			}
-		}
-		for (AURValuePoint p : points) {
-			p.value += p.temp_value * coefficient;
-		}
-	}
+//	private void calc_Capacity(ArrayList<AURValuePoint> points, double coefficient) {
+//		convexHullInstance.calc(points);
+//		double max_ = 0;
+//		for (AURValuePoint p : points) {
+//			p.temp_value = p.areaGraph.getBuilding().fireSimBuilding.getCapacity();
+//			if (p.temp_value > max_) {
+//				max_ = p.temp_value;
+//			}
+//		}
+//		if (max_ > 0) {
+//			for (AURValuePoint p : points) {
+//				p.temp_value /= max_;
+//			}
+//		}
+//		for (AURValuePoint p : points) {
+//			p.value += p.temp_value * coefficient;
+//		}
+//	}
 
-	private void calc_ConvexHull(ArrayList<AURValuePoint> points, double coefficient) {
-		convexHullInstance.calc(points);
-		double maxDist = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = convexHullInstance.centerPoint.dist(p);
-		}
-		for (AURValuePoint p : convexHullInstance.resultPoints) {
-			p.temp_value *= 1.01;
-		}
-		for (AURValuePoint p : points) {
-			Rectangle rect = AURGeoUtil.getOffsetRect(p.areaGraph.area.getShape().getBounds(), 10000);
-			if (convexHullInstance.isOnEdge(rect)) {
-				p.temp_value *= 1.01;
-			}
-			if (p.temp_value > maxDist) {
-				maxDist = p.temp_value;
-			}
-		}
-
-		if (maxDist > 0) {
-			for (AURValuePoint p : points) {
-				p.temp_value /= maxDist;
-			}
-		}
-		for (AURValuePoint p : points) {
-			p.value += p.temp_value * coefficient;
-		}
-	}
+//	private void calc_ConvexHull(ArrayList<AURValuePoint> points, double coefficient) {
+//		convexHullInstance.calc(points);
+//		double maxDist = 0;
+//		for (AURValuePoint p : points) {
+//			p.temp_value = convexHullInstance.centerPoint.dist(p);
+//		}
+//		for (AURValuePoint p : convexHullInstance.resultPoints) {
+//			p.temp_value *= 1.01;
+//		}
+//		for (AURValuePoint p : points) {
+//			Rectangle rect = AURGeoUtil.getOffsetRect(p.areaGraph.area.getShape().getBounds(), 10000);
+//			if (convexHullInstance.isOnEdge(rect)) {
+//				p.temp_value *= 1.01;
+//			}
+//			if (p.temp_value > maxDist) {
+//				maxDist = p.temp_value;
+//			}
+//		}
+//
+//		if (maxDist > 0) {
+//			for (AURValuePoint p : points) {
+//				p.temp_value /= maxDist;
+//			}
+//		}
+//		for (AURValuePoint p : points) {
+//			p.value += p.temp_value * coefficient;
+//		}
+//	}
 
 	private void calc_EstimatedFieryness(ArrayList<AURValuePoint> points, double coefficient) {
 		for (AURValuePoint p : points) {
@@ -183,15 +183,15 @@ public class AURFireValueSetter {
 //		}
 	}
 
-	public void draw(Graphics2D g) {
-		convexHullInstance.draw(g);
-		int a = 5;
-		g.setFont(new Font("TimesRoman", Font.PLAIN, 1500));
-		for (AURValuePoint point : this.points) {
-			g.setColor(Color.gray);
-			g.fillRect((int) (point.x - a), (int) (point.y - a), 2 * a, 2 * a);
-			g.setColor(Color.black);
-			g.drawString(point.value + "", (int) (point.x), (int) (point.y));
-		}
-	}
+//	public void draw(Graphics2D g) {
+//		convexHullInstance.draw(g);
+//		int a = 5;
+//		g.setFont(new Font("TimesRoman", Font.PLAIN, 1500));
+//		for (AURValuePoint point : this.points) {
+//			g.setColor(Color.gray);
+//			g.fillRect((int) (point.x - a), (int) (point.y - a), 2 * a, 2 * a);
+//			g.setColor(Color.black);
+//			g.drawString(point.value + "", (int) (point.x), (int) (point.y));
+//		}
+//	}
 }

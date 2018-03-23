@@ -47,6 +47,8 @@ public class AURFireSimBuilding {
 	
 	public double tempVar = 0;
 	
+	private static Random rand = new Random(0);
+	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
 		this.wsg = building.wsg;
@@ -61,12 +63,16 @@ public class AURFireSimBuilding {
 		this.estimatedFuel = getInitialFuel();
 //		this.ignite = false;
 
-//		if(Math.random() < 0.08) {
+//		if(rand.nextFloat() < 0.09) {
 //			this.ignite();
 //		}
 		
 //		if(this.building.building.getID().getValue() == 959) {
 //			this.ignite();
+//		}
+
+//		if(Math.random() < 0.5) {
+//			this.wsg.wi.getObjectIDsInRectangle(cands);
 //		}
 	}
 

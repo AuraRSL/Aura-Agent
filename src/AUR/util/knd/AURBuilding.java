@@ -28,7 +28,6 @@ public class AURBuilding {
 	public AURFireSimBuilding fireSimBuilding = null;
 	public Building building = null;
 	
-	
 	public AURBuilding(AURWorldGraph wsg, AURAreaGraph ag) {
 		this.wsg = wsg;
 		this.ag = ag;
