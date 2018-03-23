@@ -127,24 +127,26 @@ public class AURConstants {
         public static class RoadDetector {
                 
                 public final static double DIST_SCORE_COEFFICIENT = 30000;
-                
-                
                 public final static double DECREASE_POLICE_AREA_SCORE = 0.01;
                 
                 public static class BaseScore {
-                        public final static double DISTANCE = 0.15;
+                        public final static double DISTANCE = 0.075;
                         public final static double REFUGE = 0.15;
                         public final static double GAS_STATION = 0.075;
                         public final static double HYDRANT = 0.05;
                         public final static double WSG_ROAD = 0.075;
                         public final static double CLUSTER = 0.4;
+                        
+                        public final static double POLICE_FORCE = 0.075;
+                        public final static double AMBULANCE_TEAM = 0.1;
+                        public final static double FIRE_BRIGADE = 0.05;
                 }
                 
                 public static class SecondaryScore {
                         public final static double DEAD_POLICE_CLUSTER = 0.3;
                         public final static double BLOCKED_HUMAN = 0.4;
                         public final static double DISTANCE = 0.15;
-                        public final static double SELECTED_TARGET = 0.1;
+                        public final static double SELECTED_TARGET = 0.075;
                 }
                 
         }

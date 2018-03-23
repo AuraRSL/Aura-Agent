@@ -142,6 +142,10 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 
+                setPoliceForceScore(AURConstants.RoadDetector.BaseScore.POLICE_FORCE);
+                setFireBrigadeScore(AURConstants.RoadDetector.BaseScore.FIRE_BRIGADE);
+                setAmbulanceTeamScore(AURConstants.RoadDetector.BaseScore.AMBULANCE_TEAM);
+                
                 for(AURAreaGraph area : wsg.areas.values()){
                         /* Distance Score */
                         setDistanceScore(area, AURConstants.RoadDetector.BaseScore.DISTANCE);
@@ -244,6 +248,31 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                         area.baseScore += score;
                                 }
                         }         
+                }
+        }
+
+        private void setPoliceForceScore(double score) {
+                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
+                        if(se.getID().equals(ai.getID())){
+                                continue;
+                        }
+                        
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
+                        areaGraph.baseScore += score;
+                }
+        }
+
+        private void setFireBrigadeScore(double score) {
+                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
+                        areaGraph.baseScore += score;
+                }
+        }
+
+        private void setAmbulanceTeamScore(double score) {
+                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
+                        areaGraph.baseScore += score;
                 }
         }
 
