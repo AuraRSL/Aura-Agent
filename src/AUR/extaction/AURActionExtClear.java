@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
-import AUR.util.knd.AURWalkWatcher;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
@@ -63,7 +62,6 @@ import rescuecore2.worldmodel.EntityID;
 
 public class AURActionExtClear extends ExtAction {
         private final int clearDistance;
-        private final int clearRad;
         private final int distanceLimit;
         private final int forcedMove;
         private final int thresholdRest;
@@ -75,7 +73,6 @@ public class AURActionExtClear extends ExtAction {
         private int count;
 
         private final double agentSize = AURConstants.Agent.RADIUS;
-        private final double repairRate = 2;
 
         private final AURPoliceScoreGraph psg;
         private AURWorldGraph wsg = null;
@@ -94,7 +91,6 @@ public class AURActionExtClear extends ExtAction {
         public AURActionExtClear(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
                 this.clearDistance = si.getClearRepairDistance();
-                this.clearRad = si.getClearRepairRad();
                 
                 this.distanceLimit = 9 * this.clearDistance / 10;
                 this.forcedMove = developData.getInteger("ActionExtClear.forcedMove", 1);
@@ -704,10 +700,6 @@ public class AURActionExtClear extends ExtAction {
                 return vector.normalised().scale(this.clearDistance);
         }
 
-        private Vector2D scaleBackClear(Vector2D vector) {
-                return vector.normalised().scale(-510);
-        }
-
         private boolean needRest(Human agent) {
                 int hp = agent.getHP();
                 int damage = agent.getDamage();
@@ -804,7 +796,7 @@ public class AURActionExtClear extends ExtAction {
                         }
                         decidedLine = pathNodes.get(index);
                         
-                        if(isThereStraightRoadExistsOnPath(pathNodes,index)){ // If there is straight road exists then just move!
+                        if(AURConstants.PoliceExtClear.USE_STRAIGHT_ROAD_DETECTION && isThereStraightRoadExistsOnPath(pathNodes,index)){ // If there is straight road exists then just move!
                                 System.out.println("Straight Road Found!!");
                                 return cw.getAction(
                                         new ActionMove(

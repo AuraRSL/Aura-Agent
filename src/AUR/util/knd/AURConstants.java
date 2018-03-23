@@ -69,6 +69,7 @@ public class AURConstants {
                 public final static int MOVE_LENGTH_CALCULATE_ERROR = 500;
                 
                 public final static boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = true;
+                public final static boolean USE_STRAIGHT_ROAD_DETECTION = true;
         }
         
         /**
