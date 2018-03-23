@@ -54,7 +54,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 
-                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURBuildingClusterer");
+                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURMapClusterer");
                 this.cluseterIndex = this.clustering.calc().getClusterIndex(ai.me());
                 this.clusterEntityIDs = this.clustering.getClusterEntityIDs(cluseterIndex);
                 
@@ -126,14 +126,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 wsg.dijkstra(ai.getPosition());
                 
                 // Set dynamic scores
-                decreasePoliceAreasScore(0.8);
-                setDeadPoliceClusterScore(0.3 / this.clustering.getClusterNumber() * 2);
-                setBlockedHumansScore(0.4);
+                decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
+                setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
+                setBlockedHumansScore(AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
-                        setDistanceScore(area, 0.1);
-                        setAliveBlockadesScore(area, 0.0);
-                        setBroknessScore(area, 0.1);
+                        setDistanceScore(area, AURConstants.RoadDetector.SecondaryScore.DISTANCE);
                 }
                 pQueue.addAll(wsg.areas.values());
                 return this;
@@ -142,28 +140,24 @@ public class AURPoliceScoreGraph extends AbstractModule {
         private void setScores() {
                 wsg.NoBlockadeDijkstra(ai.getPosition());
                 
-                addAreasConflictScore(0.02);
+                decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
-                        /* Distance Score 0.2 */
-                        setDistanceScore(area, 0.2);
+                        /* Distance Score */
+                        setDistanceScore(area, AURConstants.RoadDetector.BaseScore.DISTANCE);
                         
-                        /* Building Importance 0.15 */
-                        addRefugeScore(area, 0.15);
-                        addGasStationScore(area, 0.075);
-                        addHydrandScore(area, 0.05);
+                        /* Building Importance */
+                        addRefugeScore(area, AURConstants.RoadDetector.BaseScore.REFUGE);
+                        addGasStationScore(area, AURConstants.RoadDetector.BaseScore.GAS_STATION);
+                        addHydrandScore(area, AURConstants.RoadDetector.BaseScore.HYDRANT);
                         
-                        /* WSG Road Score 0.075 */
-                        addWSGRoadScores(area, 0.075);
+                        /* WSG Road Score */
+                        addWSGRoadScores(area, AURConstants.RoadDetector.BaseScore.WSG_ROAD);
                         
-                        /* Cluster Score 0.3 */
-                        addClusterScore(area, 0.3);
+                        /* Cluster Score */
+                        addClusterScore(area, AURConstants.RoadDetector.BaseScore.CLUSTER);
                 }
                 pQueue.addAll(wsg.areas.values());
-                
-        }
-        
-        private void addAreasConflictScore(double score) {
                 
         }
 
@@ -205,19 +199,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void setTargetAsReached(EntityID entity,double score){
-                if(! visitedAreas.contains(entity)){
-                        setTargetScore(entity, 0);
-                        this.areas.get(entity).secondaryScore += 0.15 * score;
-                        visitedAreas.add(entity);
-                }
+                this.areas.get(entity).targetScore = score;
+                visitedAreas.add(entity);
         }
         
         public void setTargetScore(EntityID entity,double score){
-                this.areas.get(entity).targetScore = score;
-        }
-        
-        private void setAliveBlockadesScore(AURAreaGraph area, double d) {
-                
+                this.areas.get(entity).secondaryScore += score;
         }
         
         private void setBlockedHumansScore(double score) {
@@ -244,7 +231,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void setDistanceScore(AURAreaGraph area, double score) {
-                area.distanceScore = (AURConstants.Agent.VELOCITY / (double) area.getNoBlockadeTravelCost()) * score;
+                area.distanceScore = Math.min((AURConstants.RoadDetector.DIST_SCORE_COEFFICIENT / (double) area.getNoBlockadeTravelCost()) * score, score);
         }
 
         HashSet<EntityID> visitedDeadPoliceForces = new HashSet<>();
@@ -259,10 +246,5 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }         
                 }
         }
-
-        private void setBroknessScore(AURAreaGraph area, double d) {
-                
-        }
-        
 
 }
