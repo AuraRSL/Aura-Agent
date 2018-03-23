@@ -1311,7 +1311,7 @@ public class AURActionExtClear extends ExtAction {
                 }
                 
                 Area firstArea = (Area) worldInfo.getEntity(list1.get(0));
-                if(! isThereStraightRoadFromPointToEdgeInArea(firstArea, pathNodes.get(0).first(), firstArea.getEdgeTo(list1.get(1)) )){
+                if(list1.size() < 2 || ! isThereStraightRoadFromPointToEdgeInArea(firstArea, pathNodes.get(0).first(), firstArea.getEdgeTo(list1.get(1)) )){
                         return false;
                 }
                 
