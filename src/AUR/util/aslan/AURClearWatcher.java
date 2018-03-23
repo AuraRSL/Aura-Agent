@@ -7,6 +7,7 @@ import adf.agent.action.common.ActionMove;
 import adf.agent.action.police.ActionClear;
 import adf.agent.info.AgentInfo;
 import java.util.ArrayList;
+import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.worldmodel.EntityID;
 
@@ -95,11 +96,15 @@ public class AURClearWatcher {
                         this.lastAction = this.CLEAR;
                 }
                 else if(action instanceof ActionMove){
+                        ActionMove actionMove = (ActionMove)action;
                         System.out.println(" -> MOVE");
                         this.lastAction = this.MOVE;
                         if(((ActionMove)action).getUsePosition()){
-                                this.lastMoveVector[0] = ((ActionMove)action).getPosX() - ai.getX();
-                                this.lastMoveVector[1] = ((ActionMove)action).getPosY() - ai.getY();
+                                this.lastMoveVector[0] = actionMove.getPosX() - ai.getX();
+                                this.lastMoveVector[1] = actionMove.getPosY() - ai.getY();
+                        }
+                        else{
+                                // Should Fill
                         }
                 }
                 

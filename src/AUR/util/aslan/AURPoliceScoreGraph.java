@@ -261,7 +261,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void setBroknessScore(AURAreaGraph area, double d) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                
         }
         
 

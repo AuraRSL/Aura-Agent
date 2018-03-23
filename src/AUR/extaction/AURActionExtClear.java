@@ -803,9 +803,17 @@ public class AURActionExtClear extends ExtAction {
                                 }
                         }
                         decidedLine = pathNodes.get(index);
+                        
+                        if(isThereStraightRoadExistsOnPath(pathNodes,index)){ // If there is straight road exists then just move!
+                                System.out.println("Straight Road Found!!");
+                                return cw.getAction(
+                                        new ActionMove(
+                                                wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(decidedLine.second()))
+                                        )
+                                );
+                        }
                 }
                 
-//                return null;
                 return continueToDecidedCleaningLine(decidedLine);
         }
 
@@ -949,6 +957,7 @@ public class AURActionExtClear extends ExtAction {
         }
 
         private Action continueToDecidedCleaningLine(Pair<Point2D, EntityID> decidedCleaningLineTarget) {
+                
                 Point2D policePoint = new Point2D(agentInfo.getX(), agentInfo.getY());
                 Vector2D vectorToTarget = decidedCleaningLineTarget.first().minus(policePoint).normalised();
                 
@@ -1231,6 +1240,28 @@ public class AURActionExtClear extends ExtAction {
                 );
         }
         
+        private boolean isThereStraightRoadFromPointToEdgeInArea(Area area,Point2D fromP, Edge toE){
+
+                HashSet<Point2D> toSet = new HashSet<>();
+                Point2D startP = toE.getStart();
+                Vector2D minus = toE.getEnd().minus(startP);
+                Vector2D v = minus.normalised().scale(AURConstants.Agent.RADIUS);
+                for(int i = 1;i < minus.getLength() / AURConstants.Agent.RADIUS;i ++){
+                        startP = startP.plus(v);
+                        toSet.add(startP);
+                }
+                
+                
+                for(Point2D p2 : toSet){
+                        Polygon clearPolygon = getClearPolygon(fromP, p2);
+                        Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
+                        if(! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
+                                return true;
+                        }
+                }
+                return false;
+        }
+        
         private boolean isThereStraightRoadFromEdgeToEdgeInArea(Area area,Edge fromE, Edge toE){
                 HashSet<Point2D> fromSet = new HashSet<>();
                 {
@@ -1255,12 +1286,53 @@ public class AURActionExtClear extends ExtAction {
                 for(Point2D p1 : fromSet){
                         for(Point2D p2 : toSet){
                                 Polygon clearPolygon = getClearPolygon(p1, p2);
-                                Pair<Boolean, ArrayList<Blockade>> thereBlockadesInBlockadesListInIntersectWithClearPolygon = isThereBlockadesIntersectWithClearPolygon(clearPolygon, area);
                                 Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
-                                if(isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
+                                if(! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
                                         return true;
                                 }
                         }
+                }
+                return false;
+        }
+
+        private boolean isThereStraightRoadExistsOnPath(ArrayList<Pair<Point2D, EntityID>> pathNodes, int index) {
+                Pair<Point2D, EntityID> get = pathNodes.get(index);
+                wsg.dijkstra(agentInfo.getPosition());
+                
+                ArrayList<EntityID> list1 = new ArrayList<>();
+                for(int i = 0;i <= index;i ++){
+                        if(! list1.contains(pathNodes.get(i).second())){
+                                list1.add(pathNodes.get(i).second());
+                        }
+                }
+                
+                ArrayList<EntityID> list2 = new ArrayList<>();
+                ArrayList<EntityID> pathToClosest = wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(get.second()));
+                
+                if(pathToClosest.isEmpty())
+                        return false;
+                
+                for(int i = 0;i < pathToClosest.size();i ++){
+                        if(list2.isEmpty() || ! list2.contains(pathToClosest.get(i))){
+                                list2.add(pathToClosest.get(i));
+                        }
+                }
+                
+                Area firstArea = (Area) worldInfo.getEntity(list1.get(0));
+                if(! isThereStraightRoadFromPointToEdgeInArea(firstArea, pathNodes.get(0).first(), firstArea.getEdgeTo(list1.get(1)) )){
+                        return false;
+                }
+                
+                if(list1.size() == list2.size() && list2.equals(list1)){
+                        boolean isThereStraightRoad = true;
+                        for(int i = 1;i < index;i ++){
+                                Area area = (Area) worldInfo.getEntity(list1.get(i));
+                                if(! isThereStraightRoadFromEdgeToEdgeInArea(area, area.getEdgeTo(list1.get(i - 1)), area.getEdgeTo(list1.get(i + 1)))){
+                                        isThereStraightRoad = false;
+                                        break;
+                                }
+                        }
+                        return isThereStraightRoad;
                 }
                 return false;
         }
