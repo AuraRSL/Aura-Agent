@@ -43,6 +43,7 @@ public class K_LayerAdder {
 		
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
 		viewer.addLayer(TAB_CLUSTERING, AgentClusterLayer.class, false);
+		viewer.addLayer(TAB_CLUSTERING, A_LayerMapClusterColor.class, false);
 		
 		viewer.addLayer(TAB_MISC, K_RoadScore.class, false);
 		viewer.addLayer(TAB_MISC, K_BuildingCodes.class, false);

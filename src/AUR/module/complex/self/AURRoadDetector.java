@@ -42,7 +42,7 @@ public class AURRoadDetector extends RoadDetector {
         public AURRoadDetector(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
                 this.pathPlanning = moduleManager.getModule("ActionTransport.PathPlanning", "AUR.module.algorithm.AuraPathPlanning");
-                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURBuildingClusterer");
+                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURMapClusterer");
                 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
