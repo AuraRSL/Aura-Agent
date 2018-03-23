@@ -120,6 +120,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
+                System.out.println("Updating RoadDetector Scores...");
                 pQueue.clear();
                 wsg.NoBlockadeDijkstra(ai.getPosition());
                 wsg.dijkstra(ai.getPosition());
@@ -147,7 +148,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         /* Distance Score 0.2 */
                         setDistanceScore(area, 0.2);
                         
-                        /* Building Importance 1.5 */
+                        /* Building Importance 0.15 */
                         addRefugeScore(area, 0.15);
                         addGasStationScore(area, 0.075);
                         addHydrandScore(area, 0.05);
@@ -177,12 +178,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void addRefugeScore(AURAreaGraph area, double score) {
-                for(AURAreaGraph ag : area.neighbours){
-                        if(ag.isRoad()){
-                                ag.baseScore += score;
-                        }
-                }
                 if(area.isRefuge()){
+                        for(AURAreaGraph ag : area.neighbours){
+                                if(ag.isRoad()){
+                                        ag.baseScore += score / 2;
+                                }
+                        }
                         area.baseScore += score;
                 }
         }
@@ -192,7 +193,6 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         
                 }
                 else{
-                        
                         double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
                         score *= (1 - distanceFromCluster);
                 }
