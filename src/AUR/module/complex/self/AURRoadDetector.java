@@ -1,6 +1,7 @@
 package AUR.module.complex.self;
 
 import AUR.util.aslan.AURPoliceScoreGraph;
+import AUR.util.aslan.AURPoliceScenarioAnalyzer;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURWorldGraph;
@@ -37,6 +38,7 @@ public class AURRoadDetector extends RoadDetector {
         private EntityID result;
         private final AURWorldGraph wsg;
         private final AURPoliceScoreGraph psg;
+        private final AURPoliceScenarioAnalyzer psa;
 
         public AURRoadDetector(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
@@ -45,7 +47,9 @@ public class AURRoadDetector extends RoadDetector {
                 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
+                this.psa = moduleManager.getModule("aslan.PoliceScenarioAnalyzer","AUR.util.aslan.AURPoliceScenarioAnalyzer");
                 registerModule(this.psg);
+                registerModule(this.psa);
                 registerModule(this.clustering);
                 
                 this.result = null;
@@ -59,6 +63,12 @@ public class AURRoadDetector extends RoadDetector {
 
         @Override
         public RoadDetector calc() {
+                
+                if(psa.isThereBlockadesInMap() == psa.NO){
+                        this.result = null;
+                        return this;
+                }
+                        
                 EntityID positionID = this.agentInfo.getPosition();
                 StandardEntity currentPosition = worldInfo.getEntity(positionID);
                 openedAreas.add((Area) currentPosition);
