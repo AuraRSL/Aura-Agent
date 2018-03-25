@@ -258,13 +258,21 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
                         
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
-                        areaGraph.baseScore += score;
+                        
+                        if(areaGraph.isBuilding()){
+                                areaGraph.baseScore += score;
+                        }
                 }
         }
 
         private void setFireBrigadeScore(double score) {
                 for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
+                        
+                        if(areaGraph.isBuilding()){
+                                score *= 2.0 / 3.0;
+                        }
+                        
                         areaGraph.baseScore += score;
                 }
         }
@@ -272,6 +280,11 @@ public class AURPoliceScoreGraph extends AbstractModule {
         private void setAmbulanceTeamScore(double score) {
                 for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
+                        
+                        if(areaGraph.isBuilding()){
+                                score *= 2.0 / 3.0;
+                        }
+                        
                         areaGraph.baseScore += score;
                 }
         }
