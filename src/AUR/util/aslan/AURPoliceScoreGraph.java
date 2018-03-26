@@ -135,6 +135,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
                 setBlockedHumansScore(AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
                 setRoadsWithoutBlockadesScore(AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
+                setReleasedAgentStartEntityScore(AURConstants.RoadDetector.SecondaryScore.RELEASED_AGENTS_START_POSITION_SCORE);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, AURConstants.RoadDetector.SecondaryScore.DISTANCE);
@@ -259,6 +260,17 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
+        HashMap<EntityID,AURAreaGraph> agentsInBuildings = new HashMap<>();
+        
+        private void setReleasedAgentStartEntityScore(double score){
+                for(EntityID eid : ai.getChanged().getChangedEntities()){
+                        if(agentsInBuildings.containsKey(eid) && wsg.getAreaGraph(((Human) wi.getEntity(eid)).getPosition()).isRoad()){
+                                wsg.getAreaGraph(((Human) wi.getEntity(eid)).getPosition()).targetScore = score;
+                                agentsInBuildings.remove(eid);
+                        }
+                }
+        }
+        
         private void setPoliceForceScore(double score) {
                 for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
                         if(se.getID().equals(ai.getID())){
@@ -268,16 +280,18 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
                         
                         if(areaGraph.isBuilding()){
+                                agentsInBuildings.put(se.getID(),areaGraph);
                                 areaGraph.baseScore += score;
                         }
                 }
         }
-
+        
         private void setFireBrigadeScore(double score) {
                 for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
                         
                         if(areaGraph.isBuilding()){
+                                agentsInBuildings.put(se.getID(),areaGraph);
                                 score *= 2.0 / 3.0;
                         }
                         
@@ -290,6 +304,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
                         
                         if(areaGraph.isBuilding()){
+                                agentsInBuildings.put(se.getID(),areaGraph);
                                 score *= 2.0 / 3.0;
                         }
                         
