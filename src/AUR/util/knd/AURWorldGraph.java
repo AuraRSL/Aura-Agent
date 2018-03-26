@@ -924,11 +924,13 @@ public class AURWorldGraph extends AbstractModule {
 				if(b.edgeToPereceptAndExtinguish == null) {
 					double cost = AURGeoUtil.dist(eNode.x, eNode.y, ag_.getX(), ag_.getY());
 					AUREdgeToStand e = new AUREdgeToStand(ag_, ag_, (int) cost, eNode, ag_.getX(), ag_.getY());
+					e.standCost = e.weight + eNode.cost;
 					b.edgeToPereceptAndExtinguish = e;
 				}
 				if(b.edgeToSeeInside == null) {
 					double cost = AURGeoUtil.dist(eNode.x, eNode.y, ag_.getX(), ag_.getY());
 					AUREdgeToStand e = new AUREdgeToStand(ag_, ag_, (int) cost, eNode, ag_.getX(), ag_.getY());
+					e.standCost = e.weight + eNode.cost;
 					b.edgeToSeeInside = e;
 				}
 			}
