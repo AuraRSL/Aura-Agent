@@ -11,7 +11,7 @@ public class AURPoliceAreaScoreComparator implements Comparator<AURAreaGraph> {
 
         @Override
         public int compare(AURAreaGraph o1, AURAreaGraph o2) {
-                return (int) ( o2.getFinalScore() - o1.getFinalScore() );
+                return Double.compare(o2.getFinalScore(),o1.getFinalScore() );
         }
         
 }

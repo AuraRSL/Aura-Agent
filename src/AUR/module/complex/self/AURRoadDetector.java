@@ -77,7 +77,7 @@ public class AURRoadDetector extends RoadDetector {
                         psg.setTargetScore(result, - AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
                 }
                 
-                EntityID targetID =  psg.pQueue.poll().area.getID();
+                EntityID targetID = psg.getAreaWithMaximumScore();
                 psg.setTargetScore(targetID, AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
 
                 if (targetID == null) {

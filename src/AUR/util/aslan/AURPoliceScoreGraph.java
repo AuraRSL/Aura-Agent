@@ -37,7 +37,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public ScenarioInfo si;
         public AURWorldGraph wsg;
         
-        public PriorityQueue<AURAreaGraph> pQueue = new PriorityQueue<>(new AURPoliceAreaScoreComparator());
+        public ArrayList<AURAreaGraph> areasForScoring = new ArrayList<>();
         
         public Collection<EntityID> clusterEntityIDs;
         int cluseterIndex;
@@ -118,11 +118,15 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public AbstractModule calc() {
                 return this;
         }
+        
+        public EntityID getAreaWithMaximumScore(){
+                return this.areasForScoring.get(0).area.getID();
+        }
 
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
                 System.out.println("Updating RoadDetector Scores...");
-                pQueue.clear();
+                
                 wsg.NoBlockadeDijkstra(ai.getPosition());
                 wsg.dijkstra(ai.getPosition());
                 
@@ -135,7 +139,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, AURConstants.RoadDetector.SecondaryScore.DISTANCE);
                 }
-                pQueue.addAll(wsg.areas.values());
+                
+                areasForScoring.sort(new AURPoliceAreaScoreComparator());
                 return this;
         }
 
@@ -163,7 +168,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         /* Cluster Score */
                         addClusterScore(area, AURConstants.RoadDetector.BaseScore.CLUSTER);
                 }
-                pQueue.addAll(wsg.areas.values());
+                areasForScoring.addAll(wsg.areas.values());
+                areasForScoring.sort(new AURPoliceAreaScoreComparator());
                 
         }
 

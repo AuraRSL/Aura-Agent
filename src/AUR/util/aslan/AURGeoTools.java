@@ -3,6 +3,7 @@ package AUR.util.aslan;
 import AUR.util.knd.AURGeoUtil;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
@@ -179,6 +180,15 @@ public class AURGeoTools {
         public static boolean intersect(Polygon polygon, Collection<Area> areas) {
                 for(Area area : areas)
                         if( intersect ( polygon, area ) ) {
+                                return true;
+                        }
+                                
+                return false;
+        }
+        
+        public static boolean intersectOrContains(Polygon polygon, Collection<Edge> edges) {
+                for(Edge edge : edges)
+                        if( AURGeoUtil.intersectsOrContains(polygon, new double[]{edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY()} )) {
                                 return true;
                         }
                                 
