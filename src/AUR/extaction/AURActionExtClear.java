@@ -1317,7 +1317,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 if(list1.size() == list2.size() && list2.equals(list1)){
                         boolean isThereStraightRoad = true;
-                        for(int i = 1;i < index;i ++){
+                        for(int i = 1;i < list1.size() - 1;i ++){
                                 Area area = (Area) worldInfo.getEntity(list1.get(i));
                                 if(! isThereStraightRoadFromEdgeToEdgeInArea(area, area.getEdgeTo(list1.get(i - 1)), area.getEdgeTo(list1.get(i + 1)))){
                                         isThereStraightRoad = false;
