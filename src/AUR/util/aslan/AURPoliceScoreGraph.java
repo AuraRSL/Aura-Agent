@@ -17,7 +17,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
 import rescuecore2.misc.Pair;
+import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Civilian;
+import rescuecore2.standard.entities.FireBrigade;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Road;
@@ -221,10 +224,16 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
         
         private void setBlockedHumansScore(double score) {
-                for(StandardEntity agent : wi.getEntitiesOfType(StandardEntityURN.CIVILIAN, StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.FIRE_BRIGADE)){
-                        AURAreaGraph pos = wsg.getAreaGraph(((Human) agent).getPosition());
-                        if(pos.getTravelCost() == AURConstants.Math.INT_INF || pos.getNoBlockadeTravelCost() * 3 < pos.getTravelCost()){
-                                pos.secondaryScore += score;
+//                for(StandardEntity agent : wi.getEntitiesOfType(StandardEntityURN.CIVILIAN, StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.FIRE_BRIGADE)){
+                if(ai.getChanged().getChangedEntities() != null){
+                        for(EntityID eid : ai.getChanged().getChangedEntities()){
+                                StandardEntity entity = wi.getEntity(eid);
+                                if(entity instanceof Civilian || entity instanceof AmbulanceTeam || entity instanceof FireBrigade){
+                                        AURAreaGraph pos = wsg.getAreaGraph(((Human) entity).getPosition());
+                                        if(pos.getTravelCost() == AURConstants.Math.INT_INF || pos.getNoBlockadeTravelCost() * 4 < pos.getTravelCost()){
+                                                pos.secondaryScore += score;
+                                        }
+                                }
                         }
                 }
         }

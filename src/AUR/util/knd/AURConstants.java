@@ -146,7 +146,7 @@ public class AURConstants {
                         public final static double DEAD_POLICE_CLUSTER = 0.3;
                         public final static double BLOCKED_HUMAN = 0.4;
                         public final static double DISTANCE = 0.1;
-                        public final static double SELECTED_TARGET = 0.075;
+                        public final static double SELECTED_TARGET = 0.025;
                         public final static double ROADS_WITHOUT_BLOCKADES = 0.0;
                         public final static double RELEASED_AGENTS_START_POSITION_SCORE = 0.0;
                 }
