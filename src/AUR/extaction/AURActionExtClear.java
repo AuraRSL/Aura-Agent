@@ -105,7 +105,8 @@ public class AURActionExtClear extends ExtAction {
                 this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
                 
                 this.cw = new AURClearWatcher(ai);
-                this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi, cw);
+                this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi, cw, wsg);
+                
         }
 
         @Override
@@ -239,7 +240,7 @@ public class AURActionExtClear extends ExtAction {
                 /**
                  * Buildings Entrance Perpendicular Line Settings.
                  */
-                Action settingAction = this.bp.setChangesOfBuildingsEntrancePerpendicularLine();
+                Action settingAction = this.bp.setChangesOfBuildingsEntrancePerpendicularLine(this.target);
                 if(settingAction != null){
                         this.result = settingAction;
                         return this;

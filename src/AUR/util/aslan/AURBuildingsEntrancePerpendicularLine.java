@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
+import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.info.AgentInfo;
@@ -23,6 +24,7 @@ public class AURBuildingsEntrancePerpendicularLine {
         private AgentInfo ai;
         private WorldInfo wi;
         private AURClearWatcher cw;
+        private AURWorldGraph wsg;
         
         public final int NO_POINT_SELECTED = 0,
                          GOING_TO_POINT = 1,
@@ -32,13 +34,14 @@ public class AURBuildingsEntrancePerpendicularLine {
         private Point2D lastHomeComing = null;
         private int lastHomeComingStatus = this.NO_POINT_SELECTED;
 
-        public AURBuildingsEntrancePerpendicularLine(AgentInfo ai, WorldInfo wi, AURClearWatcher cw) {
+        public AURBuildingsEntrancePerpendicularLine(AgentInfo ai, WorldInfo wi, AURClearWatcher cw, AURWorldGraph wsg) {
                 this.ai = ai;
                 this.wi = wi;
                 this.cw = cw;
+                this.wsg = wsg;
         }
         
-        public Action setChangesOfBuildingsEntrancePerpendicularLine() {
+        public Action setChangesOfBuildingsEntrancePerpendicularLine(EntityID target) {
                 if(! AURConstants.PoliceExtClear.USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE){
                         return null;
                 }
@@ -66,7 +69,8 @@ public class AURBuildingsEntrancePerpendicularLine {
                         );
                 }
                 if(lastHomeComingStatus == GOING_FROM_POINT_TO_BUILDING &&
-                   wi.getEntity(ai.getPosition()) instanceof Building
+                   (wi.getEntity(ai.getPosition()) instanceof Building ||
+                    this.wsg.getNoBlockadePathToClosest(ai.getPosition(), Lists.newArrayList(target)).size() == this.wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(target)).size())
                 ){
                         lastHomeComingStatus = this.GOING_FROM_BUILDING_TO_POINT;
                 }
