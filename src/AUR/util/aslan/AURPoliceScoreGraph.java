@@ -20,6 +20,7 @@ import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
+import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -129,6 +130,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
                 setBlockedHumansScore(AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
+                setRoadsWithoutBlockadesScore(0.0);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, AURConstants.RoadDetector.SecondaryScore.DISTANCE);
@@ -286,6 +288,15 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
                         
                         areaGraph.baseScore += score;
+                }
+        }
+
+        private void setRoadsWithoutBlockadesScore(double score) {
+                for(EntityID eid : ai.getChanged().getChangedEntities()){
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
+                        if(areaGraph != null && areaGraph.isRoad()){
+                                areaGraph.targetScore = score;
+                        }
                 }
         }
 
