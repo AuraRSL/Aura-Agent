@@ -83,6 +83,18 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			
 			result += "LastRealFieryness:\t" + b.lastRealFieryness;
 			result += "\n";
+		
+			
+			if(b.fireZone != null) {
+				result += "g:\t" + b.fireZone.g();
+				result += "\n";
+				
+				result += "need:\t" + b.fireZone.getAgentsNeeded();
+				result += "\n";
+				
+				result += "percept time:\t" + b.fireZone.getPerceptTime();
+				result += "\n";
+			}
 		}
 		return result;
 	}

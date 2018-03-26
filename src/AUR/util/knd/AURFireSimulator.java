@@ -20,16 +20,22 @@ public class AURFireSimulator {
 	}
 	
 	public void step() {
+		long t = System.currentTimeMillis();
 		
 		if(wsg.ai.getTime() < 2) {
 			return;
 		}
 		
 		burn();
+//		System.out.println("1- step update time: " + (System.currentTimeMillis() - t));
 		cool();
+//		System.out.println("2- step update time: " + (System.currentTimeMillis() - t));
 		updateGrid();
+//		System.out.println("3- step update time: " + (System.currentTimeMillis() - t));
 		exchangeBuilding();
+//		System.out.println("4- step update time: " + (System.currentTimeMillis() - t));
 		cool();
+//		System.out.println("5- step update time: " + (System.currentTimeMillis() - t));
 	}
 	
 	private void burn() {
@@ -146,7 +152,7 @@ public class AURFireSimulator {
 			if(ag.isBuilding()) {
 				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
 				b.tempVar = 0;
-				if(ag.isOnFire() || true) {
+				if(ag.isOnFire()) { // || ag.getBuilding().fireSimBuilding.isOnFire()
 					b.tempVar = b.getRadiationEnergy();
 				}
 			}
@@ -198,7 +204,7 @@ public class AURFireSimulator {
 				this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
 			}
 			
-			//this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
+			this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
 			
 			
 		}

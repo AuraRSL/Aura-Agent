@@ -23,6 +23,11 @@ import adf.component.module.algorithm.StaticClustering;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
+
 public class AURBuildingClusterer extends StaticClustering {
 	
     private int clusterNumber = 3;
@@ -164,7 +169,7 @@ public class AURBuildingClusterer extends StaticClustering {
     
     @Override
     public Clustering calc() {
-    	//long t = System.currentTimeMillis();
+    	long t = System.currentTimeMillis();
     	if(this.calced) {
     		return this;
     	}
@@ -181,7 +186,7 @@ public class AURBuildingClusterer extends StaticClustering {
         );
     	this.clusterNumber = Math.max(1, sortedTeamAgents.size());
 		for(AURAreaGraph ag : wsg.areas.values()) {
-			if(ag.isBuilding()) {
+			if(ag.isBuilding() || true) {
 				items.add(new ClusterItem(ag, 0));
 			}
 		}
@@ -201,8 +206,11 @@ public class AURBuildingClusterer extends StaticClustering {
 			ci++;
 		}
 		calcBestClusterAllocation();
-//		System.out.println("clustering time: " + (System.currentTimeMillis() - t) + "ms");
+		System.out.println("clustering time: " + (System.currentTimeMillis() - t) + "ms");
 		this.calced = true;
+		
+		wsg.agentCluster = getClusterIndex(ai.me());
+		
 		return this;
     }
 

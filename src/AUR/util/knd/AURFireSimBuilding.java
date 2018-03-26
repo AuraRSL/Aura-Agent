@@ -19,6 +19,7 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
+import rescuecore2.worldmodel.EntityID;
 import viewer.K_ScreenTransform;
 
 /**
@@ -43,11 +44,33 @@ public class AURFireSimBuilding {
 	public int lastRealFieryness = -1;
 	public double lastRealTemperature = -1;
 	
-	private GaussianGenerator burnRate = new GaussianGenerator(0.142, 0.025, new Random(0));
+	public AURFireZone fireZone = null;
+	
+	
+	public double fireProbability = 0.2;
+	
+	private GaussianGenerator burnRate = new GaussianGenerator(0.15, 0.025, new Random(0));
 	
 	public double tempVar = 0;
 	
 	private static Random rand = new Random(0);
+	
+	public boolean isOnFireZoneBorder() {
+		if(this.fireZone == null) {
+			return false;
+		}
+		if(this.fireZone.buildings.size() <= 4) {
+			return true;
+		}
+		
+		Polygon fireZonePolygon = this.fireZone.getPolygon();
+		
+		if(AURGeoUtil.intersects(this.ag.polygon, fireZonePolygon)) {
+			return true;
+		}
+		return false;
+	}
+	
 	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
@@ -66,8 +89,8 @@ public class AURFireSimBuilding {
 //		if(rand.nextFloat() < 0.09) {
 //			this.ignite();
 //		}
-		
-//		if(this.building.building.getID().getValue() == 959) {
+//		
+//		if(this.building.building.getID().getValue() == 202035) {
 //			this.ignite();
 //		}
 
@@ -103,26 +126,73 @@ public class AURFireSimBuilding {
 		}
 		
 
+		if(getEstimatedFieryness() == 8 || this.ag.noSeeTime() <= 1) {
+			this.fireProbability = 0.01;
+		}
+
+		if (isOnFire()) {
+			this.fireProbability = 1;
+		} else {
+			this.fireProbability *= 1.002;
+			
+			if(this.ag.noSeeTime() < 1) {
+				if (this.connections != null) {
+					if (this.getEstimatedTemperature() < 1) {
+						for (AURBuildingConnection bc : this.connections) {
+							AURAreaGraph cAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+							if (cAg != null && cAg.isBuilding() == true) {
+								cAg.getBuilding().fireSimBuilding.fireProbability *= 0.5;
+							}
+						}
+					} else {
+						
+						if(this.getEstimatedFieryness() == 0) {
+							for (AURBuildingConnection bc : this.connections) {
+								AURAreaGraph cAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+								if (cAg != null && cAg.isBuilding() == true) {
+									cAg.getBuilding().fireSimBuilding.fireProbability *= 2;
+								}
+							}
+						}
+						
+
+					}
+
+				}
+			}
+			
+
+
+
+		}
+		
+		
+
+
+		this.fireProbability = Math.min(1, this.fireProbability);
 		
 	}
 	
 	public void onRealFierynessChange(int newFieryness) {
 		switch(newFieryness) {
-			case 0:
-			case 1:
+			case 0: 
+			case 1: {
+				setEstimatedFuel(getInitialFuel());
+				break;
+			}
 			case 4:
 			case 5: {
-				setEstimatedFuel(getInitialFuel());
+				setEstimatedFuel(getInitialFuel() * 0.8);
 				break;
 			}
 			case 2:
 			case 6: {
-				setEstimatedFuel(getInitialFuel() * 0.66);
+				setEstimatedFuel(getInitialFuel() * 0.48);
 				break;
 			}
 			case 3:
 			case 7: {
-				setEstimatedFuel(getInitialFuel() * 0.33);
+				setEstimatedFuel(getInitialFuel() * 0.16);
 				break;
 			}
 			
@@ -571,9 +641,14 @@ public class AURFireSimBuilding {
 	}
 	
 	public boolean isOnFire() {
+		
+		if(inflammable() == false) {
+			return false;
+		}
+		
 		int f = getEstimatedFieryness();
 		
-		if(getEstimatedTemperature() >= getIgnitionPoint() * 0.75 && f != 8) {
+		if(getEstimatedTemperature() >= getIgnitionPoint() * 0.8 && f != 8) {
 			return true;
 		}
 		
@@ -587,6 +662,37 @@ public class AURFireSimBuilding {
 		} else {
 			return 0;
 		}
+	}
+	
+	public boolean ignoreFire() {
+		if((double) getEstimatedFuel() / getInitialFuel() < 0.1) {
+			return true;
+		}
+		
+		int count = 0;
+		
+		for(AURBuildingConnection bc : this.connections) {
+			
+			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+			
+			if(toAg == null || toAg.isBuilding() == false) {
+				continue;
+			}
+			
+			AURBuilding b = toAg.getBuilding();
+			
+			if(b.fireSimBuilding.getEstimatedFieryness() == 8 || b.fireSimBuilding.isOnFire()) {
+				continue;
+			}
+			
+			count++;
+		}
+		
+		if(count < 1) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 }

@@ -130,6 +130,8 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
     @Override
     public Action think(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, MessageManager messageManager, DevelopData developData)
     {
+		
+		long t = System.currentTimeMillis();
         this.messageTool.reflectMessage(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendRequestMessages(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendInformationMessages(agentInfo, worldInfo, scenarioInfo, messageManager);
@@ -188,19 +190,24 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
         if (action != null)
         {
             this.sendActionMessage(messageManager, agent, action);
+//			System.out.println("think time: " + (System.currentTimeMillis() - t));
             return action;
         }
         target = this.search.calc().getTarget();
+	
+	    System.out.println(agent.getID() + ": " + target);
         action = this.actionExtMove.setTarget(target).calc().getAction();
         if (action != null)
         {
             this.sendActionMessage(messageManager, agent, action);
+//			System.out.println("think time: " + (System.currentTimeMillis() - t));
             return action;
         }
 
         messageManager.addMessage(
                 new MessageFireBrigade(true, agent, MessageFireBrigade.ACTION_REST,  agent.getPosition())
         );
+//		System.out.println("rest - think time: " + (System.currentTimeMillis() - t));
         return new ActionRest();
     }
 

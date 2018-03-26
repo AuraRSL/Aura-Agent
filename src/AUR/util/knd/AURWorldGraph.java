@@ -55,6 +55,8 @@ public class AURWorldGraph extends AbstractModule {
 	public AURFireSimulator fireSimulator = null;
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
 
+	public int agentCluster = -1;
+	
 	public AURFireZonesCalculator fireZonesCalculator = null;
 	
 	public int agentOrder = -1;
@@ -534,7 +536,12 @@ public class AURWorldGraph extends AbstractModule {
 //		System.out.println("buildings: " + count);
 		
 		this.fireSimulator = new AURFireSimulator(this);
-                
+		for (AURAreaGraph ag_ : this.areas.values()) {
+			if (ag_.isBuilding()) {
+				ag_.getBuilding().fireSimBuilding.getAirCells();
+			}
+		}
+		
 		this.fireZonesCalculator = new AURFireZonesCalculator(this);
 		
 		updateInfo(null);
@@ -637,8 +644,8 @@ public class AURWorldGraph extends AbstractModule {
 		this.dijkstra(ai.getPosition());
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : areas.values()) {
-			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
-					&& ag.getBuilding().edgeToPereceptAndExtinguish != null) {
+			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false && ag.getBuilding().fireSimBuilding.isOnFire() == false
+					&& (ag.getBuilding().edgeToPereceptAndExtinguish != null || ag.lastDijkstraEntranceNode != null)) {
 				result.add(ag);
 			}
 		}
@@ -671,11 +678,13 @@ public class AURWorldGraph extends AbstractModule {
 
 	@Override
 	synchronized public AbstractModule updateInfo(MessageManager messageManager) {
+		long t = System.currentTimeMillis();
 		if (updateTime >= ai.getTime()) {
 			return this;
 		}
 
 		this.fireSimulator.step();
+//		System.out.println("1- world graph update time: " + (System.currentTimeMillis() - t));
 		
 		if (ai.getChanged() == null) {
 			changes = new ArrayList<>();
@@ -708,8 +717,10 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		
-		this.dijkstra(this.ai.getPosition());
+//		System.out.println("2- world graph update time: " + (System.currentTimeMillis() - t));
 		
+		this.dijkstra(this.ai.getPosition());
+//		System.out.println("3- world graph update time: " + (System.currentTimeMillis() - t));
 		for (EntityID entID : changes) {
 			AURAreaGraph ag = getAreaGraph(entID);
 			if (ag != null) {
@@ -717,14 +728,14 @@ public class AURWorldGraph extends AbstractModule {
 			}
 		}
 		calcFireProbability();
-		
+//		System.out.println("4- world graph update time: " + (System.currentTimeMillis() - t));
 		
 		this.fireZonesCalculator.update();
-		
+//		System.out.println("5- world graph update time: " + (System.currentTimeMillis() - t));
 		if(AURConstants.Viewer.LAUNCH == true) {
 			K_Viewer.getInstance().update(this);
 		}
-		
+//		System.out.println("world graph update time: " + (System.currentTimeMillis() - t));
 		return this;
 	}
 
@@ -1133,4 +1144,19 @@ public class AURWorldGraph extends AbstractModule {
 
 		return result;
 	}
+	
+	public ArrayList<AURAreaGraph> getExtinguishableBuildings() {
+		ArrayList<AURAreaGraph> result = new ArrayList<>();
+		int r = this.si.getFireExtinguishMaxDistance() - 1;
+		for(AURAreaGraph ag : this.areas.values()) {
+			if(ag.isBuilding()) {
+				if(ag.distFromAgent() <= r) {
+					result.add(ag);
+				}
+			}
+		}
+		
+		return result;
+	}
+	
 }

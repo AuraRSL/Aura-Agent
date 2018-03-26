@@ -250,7 +250,7 @@ public class ConcaveHull {
             }
 
             // if there is no candidate increase k - try again
-            if (its) {
+            if (its && k < pointArrayList.size() - 1) {
                 return calculateConcaveHull(pointArrayList, k + 1);
             }
 
@@ -276,7 +276,7 @@ public class ConcaveHull {
         }
 
         // if not all points inside -  try again
-        if (!insideCheck) {
+        if (!insideCheck && k < pointArrayList.size() - 1) {
             return calculateConcaveHull(pointArrayList, k + 1);
         } else {
             return concaveHull;

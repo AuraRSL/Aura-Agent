@@ -37,7 +37,7 @@ public class AURCommunication {
     public void updateInfo(MessageManager messageManager){
         this.reflectMessage(messageManager);
         //TODO for ADF BUG
-        this.reflectMessage2(messageManager);
+        //this.reflectMessage2(messageManager);
     }
     private  void reflectMessage(MessageManager messageManager)
     {
@@ -48,19 +48,6 @@ public class AURCommunication {
         {
             StandardEntity entity = null;
             entity = this.reflectMessage(worldInfo, (StandardMessage) message);
-            if (entity != null) { this.receivedTimeMap.put(entity.getID(), time); }
-        }
-    }
-
-    private  void reflectMessage2(MessageManager messageManager)
-    {
-        Set<EntityID> changedEntities = worldInfo.getChanged().getChangedEntities();
-        changedEntities.add(agentInfo.getID());
-        int time = agentInfo.getTime();
-        for (CommunicationMessage message : messageManager.getReceivedMessageList())
-        {
-            StandardEntity entity = null;
-            entity = MessageUtil.reflectMessage(worldInfo, (StandardMessage) message);
             if (entity != null) { this.receivedTimeMap.put(entity.getID(), time); }
         }
     }

@@ -32,7 +32,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, K_LayerAllBlockades.class, true);
 		viewer.addLayer(TAB_MAP, K_LayerWalls.class, false);
 		viewer.addLayer(TAB_MAP, CivilianLayer.class, true);
-		viewer.addLayer(TAB_MAP, K_AgentsLayer.class, true);
+		viewer.addLayer(TAB_MAP, K_AgentsLayer.class, false);
 
                 
 		viewer.addLayer(TAB_MAP, A_SelectedArea.class, true);
@@ -42,6 +42,7 @@ public class K_LayerAdder {
 
 		
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
+		viewer.addLayer(TAB_CLUSTERING, K_AgentCluster.class, false);
 		viewer.addLayer(TAB_CLUSTERING, AgentClusterLayer.class, false);
 		
 		viewer.addLayer(TAB_MISC, K_RoadScore.class, false);
@@ -53,7 +54,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MISC, K_MediumAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_BigAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_AreaNoSeeTime.class, false);
-		viewer.addLayer(TAB_MISC, K_CloseBuildings.class, true);
+		viewer.addLayer(TAB_MISC, K_CloseBuildings.class, false);
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);
@@ -64,6 +65,9 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_FIRE, K_ConnectedBuildings.class, false);
 		viewer.addLayer(TAB_FIRE, K_AreaExtinguishableRange.class, false);
 		viewer.addLayer(TAB_FIRE, K_FireZones.class, true);
+		viewer.addLayer(TAB_FIRE, K_FireZoneBorders.class, true);
+		viewer.addLayer(TAB_FIRE, K_FireProbability.class, false);
+		viewer.addLayer(TAB_FIRE, K_IgnoredFires.class, false);
 		
 		viewer.addLayer(TAB_SCENARIO, K_AgentExtinguishRange.class, false);
 		viewer.addLayer(TAB_SCENARIO, K_AgentPerceptionRange.class, false);
@@ -78,10 +82,10 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishableBuildings.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);

@@ -53,6 +53,10 @@ public class AURAreaGraph {
 	public double goundArea = 0;
 	public double perimeter = 0;
 	
+	
+	public double fb_value;
+	public double fb_value_temp;
+	
 	public int getBlockadeForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
 			case POLICE_FORCE: {
@@ -389,6 +393,11 @@ public class AURAreaGraph {
 		if(this.isBuilding() == true) {
 			this.getBuilding().update();
 		}
+		
+//		if(Math.random() < 0.0001) {
+//			this.onFireProbability = true;
+//		}
+		
 	}
 
 //	public ArrayList<Polygon> getBlockades() {

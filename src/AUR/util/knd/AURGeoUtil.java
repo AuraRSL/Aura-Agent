@@ -103,6 +103,34 @@ public class AURGeoUtil {
 		return false;
 	}
 	
+	public static boolean intersects(Polygon p1, Polygon p2) {
+		
+		if(p1.getBounds2D().intersects(p2.getBounds()) == false) {
+			return false;
+		}
+		
+		for(int i = 0; i < p1.npoints; i++) {
+			for(int j = 0; j < p2.npoints; j++) {
+				boolean b = AURGeoUtil.getIntersection(
+						p1.xpoints[i],
+						p1.ypoints[i],
+						p1.xpoints[(i + 1) % p1.npoints],
+						p1.ypoints[(i + 1) % p1.npoints],
+						p2.xpoints[j],
+						p2.ypoints[j],
+						p2.xpoints[(j + 1) % p2.npoints],
+						p2.ypoints[(j + 1) % p2.npoints],
+						__temp__
+				);
+				if(b) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+	
 	
 	public static boolean intersectsOrContains(Polygon p, double[] segmentLine) {
 		

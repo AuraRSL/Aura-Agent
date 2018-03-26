@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import AUR.module.algorithm.AURBuildingClusterer;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURFireSearchValueSetter;
-import AUR.util.knd.AURValuePoint;
+import AUR.util.knd.AURAreaGraphValue;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.communication.MessageManager;
 import adf.agent.develop.DevelopData;
@@ -61,18 +61,18 @@ public class AURFireBrigadeSearch extends Search {
 		buildingClusterer.calc();
 		this.result = null;
 		wsg.updateInfo(null);
-		ArrayList<AURValuePoint> list = new ArrayList<>();
+		ArrayList<AURAreaGraphValue> list = new ArrayList<>();
 		AURAreaGraph agentAg = wsg.getAreaGraph(ai.getPosition());
 		ArrayList<AURAreaGraph> rubs = wsg.getPerceptibleUnburntBuildingIDs();
 		rubs.remove(agentAg);
 		for (AURAreaGraph ag : rubs) {
-			list.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
+			list.add(new AURAreaGraphValue(ag));
 		}
 		int initialClusterIndex = buildingClusterer.getClusterIndex(ai.me());
 		if (rubs.size() > 0) {
 			svs.calc(wsg, list, buildingClusterer.getClusterEntityIDs(initialClusterIndex), lastTarget);
 			if (svs.points.size() > 0) {
-				this.result = svs.points.get(0).areaGraph.area.getID();
+				this.result = svs.points.get(0).ag.area.getID();
 				lastTarget = this.result;
 				return this;
 			}

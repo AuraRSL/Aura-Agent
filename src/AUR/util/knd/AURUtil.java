@@ -1,5 +1,7 @@
 package AUR.util.knd;
 
+import adf.agent.info.WorldInfo;
+import rescuecore2.standard.entities.FireBrigade;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 
@@ -20,5 +22,24 @@ public class AURUtil {
 			|| urn.equals(StandardEntityURN.AMBULANCE_CENTRE)
 			|| urn.equals(StandardEntityURN.FIRE_STATION));
 	}
+	
+//	public int getAroundAliveLowerFireBrigades(WorldInfo wi) {
+//		for (StandardEntity sent : wi.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE)) {
+//			FireBrigade fb = (FireBrigade) sent;
+//			if(fb.isHPDefined() && fb.getHP() > 0) {
+//				
+//			}
+//			if (fb.isXDefined() && fb.isYDefined() && fb.isPositionDefined()) {
+//				if (fb.getID().getValue() < ai.me().getID().getValue()) {
+//
+//					double dist = AURGeoUtil.dist(ai.getX(), ai.getY(), fb.getX(), fb.getY());
+//
+//					if (fb.getPosition().equals(ai.getPosition())) { // 
+//						return this;
+//					}
+//				}
+//			}
+//		}
+//	}
 	
 }

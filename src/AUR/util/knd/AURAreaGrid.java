@@ -452,7 +452,7 @@ public class AURAreaGrid {
 
 	public void addBlockades(ArrayList<Polygon> blockades) {
 		blockaePolygons.addAll(blockades);
-		double delta = 250;
+		double delta = 300;
 		for (int i = 0; i < gridM; i++) {
 			for (int j = 0; j < gridN; j++) {
 				if (gridIntInfo[i][j][TYPE] != CELL_BLOCK) {
@@ -636,7 +636,6 @@ public class AURAreaGrid {
 		if(fromNode.edgesToPerceptAndExtinguish != null) {
 			result.addAll(fromNode.edgesToPerceptAndExtinguish);
 		}
-		
 		return result;
 	}
 	

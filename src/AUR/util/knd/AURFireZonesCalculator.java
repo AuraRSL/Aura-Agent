@@ -41,6 +41,7 @@ public class AURFireZonesCalculator {
 			if(ag.isBuilding() == false) {
 				continue;
 			}
+			ag.getBuilding().fireSimBuilding.fireZone = null;
 			if(ag.getBuilding().fireSimBuilding.isOnFire() == false) {
 				continue;
 			}
@@ -61,8 +62,9 @@ public class AURFireZonesCalculator {
 			while (qu.isEmpty() == false) {
 				AURAreaGraph buildingAreaGraph = qu.poll();
 				zone.add(buildingAreaGraph.getBuilding());
+				buildingAreaGraph.getBuilding().fireSimBuilding.fireZone = zone;
 				for(AURBuilding b : buildingAreaGraph.getCloseBuildings()) {
-					if(b.ag.vis == false && b.fireSimBuilding.isOnFire()) {
+					if(b.ag.vis == false && (b.fireSimBuilding.isOnFire() || b.fireSimBuilding.getEstimatedFieryness() == 8)) {
 						b.ag.vis = true;
 						qu.add(b.ag);
 					}
@@ -74,7 +76,10 @@ public class AURFireZonesCalculator {
 //		System.out.println("fire zone update: " + (System.currentTimeMillis() - t) + " ms");
 	}
 	
-	private ArrayList<AURFireZone> zones = null;
+	
+	
+	
+	public ArrayList<AURFireZone> zones = null;
 	
 	public void paint(Graphics2D g2, K_ScreenTransform kst) {
 		this.update();

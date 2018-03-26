@@ -15,10 +15,10 @@ import rescuecore2.worldmodel.EntityID;
 public class AURFireSearchValueSetter {
 
 	public AURConvexHull convexHullInstance = new AURConvexHull();
-	public ArrayList<AURValuePoint> points = new ArrayList<AURValuePoint>();
+	public ArrayList<AURAreaGraphValue> points = new ArrayList<AURAreaGraphValue>();
 	public AURFireSimulator fireSimulatorInstance = null;
 
-	public void calc(AURWorldGraph wsg, ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster, EntityID lastTarget) {
+	public void calc(AURWorldGraph wsg, ArrayList<AURAreaGraphValue> points, Collection<EntityID> initialCluster, EntityID lastTarget) {
 
 		// long t = System.currentTimeMillis();
 
@@ -29,53 +29,55 @@ public class AURFireSearchValueSetter {
 
 		this.points.clear();
 		this.points.addAll(points);
-		for (AURValuePoint p : this.points) {
+		for (AURAreaGraphValue p : this.points) {
 			p.value = 0;
 		}
 
 		//add_Fieryness(this.points, 1.5);
-		add_EstimatedFieryness(this.points, 1.5);
+		//add_EstimatedFieryness(this.points, 1.5);
 		
 		add_GasStation(this.points, 0.55);
+                calc_Capacity(this.points, 0.55);
+		add_TravelCost(this.points, 1.9);
+		
+		//mul_Color(wsg, this.points, 1.1);
+		add_FireProbability(this.points, 1.6);
                 
-		add_TravelCost(this.points, 1.5);
-		add_InitialCluster(this.points, initialCluster, 1.6);
-		mul_Color(wsg, this.points, 1.1);
-		add_FireProbability(this.points, 1.9);
-                
-		calc_noName(this.points, 1.0);
-		mul_Color(wsg, this.points, 1.1);
-		add_NoSeeTime(this.points, 1.08);
-		mul_lastTarget(lastTarget, this.points, 1);
-		Collections.sort(this.points, new Comparator<AURValuePoint>() {
+		//calc_noName(this.points, 1.0);
+		//mul_Color(wsg, this.points, 1.1);
+		add_NoSeeTime(this.points, 1.3);
+		mul_InitialCluster(this.points, initialCluster, 2.0);
+		mul_soClose(this.points, 0.4);
+		mul_lastTarget(lastTarget, this.points, 1.2);
+		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override
-			public int compare(AURValuePoint o1, AURValuePoint o2) {
+			public int compare(AURAreaGraphValue o1, AURAreaGraphValue o2) {
 				return Double.compare(o2.value, o1.value);
 			}
 		});
 	}
 	
 	
-	public void mul_lastTarget(EntityID lastTarget, ArrayList<AURValuePoint> points, double coefficient) {
-		for (AURValuePoint p : points) {
-			if(p.areaGraph.area.getID().equals(lastTarget)) {
+	public void mul_lastTarget(EntityID lastTarget, ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if(p.ag.area.getID().equals(lastTarget)) {
 				p.value *= 1.08 * coefficient;
 			}
 		}
 	}
 	
-	public void mul_Color(AURWorldGraph wsg, ArrayList<AURValuePoint> points, double coefficient) {
+	public void mul_Color(AURWorldGraph wsg, ArrayList<AURAreaGraphValue> points, double coefficient) {
 		int agentColor = wsg.getAgentColor();
 
-		for (AURValuePoint p : points) {
-			if (p.areaGraph.color == agentColor) {
-				p.value *= (wsg.colorCoe[p.areaGraph.color][agentColor]) * coefficient;
+		for (AURAreaGraphValue p : points) {
+			if (p.ag.color == agentColor) {
+				p.value *= (wsg.colorCoe[p.ag.color][agentColor]) * coefficient;
 			}
 
 		}
 	}
 	
-	private void calc_noName(ArrayList<AURValuePoint> points, double coefficient) {
+	private void calc_noName(ArrayList<AURAreaGraphValue> points, double coefficient) {
 //		double max = 0;
 //		for (AURValuePoint p : points) {
 //			p.temp_value = p.areaGraph.countUnburntsInGrid();
@@ -91,13 +93,13 @@ public class AURFireSearchValueSetter {
 //		}
 	}
 
-	public void calcNoBlockade(AURWorldGraph wsg, ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster) {
+	public void calcNoBlockade(AURWorldGraph wsg, ArrayList<AURAreaGraphValue> points, Collection<EntityID> initialCluster) {
 		wsg.updateInfo(null);
 		wsg.NoBlockadeDijkstra(wsg.ai.getPosition());
 
 		this.points.clear();
 		this.points.addAll(points);
-		for (AURValuePoint p : this.points) {
+		for (AURAreaGraphValue p : this.points) {
 			p.value = 0;
 		}
 
@@ -109,42 +111,44 @@ public class AURFireSearchValueSetter {
 
 		// add_NoSeeTime(this.points, 1.1);
 		add_NoBlockadeTravelCost(this.points, 1.5);
-		add_InitialCluster(this.points, initialCluster, 1.6);
+		
 		mul_Color(wsg, this.points, 1.1);
 		add_FireProbability(this.points, 1.9);
 		// calc_ConvexHull(this.points, 0.5);
 		calc_noName(this.points, 1.0);
+		mul_InitialCluster(this.points, initialCluster, 1.1);
 		mul_Color(wsg, this.points, 1.1);
 		add_NoSeeTime(this.points, 1.08);
-		Collections.sort(this.points, new Comparator<AURValuePoint>() {
+		mul_soClose(this.points, 0.5);
+		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override
-			public int compare(AURValuePoint o1, AURValuePoint o2) {
+			public int compare(AURAreaGraphValue o1, AURAreaGraphValue o2) {
 				return Double.compare(o2.value, o1.value);
 			}
 		});
 	}
 
-	private void add_NoSeeTime(ArrayList<AURValuePoint> points, double coefficient) {
+	private void add_NoSeeTime(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		double max_ = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.noSeeTime();
+		for (AURAreaGraphValue p : points) {
+			p.temp_value = p.ag.noSeeTime();
 			if (p.temp_value > max_) {
 				max_ = p.temp_value;
 			}
 		}
 		if (max_ > 0) {
-			for (AURValuePoint p : points) {
+			for (AURAreaGraphValue p : points) {
 				p.temp_value /= max_;
 			}
 		}
-		for (AURValuePoint p : points) {
+		for (AURAreaGraphValue p : points) {
 			p.value += p.temp_value * coefficient;
 		}
 	}
 
-	private void add_Fieryness(ArrayList<AURValuePoint> points, double coefficient) {
-		for (AURValuePoint p : points) {
-			Building b = (Building) (p.areaGraph.area);
+	private void add_Fieryness(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			Building b = (Building) (p.ag.area);
 			if (b.isFierynessDefined() == false) {
 				// p.value += 0.5 * coefficient;
 				continue;
@@ -167,12 +171,12 @@ public class AURFireSearchValueSetter {
 		}
 	}
 	
-	private void add_EstimatedFieryness(ArrayList<AURValuePoint> points, double coefficient) {
-		for (AURValuePoint p : points) {
-			if(p.areaGraph.isBuilding() == false) {
+	private void add_EstimatedFieryness(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if(p.ag.isBuilding() == false) {
 				continue;
 			}
-			switch (p.areaGraph.getBuilding().fireSimBuilding.getEstimatedFieryness()) {
+			switch (p.ag.getBuilding().fireSimBuilding.getEstimatedFieryness()) {
 				case 1: {
 					p.value += 1 * coefficient;
 					break;
@@ -189,64 +193,100 @@ public class AURFireSearchValueSetter {
 
 		}
 	}
+	
+	private void calc_Capacity(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			
+			if(p.ag.isBig()) {
+				p.value += 1 * coefficient;
+			} else {
+				if(p.ag.isSmall() == false) {
+					p.value += 0.3 * coefficient;
+				}
+			}
+			
 
-	private void add_FireProbability(ArrayList<AURValuePoint> points, double coefficient) {
-		for (AURValuePoint p : points) {
-			if (p.areaGraph.onFireProbability) {
-				p.value += (1 + 0) * coefficient;
+		}
+	}
+	
+	private void add_FireProbability(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		
+		double max = -100;
+		for (AURAreaGraphValue p : points) {
+			
+			max = Math.max(max, p.ag.getBuilding().fireSimBuilding.fireProbability);
+
+		}
+		if(max <= 0.00001) {
+			return;
+		}
+		
+		for (AURAreaGraphValue p : points) {
+			
+			if (true) {
+				p.value += ((double) p.ag.getBuilding().fireSimBuilding.fireProbability / max) * coefficient;
 			}
 		}
 	}
 
-	private void add_GasStation(ArrayList<AURValuePoint> points, double coefficient) {
+	private void add_GasStation(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		double maxDist = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.lineDistToClosestGasStation();
+		for (AURAreaGraphValue p : points) {
+			p.temp_value = p.ag.lineDistToClosestGasStation();
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
 		}
 		if (maxDist > 0) {
-			for (AURValuePoint p : points) {
+			for (AURAreaGraphValue p : points) {
 				p.value += (1 - (p.temp_value / maxDist)) * coefficient;
 			}
 		}
 	}
 
-	private void add_TravelCost(ArrayList<AURValuePoint> points, double coefficient) {
+	private void add_TravelCost(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		double maxDist = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.getTravelCost();
+		for (AURAreaGraphValue p : points) {
+			p.temp_value = p.ag.getBuilding().getPerceptCost();
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
 		}
 
-		for (AURValuePoint p : points) {
+		for (AURAreaGraphValue p : points) {
 			p.value += (1 - (p.temp_value / maxDist)) * coefficient;
 		}
 	}
+	
+	private void mul_soClose(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if(p.ag.getBuilding().getPerceptCost() < AURConstants.Agent.VELOCITY * 0.5) {
+				p.value *= coefficient;
+			}
+		}
 
-	private void add_NoBlockadeTravelCost(ArrayList<AURValuePoint> points, double coefficient) {
+	}
+
+	private void add_NoBlockadeTravelCost(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		double maxDist = 0;
-		for (AURValuePoint p : points) {
-			p.temp_value = p.areaGraph.getNoBlockadeTravelCost();
+		for (AURAreaGraphValue p : points) {
+			p.temp_value = p.ag.getNoBlockadeTravelCost();
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
 		}
 
-		for (AURValuePoint p : points) {
+		for (AURAreaGraphValue p : points) {
 			p.value += (1 - (p.temp_value / maxDist)) * coefficient;
 		}
 	}
 
-	private void add_InitialCluster(ArrayList<AURValuePoint> points, Collection<EntityID> initialCluster,
+	private void mul_InitialCluster(ArrayList<AURAreaGraphValue> points, Collection<EntityID> initialCluster,
 			double coefficient) {
-		for (AURValuePoint p : points) {
-			if (true && p.areaGraph.seen() == false && p.areaGraph.burnt == false
-					&& initialCluster.contains(p.areaGraph.area.getID())) {
-				p.value += (1 * coefficient);
+		for (AURAreaGraphValue p : points) {
+			if (true && p.ag.seen() == false && p.ag.burnt == false
+					&& initialCluster.contains(p.ag.area.getID())) {
+				p.value *= (1 * coefficient);
 			}
 
 		}

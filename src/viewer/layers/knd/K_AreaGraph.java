@@ -8,6 +8,7 @@ package viewer.layers.knd;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURBorder;
 import AUR.util.knd.AUREdge;
+import AUR.util.knd.AUREdgeToStand;
 import AUR.util.knd.AURNode;
 import AUR.util.knd.AURWorldGraph;
 import java.awt.BasicStroke;
@@ -54,8 +55,38 @@ public class K_AreaGraph extends K_ViewerLayer {
 						);
 					}
 				}
+				
+				
 			}
 		}
+		
+//		g2.setColor(Color.red);
+//		AUREdgeToStand edge = selected_ag.getBuilding().edgeToPereceptAndExtinguish;
+//			
+//		if(edge != null) {
+//			System.out.println(edge.standX + ", " + edge.standY);
+//			g2.fillOval(kst.xToScreen(edge.standX) - 3, kst.yToScreen(edge.standY) - 3, 6, 6);
+//		}
+		
+//		for(AURBorder border : selected_ag.borders) {
+//			for(AURNode node : border.nodes) {
+//				if(node.edgesToPerceptAndExtinguish == null) {
+//					continue;
+//				}
+//				for(AUREdgeToStand edge : node.edgesToPerceptAndExtinguish) {
+//					g2.fillOval(kst.xToScreen(edge.standX) - 3, kst.yToScreen(edge.standY) - 3, 6, 6);
+//					
+//					System.out.println(edge.standX + ", " + edge.standY);
+//					
+//					g2.drawLine(
+//						kst.xToScreen(node.x), kst.yToScreen(node.y),
+//						kst.xToScreen(edge.standX), kst.yToScreen(edge.standY)
+//					);
+//				}
+//				
+//				
+//			}
+//		}
 		
     }
 
