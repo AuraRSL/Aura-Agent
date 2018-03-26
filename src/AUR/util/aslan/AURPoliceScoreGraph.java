@@ -134,7 +134,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
                 setBlockedHumansScore(AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
-                setRoadsWithoutBlockadesScore(0.0);
+                setRoadsWithoutBlockadesScore(AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, AURConstants.RoadDetector.SecondaryScore.DISTANCE);
