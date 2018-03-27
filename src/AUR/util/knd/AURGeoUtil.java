@@ -334,7 +334,7 @@ public class AURGeoUtil {
 		double dy2 = y3 - y2;
 		double s = (dx1 * (y0 - y2) - dy1 * (x0 - x2)) / (dx1 * dy2 - dx2 * dy1);
 		double t = (dx2 * (y0 - y2) - dy2 * (x0 - x2)) / (dx1 * dy2 - dx2 * dy1);
-		if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+		if (s >= 0 - EPS && s <= 1 + EPS && t >= 0 - EPS && t <= 1 + EPS) {
 			intersection[0] = x0 + (t * dx1);
 			intersection[1] = y0 + (t * dy1);
 			return true;
