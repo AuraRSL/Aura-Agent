@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.PriorityQueue;
 import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Area;
@@ -25,7 +24,6 @@ import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.FireBrigade;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
-import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -130,6 +128,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
+                long sTime = System.currentTimeMillis();
                 System.out.println("Updating RoadDetector Scores...");
                 
                 wsg.updateInfo(messageManager);
@@ -139,21 +138,29 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 // Set dynamic scores
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
-                setBlockedHumansScore(AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
-                setRoadsWithoutBlockadesScore(AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
                 setReleasedAgentStartEntityScore(AURConstants.RoadDetector.SecondaryScore.RELEASED_AGENTS_START_POSITION_SCORE);
                 
-                setOpenBuildingsScore(); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
+                if(ai.getChanged().getChangedEntities() != null){
+                        for(EntityID eid : ai.getChanged().getChangedEntities()){
+                                setBlockedHumansScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
+                                setRoadsWithoutBlockadesScore(eid, AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
+                                setOpenBuildingsScore(eid); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
+                        }
+                }
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, AURConstants.RoadDetector.SecondaryScore.DISTANCE);
                 }
                 
                 areasForScoring.sort(new AURPoliceAreaScoreComparator());
+                
+                System.out.println("PSG UpdateInfo Time (Contains WSG UpdateInfo): " + (System.currentTimeMillis() - sTime));
                 return this;
         }
 
         private void setScores() {
+                long sTime = System.currentTimeMillis();
+                
                 wsg.NoBlockadeDijkstra(ai.getPosition());
                 
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
@@ -180,6 +187,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 areasForScoring.addAll(wsg.areas.values());
                 areasForScoring.sort(new AURPoliceAreaScoreComparator());
                 
+                System.out.println("PSG Setting Base Scores Time: " + (System.currentTimeMillis() - sTime));
         }
 
         private void addScoreToCollection(ArrayList<EntityID> collection, double score) {
@@ -228,17 +236,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.areas.get(entity).secondaryScore += score;
         }
         
-        private void setBlockedHumansScore(double score) {
-//                for(StandardEntity agent : wi.getEntitiesOfType(StandardEntityURN.CIVILIAN, StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.FIRE_BRIGADE)){
-                if(ai.getChanged().getChangedEntities() != null){
-                        for(EntityID eid : ai.getChanged().getChangedEntities()){
-                                StandardEntity entity = wi.getEntity(eid);
-                                if(entity instanceof Civilian || entity instanceof AmbulanceTeam || entity instanceof FireBrigade){
-                                        AURAreaGraph pos = wsg.getAreaGraph(((Human) entity).getPosition());
-                                        if(pos.getTravelCost() == AURConstants.Math.INT_INF || pos.getNoBlockadeTravelCost() * 4 < pos.getTravelCost()){
-                                                pos.secondaryScore += score;
-                                        }
-                                }
+        private void setBlockedHumansScore(EntityID eid, double score) {
+                StandardEntity entity = wi.getEntity(eid);
+                if(entity instanceof Civilian || entity instanceof AmbulanceTeam || entity instanceof FireBrigade){
+                        AURAreaGraph pos = wsg.getAreaGraph(((Human) entity).getPosition());
+                        if(pos.getTravelCost() == AURConstants.Math.INT_INF || pos.getNoBlockadeTravelCost() * 4 < pos.getTravelCost()){
+                                pos.secondaryScore += score;
                         }
                 }
         }
@@ -328,44 +331,40 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
-        private void setRoadsWithoutBlockadesScore(double score) {
-                for(EntityID eid : ai.getChanged().getChangedEntities()){
-                        AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
-                        
-                        if(areaGraph != null && areaGraph.isRoad() &&
-                           areaGraph.area.isBlockadesDefined() &&
-                           areaGraph.area.getBlockades().isEmpty()){
-                                
-                                areaGraph.targetScore = score;
-                        }
+        private void setRoadsWithoutBlockadesScore(EntityID eid, double score) {
+                AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
+
+                if(areaGraph != null && areaGraph.isRoad() &&
+                   areaGraph.area.isBlockadesDefined() &&
+                   areaGraph.area.getBlockades().isEmpty()){
+
+                        areaGraph.targetScore = score;
                 }
         }
 
-        private void setOpenBuildingsScore() {
-                for(EntityID eid : ai.getChanged().getChangedEntities()){
-                        AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
-                        if(areaGraph != null && areaGraph.isBuilding()){
-                                int all = 0, open = 0;
-                                
-                                for(AURAreaGraph ag : areaGraph.neighbours){
-                                        Edge edgeTo = ag.area.getEdgeTo(areaGraph.area.getID());
-                                        if(edgeTo.isPassable()){
-                                                all ++;
-                                                
-                                                if(!ag.area.isBlockadesDefined()){
-                                                        continue;
-                                                }
-                                                
-                                                int size = AURPoliceUtil.filterAlirezaPathBug(wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(ag.area.getID()))).size();
-                                                int size1 = AURPoliceUtil.filterAlirezaPathBug(wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(areaGraph.area.getID()))).size();
-                                                if(size1 != 0 && Math.abs(size - size1) == 1){
-                                                        open ++;
-                                                }
+        private void setOpenBuildingsScore(EntityID eid) {
+                AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
+                if(areaGraph != null && areaGraph.isBuilding()){
+                        int all = 0, open = 0;
+
+                        for(AURAreaGraph ag : areaGraph.neighbours){
+                                Edge edgeTo = ag.area.getEdgeTo(areaGraph.area.getID());
+                                if(edgeTo.isPassable()){
+                                        all ++;
+
+                                        if(!ag.area.isBlockadesDefined()){
+                                                continue;
+                                        }
+
+                                        int size = AURPoliceUtil.filterAlirezaPathBug(wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(ag.area.getID()))).size();
+                                        int size1 = AURPoliceUtil.filterAlirezaPathBug(wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(areaGraph.area.getID()))).size();
+                                        if(size1 != 0 && Math.abs(size - size1) == 1){
+                                                open ++;
                                         }
                                 }
-                                
-                                areaGraph.targetScore = Math.min((all - open) / all, areaGraph.targetScore);
                         }
+
+                        areaGraph.targetScore = Math.min((all - open) / all, areaGraph.targetScore);
                 }
         }
 
