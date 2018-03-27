@@ -39,7 +39,7 @@ public class AURFireZone {
 		for(AURBuilding b : buildings) {
 //			coe = 1;
 			if(b.fireSimBuilding.ignoreFire() == true) {
-				continue;
+				//continue;
 			}
 			if(b.ag.isSmall()) {
 				sum += 0.75;
@@ -63,7 +63,7 @@ public class AURFireZone {
 		
 		for(AURBuilding b : buildings) {
 			if(b.fireSimBuilding.ignoreFire() == true) {
-				continue;
+				//continue;
 			}
 			time = Math.min(time, b.getPerceptTime());
 		}
@@ -74,7 +74,7 @@ public class AURFireZone {
 		if(getPerceptTime() <= 2) {
 			return true;
 		}
-		if(g() >= 0.65)  {
+		if(g() >= 0.8)  {
 			return true;
 		}
 		

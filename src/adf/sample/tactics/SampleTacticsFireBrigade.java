@@ -190,24 +190,24 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
         if (action != null)
         {
             this.sendActionMessage(messageManager, agent, action);
-//			System.out.println("think time: " + (System.currentTimeMillis() - t));
+			System.out.println("think time: " + (System.currentTimeMillis() - t));
             return action;
         }
         target = this.search.calc().getTarget();
 	
-	    System.out.println(agent.getID() + ": " + target);
+//	    System.out.println(agent.getID() + ": " + target);
         action = this.actionExtMove.setTarget(target).calc().getAction();
         if (action != null)
         {
             this.sendActionMessage(messageManager, agent, action);
-//			System.out.println("think time: " + (System.currentTimeMillis() - t));
+			System.out.println("think time: " + (System.currentTimeMillis() - t));
             return action;
         }
 
         messageManager.addMessage(
                 new MessageFireBrigade(true, agent, MessageFireBrigade.ACTION_REST,  agent.getPosition())
         );
-//		System.out.println("rest - think time: " + (System.currentTimeMillis() - t));
+		System.out.println("rest - think time: " + (System.currentTimeMillis() - t));
         return new ActionRest();
     }
 

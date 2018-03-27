@@ -194,7 +194,7 @@ public class AURBuildingClusterer extends StaticClustering {
 			clusterNumber, 
 			30
 		);
-		dbscan.getRandomGenerator().setSeed(ai.me().getStandardURN().ordinal() + 5);
+		dbscan.getRandomGenerator().setSeed(ai.me().getStandardURN().ordinal() + 1);
 		List<CentroidCluster<ClusterItem>> lcd = dbscan.cluster(items);
 		int ci = 0;
 		for(CentroidCluster<ClusterItem> x : lcd) {

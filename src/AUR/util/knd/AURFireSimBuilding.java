@@ -655,15 +655,6 @@ public class AURFireSimBuilding {
 		return f > 0 && f < 4;
 	}
 	
-	public int getWaterNeeded() {
-		if(isOnFire() == true) {
-			return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
-			
-		} else {
-			return 0;
-		}
-	}
-	
 	public boolean ignoreFire() {
 		if((double) getEstimatedFuel() / getInitialFuel() < 0.1) {
 			return true;
@@ -693,6 +684,42 @@ public class AURFireSimBuilding {
 		}
 		
 		return false;
+	}
+	
+	public int getWaterNeeded() {
+		if(isOnFire() == true) {
+			double wq = getWaterNeeded_() * 2;
+			return (int) Math.min(wq, ag.wsg.si.getFireExtinguishMaxSum() - 1);
+			//return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
+			
+		} else {
+			return 0;
+		}
+	}
+	
+	// mrl
+	private int getWaterNeeded_() {
+		int waterNeeded = 0;
+		double currentTemperature = getEstimatedTemperature();
+		int step = 500;
+		while (true) {
+			currentTemperature = waterCooling(currentTemperature, step);
+			waterNeeded += step;
+			if (currentTemperature <= 0) {
+				break;
+			}
+		}
+
+		return waterNeeded;
+	}
+
+	// mrl
+	private double waterCooling(double temperature, int water) {
+		if (water > 0) {
+			double effect = water * AURConstants.FireSim.WATER_COEFFICIENT;
+			return (temperature * getCapacity() - effect) / getCapacity();
+		}
+		return water;
 	}
 	
 }
