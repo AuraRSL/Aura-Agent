@@ -61,10 +61,10 @@ public class AURSightAreaPolygon {
 		
 		cands.remove(building.ag.area);
 		
-		ArrayList<Polygon> q1 = new ArrayList<>();
-		ArrayList<Polygon> q2 = new ArrayList<>();
-		ArrayList<Polygon> q3 = new ArrayList<>();
-		ArrayList<Polygon> q4 = new ArrayList<>();
+		ArrayList<Building> q1 = new ArrayList<>();
+		ArrayList<Building> q2 = new ArrayList<>();
+		ArrayList<Building> q3 = new ArrayList<>();
+		ArrayList<Building> q4 = new ArrayList<>();
 		
 		
 		double cx = building.ag.area.getX();
@@ -82,16 +82,16 @@ public class AURSightAreaPolygon {
 			Polygon p = (Polygon) ((Building) sent).getShape();
 			Rectangle2D pBounds = p.getBounds();
 			if(pBounds.intersects(bounds1)) {
-				q1.add(p);
+				q1.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds2)) {
-				q2.add(p);
+				q2.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds3)) {
-				q3.add(p);
+				q3.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds4)) {
-				q4.add(p);
+				q4.add((Building) sent);
 			}
 		}
 		
@@ -214,7 +214,7 @@ public class AURSightAreaPolygon {
 			rx = cx + Math.cos(r) * maxViewDistance;
 			ry = cy + Math.sin(r) * maxViewDistance;
 
-			ArrayList<Polygon> candi = null;
+			ArrayList<Building> candi = null;
 			if(r >= 0 && r <= Math.PI / 2) {
 				candi = q1;
 			} else if(r >= Math.PI / 2 && r <= Math.PI / 1) {
@@ -267,13 +267,13 @@ public class AURSightAreaPolygon {
 			}
 			
 
-			for(Polygon po : candi) {
+			for(Building bu : candi) {
 				ray[0] = cx;
 				ray[1] = cy;
 				ray[2] = rx;
 				ray[3] = ry;
 
-				if(AURGeoUtil.hitRayAllEdges(po, ray)) {
+				if(AURGeoUtil.hitRayWalls(bu, ray)) {
 					rx = ray[2];
 					ry = ray[3];
 					if(Math.abs(rx - cx) < 1 && Math.abs(ry - cy) < 1) {

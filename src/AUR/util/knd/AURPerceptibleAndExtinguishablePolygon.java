@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntity;
-import rescuecore2.standard.entities.StandardEntityURN;
 
 /**
  *
@@ -42,10 +41,10 @@ public class AURPerceptibleAndExtinguishablePolygon {
 		
 		cands.remove(building.ag.area);
 		
-		ArrayList<Polygon> q1 = new ArrayList<>();
-		ArrayList<Polygon> q2 = new ArrayList<>();
-		ArrayList<Polygon> q3 = new ArrayList<>();
-		ArrayList<Polygon> q4 = new ArrayList<>();
+		ArrayList<Building> q1 = new ArrayList<>();
+		ArrayList<Building> q2 = new ArrayList<>();
+		ArrayList<Building> q3 = new ArrayList<>();
+		ArrayList<Building> q4 = new ArrayList<>();
 		
 		
 		double cx = building.ag.area.getX();
@@ -57,22 +56,23 @@ public class AURPerceptibleAndExtinguishablePolygon {
 		Rectangle bounds4 = new Rectangle((int) cx, (int) cy - r_, r_, r_);
 		
 		for(StandardEntity sent : cands) {
+		
 			if(AURUtil.isBuilding(sent) == false) {
 				continue;
 			}
 			Polygon p = (Polygon) ((Building) sent).getShape();
 			Rectangle2D pBounds = p.getBounds();
 			if(pBounds.intersects(bounds1)) {
-				q1.add(p);
+				q1.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds2)) {
-				q2.add(p);
+				q2.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds3)) {
-				q3.add(p);
+				q3.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds4)) {
-				q4.add(p);
+				q4.add((Building) sent);
 			}
 		}
 
@@ -82,7 +82,7 @@ public class AURPerceptibleAndExtinguishablePolygon {
 		double r = 0;
 		double dr = (2 * Math.PI) / 72;
 		
-		double smallINF = 1e10;
+		double smallINF = 1e6;
 		
 		double p[] = new double[2];
 		double ray[] = new double[4];
@@ -113,12 +113,12 @@ public class AURPerceptibleAndExtinguishablePolygon {
 						max_ = d;
 						fx = p[0];
 						fy = p[1];
-						commonW = building.commonWall[i];
+						//commonW = building.commonWall[i];
 					}
 				}
 			}
 			
-			if(commonW) {
+			if(commonW && false) {
 				rx = fx;
 				ry = fy;
 			} else {
@@ -127,9 +127,11 @@ public class AURPerceptibleAndExtinguishablePolygon {
 				
 				dist = Math.min(dist + maxViewDistance, maxExtinguishDistance);
 				
-				rx = cx + Math.cos(r) * dist;
-				ry = cy + Math.sin(r) * dist;
-				ArrayList<Polygon> candi = null;
+				rx = cx + Math.cos(r) * (dist);
+				ry = cy + Math.sin(r) * (dist);
+//				rx = fx;
+//				ry = fy;
+				ArrayList<Building> candi = null;
 				if(r >= 0 && r <= Math.PI / 2) {
 					candi = q1;
 				} else if(r >= Math.PI / 2 && r <= Math.PI / 1) {
@@ -140,13 +142,13 @@ public class AURPerceptibleAndExtinguishablePolygon {
 					candi = q4;
 				}
 				
-				for(Polygon po : candi) {
+				for(Building b : candi) {
 					ray[0] = fx;
 					ray[1] = fy;
 					ray[2] = rx;
 					ray[3] = ry;
-
-					if(AURGeoUtil.hitRayAllEdges(po, ray)) {
+					
+					if(AURGeoUtil.hitRayWalls(b, ray)) {
 						rx = ray[2];
 						ry = ray[3];
 						if(Math.abs(rx - fx) < 1 && Math.abs(ry - fy) < 1) {
@@ -159,8 +161,8 @@ public class AURPerceptibleAndExtinguishablePolygon {
 			result.addPoint((int) rx, (int) ry);
 			r += dr;
 		}
-		
-		return AURGeoUtil.getSimplifiedPolygon(result, 0);
+		//return result;
+		return AURGeoUtil.getSimplifiedPolygon(result, 0.2);
 	}
 
 }

@@ -537,6 +537,66 @@ public class AURAreaGrid {
 		return result;
 	}
 	
+	// very very bad version
+	public void optimizeStandPoints(AURNode fromNode) {
+		if(fromNode == null) {
+			return;
+		}
+		ArrayList<AUREdgeToStand> edgesToPercept = fromNode.edgesToPerceptAndExtinguish;
+		ArrayList<AUREdgeToStand> edgesToSeeInside = fromNode.edgesToSeeInside;
+		
+		if(edgesToPercept != null) {
+			for (int ii = 0; ii < edgesToPercept.size(); ii++) {
+				AUREdgeToStand iiE = edgesToPercept.get(ii);
+				for (int jj = ii + 1; jj < edgesToPercept.size(); jj++) {
+					AUREdgeToStand jjE = edgesToPercept.get(jj);
+					Polygon iiP = iiE.toSeeAreaGraph.getBuilding().getPerceptibleAndExtinguishableAreaPolygon();
+					if (iiE.fromNode == jjE.fromNode && iiE.ownerAg == jjE.ownerAg) {
+
+						if (iiP.contains(jjE.standX, jjE.standY)) {
+							iiE.standX = jjE.standX;
+							iiE.standY = jjE.standY;
+							iiE.weight = jjE.weight;
+						} else {
+							Polygon jjP = jjE.toSeeAreaGraph.getBuilding().getPerceptibleAndExtinguishableAreaPolygon();
+							if (jjP.contains(iiE.standX, iiE.standY)) {
+								jjE.standX = iiE.standX;
+								jjE.standY = iiE.standY;
+								jjE.weight = iiE.weight;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if(edgesToSeeInside != null) {
+			for (int ii = 0; ii < edgesToSeeInside.size(); ii++) {
+				AUREdgeToStand iiE = edgesToSeeInside.get(ii);
+				for (int jj = ii + 1; jj < edgesToSeeInside.size(); jj++) {
+					AUREdgeToStand jjE = edgesToSeeInside.get(jj);
+					Polygon iiP = iiE.toSeeAreaGraph.getBuilding().getSightAreaPolygon();
+					if (iiE.fromNode == jjE.fromNode && iiE.ownerAg == jjE.ownerAg) {
+
+						if (iiP.contains(jjE.standX, jjE.standY)) {
+							iiE.standX = jjE.standX;
+							iiE.standY = jjE.standY;
+							iiE.weight = jjE.weight;
+						} else {
+							Polygon jjP = jjE.toSeeAreaGraph.getBuilding().getSightAreaPolygon();
+							if (jjP.contains(iiE.standX, iiE.standY)) {
+								jjE.standX = iiE.standX;
+								jjE.standY = iiE.standY;
+								jjE.weight = iiE.weight;
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+
 	public ArrayList<AUREdgeToStand> getEdgesToPerceptiblePolygons(AURAreaGraph ag, int fromX, int fromY) {
 		AURNode fromNode = new AURNode(fromX, fromY, ag, ag);
 		ArrayList<AUREdgeToStand> result = new ArrayList<>();
@@ -636,6 +696,7 @@ public class AURAreaGrid {
 		if(fromNode.edgesToPerceptAndExtinguish != null) {
 			result.addAll(fromNode.edgesToPerceptAndExtinguish);
 		}
+		optimizeStandPoints(fromNode);
 		return result;
 	}
 	
@@ -738,7 +799,7 @@ public class AURAreaGrid {
 		if(fromNode.edgesToSeeInside != null) {
 			result.addAll(fromNode.edgesToSeeInside);
 		}
-		
+		optimizeStandPoints(fromNode);
 		return result;
 	}
 	
@@ -914,6 +975,7 @@ public class AURAreaGrid {
 				que.add(IJToLong(ip, jp));
 			}
 		}
+		optimizeStandPoints(fromNode);
 	}
 
 	public static long IJToLong(int i, int j) {
