@@ -91,15 +91,16 @@ public class AURClearWatcher {
                 
                 if(this.lastAction == CLEAR_FROM_WATCHER)
                         System.out.println(" -> CLEAR_FROM_WATCHER");
-                else if(action instanceof ActionClear){
+                else if(newAction instanceof ActionClear){
                         System.out.println(" -> CLEAR");
                         this.lastAction = this.CLEAR;
                 }
-                else if(action instanceof ActionMove){
-                        ActionMove actionMove = (ActionMove)action;
+                else if(newAction instanceof ActionMove){
+                        ActionMove actionMove = (ActionMove)newAction;
+                        
                         System.out.println(" -> MOVE");
                         this.lastAction = this.MOVE;
-                        if(((ActionMove)action).getUsePosition()){
+                        if(((ActionMove)newAction).getUsePosition()){
                                 this.lastMoveVector[0] = actionMove.getPosX() - ai.getX();
                                 this.lastMoveVector[1] = actionMove.getPosY() - ai.getY();
                         }

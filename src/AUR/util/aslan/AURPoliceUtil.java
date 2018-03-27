@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
+import adf.agent.info.WorldInfo;
 import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,4 +98,13 @@ public class AURPoliceUtil {
         /**
          * End of Kandeh's path planning bug ignoring.
          */
+        
+        /*
+         * This method is not tested.
+         */
+        public static EntityID getAreaEntityIDOfCoordinates(WorldInfo wi, int[] lastPoint) {
+                for(EntityID e : wi.getObjectIDsInRange(lastPoint[0], lastPoint[1], 1))
+                        return e;
+                return null;
+        }
 }

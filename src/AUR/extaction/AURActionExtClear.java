@@ -198,7 +198,7 @@ public class AURActionExtClear extends ExtAction {
                         if(tempTarget != null){
                                 if(tempTarget.second()){
                                         this.result = new ActionMove(
-                                                pathPlanning.setFrom(policeForce.getPosition()).setDestination(tempTarget.first()).calc().getResult()
+                                                wsg.getPathToClosest(policeForce.getPosition(), Lists.newArrayList(tempTarget.first()))
                                         );
                                         return this;
                                 }
@@ -973,12 +973,18 @@ public class AURActionExtClear extends ExtAction {
                                 }
                         }
                         
+                        int[] lastPoint = new int[]{
+                                (int) (policePoint.getX() + moveVector.getX()),
+                                (int) (policePoint.getY() + moveVector.getY())
+                        };
+                        
+                        EntityID areaOfLastPoint = agentInfo.getPosition(); // This should be edited and replace with destination entity id. # TODO
                         
                         return this.cw.getAction(
                                 new ActionMove(
-                                        Lists.newArrayList(agentInfo.getPosition()),
-                                        (int) (policePoint.getX() + moveVector.getX()),
-                                        (int) (policePoint.getY() + moveVector.getY())
+                                        wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
+                                        lastPoint[0],
+                                        lastPoint[1]
                                 )
                         );
                 }

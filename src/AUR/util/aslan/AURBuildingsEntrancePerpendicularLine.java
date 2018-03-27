@@ -32,6 +32,7 @@ public class AURBuildingsEntrancePerpendicularLine {
                          GOING_FROM_BUILDING_TO_POINT = 3;
         
         private Point2D lastHomeComing = null;
+        private EntityID lastHomeComingEntityID = null;
         private int lastHomeComingStatus = this.NO_POINT_SELECTED;
 
         public AURBuildingsEntrancePerpendicularLine(AgentInfo ai, WorldInfo wi, AURClearWatcher cw, AURWorldGraph wsg) {
@@ -62,7 +63,7 @@ public class AURBuildingsEntrancePerpendicularLine {
                         System.out.println("Back to point...");
                         return this.cw.getAction(
                                 new ActionMove(
-                                        Lists.newArrayList(ai.getPosition()),
+                                        wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(lastHomeComingEntityID)),
                                         (int) lastHomeComing.getX(),
                                         (int) lastHomeComing.getY()
                                 )
@@ -108,6 +109,7 @@ public class AURBuildingsEntrancePerpendicularLine {
                                 ai.getPosition()
                         );
                         lastHomeComing = decidedLine.first();
+                        lastHomeComingEntityID = decidedLine.second();
                         lastHomeComingStatus = GOING_TO_POINT;
                 }
                 return decidedLine;

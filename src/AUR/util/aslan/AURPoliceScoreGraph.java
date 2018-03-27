@@ -204,7 +204,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(area.isRefuge()){
                         for(AURAreaGraph ag : area.neighbours){
                                 if(ag.isRoad()){
-                                        ag.baseScore += score / 2;
+                                        ag.baseScore += score * 2 / 3;
                                 }
                         }
                         area.baseScore += score;
@@ -217,7 +217,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
                 else{
                         double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
-                        score *= (1 - distanceFromCluster);
+                        score *= (1 - distanceFromCluster) * 2 / 3;
                 }
                 area.baseScore += score;
         }
