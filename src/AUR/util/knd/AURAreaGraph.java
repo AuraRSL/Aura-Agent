@@ -503,7 +503,7 @@ public class AURAreaGraph {
         public double targetScore = 1;
         
         public double getFinalScore(){
-                return (baseScore * secondaryScore + distanceScore) * targetScore;
+                return baseScore * secondaryScore * distanceScore * targetScore;
         }
         // End of section added by Amir Aslan Aslani
 }

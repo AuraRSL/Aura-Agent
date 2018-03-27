@@ -260,7 +260,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void setDistanceScore(AURAreaGraph area, double score) {
-                area.distanceScore = Math.min((AURConstants.RoadDetector.DIST_SCORE_COEFFICIENT / (double) area.getNoBlockadeTravelCost()) * score, score);
+                area.distanceScore = (1 - score) + Math.min((AURConstants.RoadDetector.DIST_SCORE_COEFFICIENT / (double) area.getNoBlockadeTravelCost()) * score, score);
         }
 
         HashSet<EntityID> visitedDeadPoliceForces = new HashSet<>();

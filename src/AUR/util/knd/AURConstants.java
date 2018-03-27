@@ -131,22 +131,24 @@ public class AURConstants {
                 
                 public static class BaseScore {
                         public final static double DISTANCE = 0.075;
-                        public final static double REFUGE = 0.15;
-                        public final static double GAS_STATION = 0.075;
-                        public final static double HYDRANT = 0.05;
-                        public final static double WSG_ROAD = 0.075;
-                        public final static double CLUSTER = 0.4;
                         
-                        public final static double POLICE_FORCE = 0.075;
-                        public final static double AMBULANCE_TEAM = 0.1;
-                        public final static double FIRE_BRIGADE = 0.05;
+                        public final static double REFUGE = 0.3;
+                        public final static double GAS_STATION = 0.2;
+                        public final static double HYDRANT = 0.1;
+                        
+                        public final static double WSG_ROAD = 0.075;
+                        public final static double CLUSTER = 0.5;
+                        
+                        public final static double POLICE_FORCE = 0.1;
+                        public final static double AMBULANCE_TEAM = 0.125;
+                        public final static double FIRE_BRIGADE = 0.075;
                 }
                 
                 public static class SecondaryScore {
                         public final static double DEAD_POLICE_CLUSTER = 0.3;
                         public final static double BLOCKED_HUMAN = 0.4;
-                        public final static double DISTANCE = 0.1;
-                        public final static double SELECTED_TARGET = 0.025;
+                        public final static double DISTANCE = 0.075;
+                        public final static double SELECTED_TARGET = 0.05;
                         public final static double ROADS_WITHOUT_BLOCKADES = 0.0;
                         public final static double RELEASED_AGENTS_START_POSITION_SCORE = 0.0;
                 }

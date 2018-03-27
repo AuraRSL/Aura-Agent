@@ -4,7 +4,7 @@ import AUR.util.aslan.AURAreaCostComparator;
 import AUR.util.aslan.AURBuildingsEntrancePerpendicularLine;
 import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURDijkstra;
-import AUR.util.aslan.AURExtClearUtil;
+import AUR.util.aslan.AURPoliceUtil;
 import AUR.util.aslan.AURGeoMetrics;
 import AUR.util.aslan.AURGeoTools;
 import AUR.util.aslan.AURPoliceScoreGraph;
