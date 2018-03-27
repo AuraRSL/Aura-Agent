@@ -707,17 +707,21 @@ public class AURWorldGraph extends AbstractModule {
 				}
 			}
 		}
+		
+//		int count = 0;
+		
 		for (AURAreaGraph ag : forceUpdate) {
-			ag.initForReCalc();
+			ag.needUpdate = true;
 		}
 		for (AURAreaGraph ag : areas.values()) {
 			if (ag.needUpdate) {
 				instanceAreaGrid.init(ag);
 				instanceAreaGrid.setEdgePointsAndCreateGraph();
+//				count++;
 			}
 		}
 		
-//		System.out.println("2- world graph update time: " + (System.currentTimeMillis() - t));
+//		System.out.println("2- world graph update time: " + (System.currentTimeMillis() - t) + "\t\t" + count);
 		
 		this.dijkstra(this.ai.getPosition());
 //		System.out.println("3- world graph update time: " + (System.currentTimeMillis() - t));

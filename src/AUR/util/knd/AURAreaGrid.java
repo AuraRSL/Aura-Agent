@@ -837,9 +837,15 @@ public class AURAreaGrid {
 		b = b || (this.areaGraph.sightableBuildings != null && this.areaGraph.sightableBuildings.size() > 0);
 		b = b || (this.blockaePolygons != null && this.blockaePolygons.size() > 0);
 		if (b) {
+			
+			//long t = System.currentTimeMillis();
+			
 			for (int i = 0; i < edgePointsSize; i++) {
 				bfs(i);
 			}
+			
+			//System.out.println(System.currentTimeMillis() - t);
+			
 		} else {
 			int cost = 0;
 			AURNode iNode;
@@ -885,6 +891,7 @@ public class AURAreaGrid {
 			perceptibleAreas = new ArrayList<>();
 			perceptibleAreas.addAll(areaGraph.perceptibleAndExtinguishableBuildings);
 			remove = new ArrayList<AURBuilding>();
+			
 		}
 		
 		ArrayList<AURBuilding> sightableAreas = null;
@@ -904,7 +911,8 @@ public class AURAreaGrid {
 			
 			
 			
-			if(areaGraph.perceptibleAndExtinguishableBuildings != null || areaGraph.sightableBuildings != null) {
+			if(false|| (perceptibleAreas != null && perceptibleAreas.size() > 0)
+				|| (sightableAreas != null && sightableAreas.size() > 0)) {
 				
 				if(this.areaGraph.polygon.contains(gridPoints[i][j][0], gridPoints[i][j][1]) == true) {
 					
@@ -1294,4 +1302,5 @@ public class AURAreaGrid {
 
 	}
 	
+
 }

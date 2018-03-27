@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import rescuecore2.standard.entities.Area;
@@ -358,26 +359,42 @@ public class AURAreaGraph {
 		return wsg.ai.getTime() - lastSeen;
 	}
 
+	int lastHashCode = 1;
+	
+	public int getCurrentAliveBlockadesHashCode() {
+		int hash = 1;
+		if(isBuilding() == true) {
+			return hash;
+		}
+		ArrayList<Polygon> blockades = getAliveBlockades();
+		for(Polygon bp : blockades) {
+			for(int i = 0; i < bp.npoints; i++) {
+				hash = 31 * hash + bp.xpoints[i];
+				hash = 31 * hash + bp.ypoints[i];
+			}
+		}
+		return hash;
+	}
+	
 	public void update(AURWorldGraph wsg) {
 		lastDijkstraEntranceNode = null;
 		lastNoBlockadeDijkstraEntranceNode = null;
 		pQueEntry = null;
 		this.needUpdate = false;
-		if (wsg.changes.contains(area.getID()) || updateTime < 0) {
-			updateTime = wsg.ai.getTime();
-			this.needUpdate = true;
-		}
-		this.needUpdate = this.needUpdate || (longTimeNoSee() && hasBlockade());
-		if (this.needUpdate) {
+		int currentHashCode = getCurrentAliveBlockadesHashCode();
+		
+		if (lastHashCode != currentHashCode || updateTime < 0) {
 			for (AURBorder border : borders) {
 				border.reset();
 			}
+			updateTime = wsg.ai.getTime();
+			this.needUpdate = true;
 		}
+		lastHashCode = currentHashCode;
 		
 		if(isBuilding()) {
 			int temp = 0;
 			Building b = ((Building) (this.area));
-			temp = 0;
 			if(b.isTemperatureDefined()) {
 				temp = b.getTemperature();
 			}
@@ -389,28 +406,22 @@ public class AURAreaGraph {
 				this.fireReportTime = -1;
 			}
 			lastTemperature = temp;
-		}
-		if(this.isBuilding() == true) {
+			
 			this.getBuilding().update();
 		}
-		
-//		if(Math.random() < 0.0001) {
-//			this.onFireProbability = true;
-//		}
-		
 	}
 
-//	public ArrayList<Polygon> getBlockades() {
-//		ArrayList<Polygon>  result = new ArrayList<>();
-//		if(this.area.isBlockadesDefined() == false) {
-//			return result;
-//		}
-//		for (EntityID entId : this.area.getBlockades()) {
-//			Blockade b = (Blockade) wsg.wi.getEntity(entId);
-//			result.add((Polygon) (b.getShape()));
-//		}
-//		return result;
-//	}
+	public ArrayList<Polygon> getBlockades() {
+		ArrayList<Polygon>  result = new ArrayList<>();
+		if(this.area.isBlockadesDefined() == false) {
+			return result;
+		}
+		for (EntityID entId : this.area.getBlockades()) {
+			Blockade b = (Blockade) wsg.wi.getEntity(entId);
+			result.add((Polygon) (b.getShape()));
+		}
+		return result;
+	}
 	
 	public ArrayList<Polygon> getAliveBlockades() {
 		ArrayList<Polygon>  result = new ArrayList<>();
@@ -441,10 +452,6 @@ public class AURAreaGraph {
 	
 	public boolean isRecentlyReportedFire() {
 		return (wsg.ai.getTime() - fireReportTime) <= FIRE_REPORT_FORGET_TIME;
-	}
-	
-	public void initForReCalc() {
-		this.needUpdate = true;
 	}
 
 	public void addBorderCenterEdges() {
