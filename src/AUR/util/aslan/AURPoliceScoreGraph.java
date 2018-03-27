@@ -11,6 +11,7 @@ import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.Clustering;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Civilian;
+import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.FireBrigade;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
@@ -130,6 +132,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public AbstractModule updateInfo(MessageManager messageManager) {
                 System.out.println("Updating RoadDetector Scores...");
                 
+                wsg.updateInfo(messageManager);
                 wsg.NoBlockadeDijkstra(ai.getPosition());
                 wsg.dijkstra(ai.getPosition());
                 
@@ -139,6 +142,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 setBlockedHumansScore(AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
                 setRoadsWithoutBlockadesScore(AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
                 setReleasedAgentStartEntityScore(AURConstants.RoadDetector.SecondaryScore.RELEASED_AGENTS_START_POSITION_SCORE);
+                
+                setOpenBuildingsScore(); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         setDistanceScore(area, AURConstants.RoadDetector.SecondaryScore.DISTANCE);
@@ -239,10 +244,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void addGasStationScore(AURAreaGraph area, double score) {
-                if(! area.isGasStation()){
-                        score = 0;
+                if(area.isGasStation()){
+                        area.baseScore += score;
+                        for(AURAreaGraph neigs : area.neighbours){
+                                neigs.baseScore += score;
+                        }
                 }
-                area.baseScore += score;
         }
 
         private void addHydrandScore(AURAreaGraph area, double score) {
@@ -324,8 +331,40 @@ public class AURPoliceScoreGraph extends AbstractModule {
         private void setRoadsWithoutBlockadesScore(double score) {
                 for(EntityID eid : ai.getChanged().getChangedEntities()){
                         AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
-                        if(areaGraph != null && areaGraph.isRoad()){
+                        
+                        if(areaGraph != null && areaGraph.isRoad() &&
+                           areaGraph.area.isBlockadesDefined() &&
+                           areaGraph.area.getBlockades().isEmpty()){
+                                
                                 areaGraph.targetScore = score;
+                        }
+                }
+        }
+
+        private void setOpenBuildingsScore() {
+                for(EntityID eid : ai.getChanged().getChangedEntities()){
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
+                        if(areaGraph != null && areaGraph.isBuilding()){
+                                int all = 0, open = 0;
+                                
+                                for(AURAreaGraph ag : areaGraph.neighbours){
+                                        Edge edgeTo = ag.area.getEdgeTo(areaGraph.area.getID());
+                                        if(edgeTo.isPassable()){
+                                                all ++;
+                                                
+                                                if(!ag.area.isBlockadesDefined()){
+                                                        continue;
+                                                }
+                                                
+                                                int size = AURPoliceUtil.filterAlirezaPathBug(wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(ag.area.getID()))).size();
+                                                int size1 = AURPoliceUtil.filterAlirezaPathBug(wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(areaGraph.area.getID()))).size();
+                                                if(size1 != 0 && Math.abs(size - size1) == 1){
+                                                        open ++;
+                                                }
+                                        }
+                                }
+                                
+                                areaGraph.targetScore = Math.min((all - open) / all, areaGraph.targetScore);
                         }
                 }
         }

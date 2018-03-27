@@ -93,6 +93,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_POLICE, A_BuildingBlockadeEstimator.class, false);
 		viewer.addLayer(TAB_POLICE, A_WorldBlockadeEstimator.class, false);
 		viewer.addLayer(TAB_POLICE, A_AreasRoadDetectorScore.class, false);
+		viewer.addLayer(TAB_POLICE, A_AreasThatBlockadesNotDefined.class, false);
 
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, false);

@@ -751,21 +751,7 @@ public class AURActionExtClear extends ExtAction {
         private Action improvedRoadClearing(PoliceForce policeForce, EntityID target) {
                 System.out.println("From: " + agentInfo.getPosition());
                 System.out.println("Target: " + target);
-                ArrayList<EntityID> path = this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target));
-                
-                /**
-                 * Start of Kandeh's path planning bug ignoring
-                 * if kandeh fix this bug this section should remove.
-                 */
-                for(int i = 0;i < path.size() - 1;i ++){
-                        if(path.get(i).equals(path.get(i + 1))){
-                                path.remove(i);
-                                i --;
-                        }
-                }
-                /**
-                 * End of Kandeh's path planning bug ignoring.
-                 */
+                ArrayList<EntityID> path = AURPoliceUtil.filterAlirezaPathBug(this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target)));
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
                 if(pathNodes == null && path.size() > 1){
@@ -903,13 +889,13 @@ public class AURActionExtClear extends ExtAction {
                         areas.add((Area) worldInfo.getEntity(eid));
                 Point2D p1 = a1,
                         p2 = AURGeoTools.getEdgeMid(a.getEdgeTo(a3));
-                Polygon clearPolygon = AURExtClearUtil.getClearPolygon(p1, p2);
+                Polygon clearPolygon = AURPoliceUtil.getClearPolygon(p1, p2);
                 return ! AURGeoTools.intersect(clearPolygon, areas);
         }
         
         private boolean hasRoadIntersect(Point2D policeForce, ArrayList<Pair<Point2D, EntityID>> path, int to) {
 
-                Polygon clearLine = AURExtClearUtil.getClearPolygon(policeForce, path.get(to).first());
+                Polygon clearLine = AURPoliceUtil.getClearPolygon(policeForce, path.get(to).first());
 
                 double[] vectorScaled = AURGeoMetrics.getVectorScaled( 
                         AURGeoMetrics.getVectorNormal( 
@@ -921,7 +907,7 @@ public class AURActionExtClear extends ExtAction {
                         agentSize 
                 ); 
                  
-                Polygon clearLineAgentSpace = AURExtClearUtil.getClearPolygon( 
+                Polygon clearLineAgentSpace = AURPoliceUtil.getClearPolygon( 
                         path.get(to).first(), 
                         new Point2D( 
                                 path.get(to).first().getX() + vectorScaled[0], 
@@ -962,7 +948,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 Vector2D clearVector = vectorToTarget.scale(clearVectorLen * 98 / 100);
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
-                Polygon clearPolygon = AURExtClearUtil.getClearPolygon(policePoint, clearPoint);
+                Polygon clearPolygon = AURPoliceUtil.getClearPolygon(policePoint, clearPoint);
                 
                 Pair<Boolean, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon,(Area) worldInfo.getEntity(agentInfo.getPosition()));
 
@@ -1102,8 +1088,7 @@ public class AURActionExtClear extends ExtAction {
                         for(int j = 0;j < points.size();j ++){
                                 if(
                                         i != j &&
-                                        ! AURGeoTools.intersect(
-                                                AURExtClearUtil.getClearPolygon(points.get(i), points.get(j)),
+                                        ! AURGeoTools.intersect(AURPoliceUtil.getClearPolygon(points.get(i), points.get(j)),
                                                 areas
                                         )
                                 ){
@@ -1204,7 +1189,7 @@ public class AURActionExtClear extends ExtAction {
                 tP[1] += agentPosition[1];
                 fP[0] += agentPosition[0];
                 fP[1] += agentPosition[1];
-                Polygon cp = AURExtClearUtil.getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
+                Polygon cp = AURPoliceUtil.getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
                 return ! isThereBlockadesIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
         }
         
@@ -1243,7 +1228,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 
                 for(Point2D p2 : toSet){
-                        Polygon clearPolygon = AURExtClearUtil.getClearPolygon(fromP, p2);
+                        Polygon clearPolygon = AURPoliceUtil.getClearPolygon(fromP, p2);
                         Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
                         if(! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
                                 return true;
@@ -1275,7 +1260,7 @@ public class AURActionExtClear extends ExtAction {
                 }
                 for(Point2D p1 : fromSet){
                         for(Point2D p2 : toSet){
-                                Polygon clearPolygon = AURExtClearUtil.getClearPolygon(p1, p2);
+                                Polygon clearPolygon = AURPoliceUtil.getClearPolygon(p1, p2);
                                 Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
                                 if(! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
                                         return true;

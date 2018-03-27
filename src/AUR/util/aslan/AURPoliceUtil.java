@@ -15,7 +15,7 @@ import rescuecore2.worldmodel.EntityID;
  *
  * @author Amir Aslan Aslani - Mar 2018
  */
-public class AURExtClearUtil {
+public class AURPoliceUtil {
         public static ArrayList<Point2D> getAreaGuidPoints(Polygon polygon, Point2D p1, Point2D p2, Collection<Edge> passableEdges, Collection<Edge> notPassableEdges) {
                 ArrayList<Point2D> points = new ArrayList<>();
                 
@@ -79,4 +79,22 @@ public class AURExtClearUtil {
         public static Polygon getClearPolygon(Point2D p1, Point2D p2) {
                 return AURGeoTools.getClearPolygon(p1, p2, AURConstants.PoliceExtClear.CLEAR_POLYGON_HEIGHT);
         }
+        
+        /**
+         * Start of Kandeh's path planning bug ignoring
+         * if kandeh fix this bug this section should remove.
+         * ;)
+         */
+        public static ArrayList<EntityID> filterAlirezaPathBug(ArrayList<EntityID> path){
+                for(int i = 0;i < path.size() - 1;i ++){
+                        if(path.get(i).equals(path.get(i + 1))){
+                                path.remove(i);
+                                i --;
+                        }
+                }
+                return path;
+        }
+        /**
+         * End of Kandeh's path planning bug ignoring.
+         */
 }
