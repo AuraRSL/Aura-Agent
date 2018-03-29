@@ -221,6 +221,11 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
                         score *= (1 - distanceFromCluster) * 2 / 3;
                 }
+                
+                if(area.isRoad()){
+                        score /= 2;
+                }
+                
                 area.baseScore += score;
         }
         
