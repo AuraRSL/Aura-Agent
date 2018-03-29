@@ -13,14 +13,14 @@ import viewer.K_ViewerLayer;
  * @author Alireza Kandeh - 2018
  */
 
-public class K_BigAreas extends K_ViewerLayer {
+public class K_ExtraSmallAreas extends K_ViewerLayer {
 
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if (ag.isBig()) {
+			if (ag.isExtraSmall()) {
 				Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
-				g2.setColor(Color.CYAN);
+				g2.setColor(Color.RED);
 				g2.fillPolygon(polygon);
 				g2.setColor(Color.black);
 				g2.drawPolygon(polygon);

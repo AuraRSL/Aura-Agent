@@ -210,7 +210,7 @@ public class AURBuildingClusterer extends StaticClustering {
 		this.calced = true;
 		
 		wsg.agentCluster = getClusterIndex(ai.me());
-		
+		wsg.clusters = sortedTeamAgents.size();
 		return this;
     }
 

@@ -174,6 +174,45 @@ public class AURGeoUtil {
 		return Math.abs(sum / 2);
 	}
 	
+	public static boolean isAlmostConvex(Polygon p) {
+		if(p.npoints <= 3) {
+			return true;
+		}
+		p = AURGeoUtil.getSimplifiedPolygon(p, 0.1);
+		if(p.npoints <= 3) {
+			return true;
+		}
+		int ori = AURGeoUtil.COLLINEAR;
+		for (int i = 0; i < p.npoints; i++) {
+			if(false&& p.xpoints[i] == p.xpoints[(i + 1) % p.npoints]
+				&& p.ypoints[i] == p.ypoints[(i + 1) % p.npoints]
+			) {
+				continue;
+			}
+			if(false&& p.xpoints[(i + 1) % p.npoints] == p.xpoints[(i + 2) % p.npoints]
+				&& p.ypoints[(i + 1) % p.npoints] == p.ypoints[(i + 2) % p.npoints]
+			) {
+				continue;
+			}
+			int ori_ = AURGeoUtil.getOrientation(
+				p.xpoints[i],
+				p.ypoints[i],
+				p.xpoints[(i + 1) % p.npoints],
+				p.ypoints[(i + 1) % p.npoints],
+				p.xpoints[(i + 2) % p.npoints],
+				p.ypoints[(i + 2) % p.npoints]
+			);
+			if(ori == AURGeoUtil.COLLINEAR) {
+				ori = ori_;
+			}
+			if(ori_ != ori && ori != AURGeoUtil.COLLINEAR && ori_ != AURGeoUtil.COLLINEAR) {
+				return false;
+			}
+		}
+		return true;
+	}
+		
+	
 	public static double getPerimeter(Polygon p) {
 		double sum = 0;
 		for (int i = 0; i < p.npoints; i++) {

@@ -27,6 +27,8 @@ public class K_ShortestPath extends K_ViewerLayer {
 		int lastX = 0;
 		int lastY = 0;
 		int X, Y;
+//		wsg.dijkstra(selected_ag.area.getID());
+		wsg.dijkstra(wsg.ai.getPosition());
 		g2.setColor(Color.orange);
 		g2.setStroke(new BasicStroke(3));
 

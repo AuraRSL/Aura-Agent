@@ -30,4 +30,36 @@ public class AUREdge {
 		}
 		return toNode.ownerArea1;
 	}
+
+	public double getPriority() {
+		double result = 0;
+		double w = weight / 100;
+		result += w;
+		AURAreaGraph ag = areaGraph;
+		boolean isSmallOrExtraSmall = (ag.isExtraSmall() || ag.isSmall());
+		
+		if(isSmallOrExtraSmall == true && ag.isAlmostConvex() == false) {
+			result += w * 2;
+		}
+		
+		if(ag.isExtraSmall()) {
+			result += w * 10;
+		}
+		
+		if(ag.isBuilding()) {
+			result += w * 100;
+			if(ag.getBuilding().fireSimBuilding.isOnFire()) {
+				result += w * 200;
+			}
+		}
+		
+		if(isSmallOrExtraSmall && ag.isBuildingNeighbour() == true) {
+			result += w * 40;
+		}
+		
+		result += 3 * (1 - ((double) Math.min(500, ag.noSeeTime()) / 500)) * w;	
+		
+		return result;
+	}
+	
 }

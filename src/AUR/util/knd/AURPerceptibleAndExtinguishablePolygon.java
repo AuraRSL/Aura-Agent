@@ -161,8 +161,8 @@ public class AURPerceptibleAndExtinguishablePolygon {
 			result.addPoint((int) rx, (int) ry);
 			r += dr;
 		}
-		//return result;
-		return AURGeoUtil.getSimplifiedPolygon(result, 0.2);
+		return result;
+//		return AURGeoUtil.getSimplifiedPolygon(result, 0.2);
 	}
 
 }

@@ -855,8 +855,7 @@ public class AURAreaGrid {
 				for (int j = i + 1; j < edgePointsSize; j++) {
 					iNode = edgePointObject[i];
 					jNode = edgePointObject[j];
-					cost = Math.abs(edgePoint[i][0] - edgePoint[j][0]) + Math.abs(edgePoint[i][1] - edgePoint[j][1]);
-					cost = cost * GRID_SIZE;
+					cost = (int) AURGeoUtil.dist(iNode.x, iNode.y, jNode.x, jNode.y);
 					edge = new AUREdge(iNode, jNode, cost, areaGraph);
 					iNode.edges.add(edge);
 					jNode.edges.add(edge);

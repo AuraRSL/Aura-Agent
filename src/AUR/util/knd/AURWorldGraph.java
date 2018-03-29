@@ -54,6 +54,7 @@ public class AURWorldGraph extends AbstractModule {
 	public boolean grid[][] = null;
 	public AURFireSimulator fireSimulator = null;
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
+	public int clusters = 0;
 
 	public int agentCluster = -1;
 	
@@ -613,8 +614,18 @@ public class AURWorldGraph extends AbstractModule {
 				if (ag.neighbours.contains(nei)) {
 					continue;
 				}
+
 				ag.neighbours.add(nei);
 				nei.neighbours.add(ag);
+				
+				if(ag.isBuilding()) {
+					nei.setBuildingNeighbour();
+				}
+				
+				if(nei.isBuilding()) {
+					ag.setBuildingNeighbour();
+				}
+				
 			}
 			ag.vis = true;
 		}
@@ -760,6 +771,7 @@ public class AURWorldGraph extends AbstractModule {
 					node.cost = AURConstants.Math.INT_INF;
 					node.pre = null;
 					node.pQueEntry = null;
+					node.vis = false;
 				}
 			}
 		}
@@ -862,15 +874,18 @@ public class AURWorldGraph extends AbstractModule {
 		FibonacciHeap<AURNode> que = new FibonacciHeap<>();
 		for (AURNode node : startNodes) {
 			node.pre = startNullNode;
-			node.pQueEntry = que.enqueue(node, node.cost);
+			AUREdge edge = new AUREdge(startNullNode, node, node.cost, fromAg);
+			node.pQueEntry = que.enqueue(node, edge.getPriority());
 		}
 		AURNode qNode = null;
 		AURAreaGraph ag;
 		AURNode toNode = null;
 		while (que.isEmpty() == false) {
-			
 			qNode = que.dequeueMin().getValue();
+			double qNPriority = qNode.pQueEntry.getPriority();
+			qNode.vis = true;
 			qNode.pQueEntry = null;
+			
 			if(qNode.edgesToPerceptAndExtinguish != null) {
 				for(AUREdgeToStand etp : qNode.edgesToPerceptAndExtinguish) {
 					if(etp.toSeeAreaGraph.getBuilding().edgeToPereceptAndExtinguish == null) {
@@ -901,30 +916,36 @@ public class AURWorldGraph extends AbstractModule {
 				}
 			}
 
-			
 			ag = qNode.ownerArea1;
-			if (ag.getTravelCost()> qNode.cost) {
+			if (ag.lastDijkstraEntranceNode == null) {
 				ag.lastDijkstraEntranceNode = qNode;
 			}
 			ag = qNode.ownerArea2;
-			if (ag.getTravelCost() > qNode.cost) {
+			if (ag.lastDijkstraEntranceNode == null) {
 				ag.lastDijkstraEntranceNode = qNode;
 			}
 			for (AUREdge edge : qNode.edges) {
-
-				int cost = (qNode.cost + edge.weight) //  * edge.areaGraph.areaCostFactor
-						+ (1000 - edge.areaGraph.noSeeTime()) * 2;
 				toNode = edge.nextNode(qNode);
-				if (toNode.cost > cost) {
-					toNode.cost = cost;
-
-					if (toNode.pQueEntry == null) {
-						toNode.pQueEntry = que.enqueue(toNode, toNode.cost);
-					} else {
-						que.decreaseKey(toNode.pQueEntry, toNode.cost);
-					}
-					toNode.pre = qNode;
+				if(toNode.vis == true) {
+					continue;
 				}
+
+				int cost = qNode.cost + edge.weight;
+				
+				double p = qNPriority + edge.getPriority();
+				if(toNode.pQueEntry == null) {
+					toNode.cost = cost;
+					toNode.pre = qNode;
+					toNode.pQueEntry = que.enqueue(toNode, p);
+					
+				} else {
+					if(toNode.pQueEntry.getPriority() > p) {
+						toNode.cost = cost;
+						toNode.pre = qNode;
+						que.decreaseKey(toNode.pQueEntry, p);
+					}
+				}
+		
 			}
 
 		}

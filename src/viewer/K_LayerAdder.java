@@ -50,11 +50,15 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MISC, K_LayerAreaCenters.class, false);
 		viewer.addLayer(TAB_MISC, K_AreaVertices.class, false);
 		viewer.addLayer(TAB_MISC, K_CommonWalls.class, false);
+		viewer.addLayer(TAB_MISC, K_ExtraSmallAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_SmallAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_MediumAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_BigAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_AreaNoSeeTime.class, false);
 		viewer.addLayer(TAB_MISC, K_CloseBuildings.class, false);
+		viewer.addLayer(TAB_MISC, K_AlmostConvex.class, false);
+		viewer.addLayer(TAB_MISC, K_BuildingNeighbourAreas.class, false);
+		viewer.addLayer(TAB_MISC, K_AreaColor.class, false);
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);
@@ -78,14 +82,14 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaGraph.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaGrid.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaBorders.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPath.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPath.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishableBuildings.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_LayerTravelCost.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);

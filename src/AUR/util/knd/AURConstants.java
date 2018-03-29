@@ -8,7 +8,7 @@ package AUR.util.knd;
 public class AURConstants {
 
 	public static class Misc {
-		public final static int CLOSE_BUILDING_THRESHOLD = 75 * 1000;
+		public final static int CLOSE_BUILDING_THRESHOLD = 25 * 1000;
 	}
 	
 	public static class PathPlanning {

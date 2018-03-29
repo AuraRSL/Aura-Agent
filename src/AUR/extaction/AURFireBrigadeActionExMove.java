@@ -112,6 +112,10 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 	@Override
 	public ExtAction calc() {
 		ActionMove actMove = wsg.getMoveActionToPercept(ai.getPosition(), target);
+//		Collection<EntityID> targets = new ArrayList<>();
+//		targets.add(target);
+//		ActionMove actMove = new ActionMove(wsg.getPathToClosest(ai.getPosition(), targets));
+		
 		if (result == null || false) {
 			//actMove = wsg.getNoBlockadeMoveAction(ai.getPosition(), target);
 		}

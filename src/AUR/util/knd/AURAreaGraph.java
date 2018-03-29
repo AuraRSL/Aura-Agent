@@ -53,7 +53,8 @@ public class AURAreaGraph {
 	public Polygon polygon = null;
 	public double goundArea = 0;
 	public double perimeter = 0;
-	
+	private boolean isAlmostConvex = false;
+	private boolean isBuildingNeighbour = false;
 	
 	public double fb_value;
 	public double fb_value_temp;
@@ -71,6 +72,14 @@ public class AURAreaGraph {
 			}
 		}
 		return AURConstants.PathPlanning.DEFAULT_BLOCKADE_FORGET_TIME;
+	}
+	
+	public void setBuildingNeighbour() {
+		this.isBuildingNeighbour = true;
+	}
+	
+	public boolean isBuildingNeighbour() {
+		return this.isBuildingNeighbour;
 	}
 	
 	private AURBuilding building = null;
@@ -200,12 +209,30 @@ public class AURAreaGraph {
 		return getBuilding().fireSimBuilding.getWaterNeeded();
 	}
 	
+	public boolean isExtraSmall() {
+		return this.goundArea < 1000 * 1000 * 3;
+	}
+	
 	public boolean isSmall() {
-		return this.goundArea < 1000 * 1000 * 25;
+		if(isExtraSmall()) {
+			return false;
+		}
+		return this.goundArea < 1000 * 1000 * 20;
+	}
+	
+	public boolean isMedium() {
+		if(isExtraSmall() || isSmall() || isBig()) {
+			return false;
+		}
+		return true;
 	}
 	
 	public boolean isBig() {
-		return this.goundArea > (wsg.worldGridSize * wsg.worldGridSize * 4) / 6;
+		return this.goundArea > 1000 * 1000 * 40;
+	}
+	
+	public boolean isAlmostConvex() {
+		return this.isAlmostConvex;
 	} 
 	
 	public AURAreaGraph(Area area, AURWorldGraph wsg, AURAreaGrid instanceAreaGrid) {
@@ -223,6 +250,8 @@ public class AURAreaGraph {
 		if(isBuilding()) {
 			this.building = new AURBuilding(this.wsg, this);
 		}
+		
+		this.isAlmostConvex = AURGeoUtil.isAlmostConvex(this.polygon);
 	}
 	
 	public final AURBuilding getBuilding() {
@@ -474,18 +503,18 @@ public class AURAreaGraph {
 	
 	public double getScore() {
 		double perceptScore = 0;
-		int p = 1;
+		double p = 0.5;
 		if(perceptibleAndExtinguishableBuildings != null) {
 			perceptScore = (double) Math.pow(perceptibleAndExtinguishableBuildings.size(), p) / Math.pow(wsg.getMaxPerceptibleBuildings(), p);
 		}
 		
-		double aScore = 1 - (Math.pow(AURGeoUtil.getArea((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadArea(), p));
+		//double aScore = 1 - (Math.pow(AURGeoUtil.getArea((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadArea(), p));
 		
-		double perimeterScore = 1 - (Math.pow(AURGeoUtil.getPerimeter((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadPerimeter(), p));
+		//double perimeterScore = 1 - (Math.pow(AURGeoUtil.getPerimeter((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadPerimeter(), p));
 		
 		
 		//pScore = Math.pow(pScore, 0.1);
-		double score = 1.0 * perceptScore * perimeterScore;
+		double score = 1.0 * perceptScore * 1;
 		
 		return score;
 	}
@@ -513,4 +542,5 @@ public class AURAreaGraph {
         public double getFinalScore(){
                 return baseScore * secondaryScore;
         }
+
 }

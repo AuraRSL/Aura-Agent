@@ -194,7 +194,18 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
             return action;
         }
         target = this.search.calc().getTarget();
-	
+	if(agentInfo.getPosition().equals(new EntityID(53268))) {
+		b = true;
+	}
+	if(agentInfo.getPosition().equals(new EntityID(3139))) {
+		b = false;
+	}
+//	if(b) {
+//		target = new EntityID(3139);
+//	} else {
+//		target = new EntityID(53268);
+//	}
+//	
 //	    System.out.println(agent.getID() + ": " + target);
         action = this.actionExtMove.setTarget(target).calc().getAction();
         if (action != null)
@@ -210,6 +221,8 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
 		System.out.println("rest - think time: " + (System.currentTimeMillis() - t));
         return new ActionRest();
     }
+    
+    boolean b = false;
 
     private void sendActionMessage(MessageManager messageManager, FireBrigade agent, Action action)
     {
