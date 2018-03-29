@@ -65,11 +65,11 @@ public class AURConstants {
          * @author Amir Aslan Aslani - Mar 2018
          */
         public static class PoliceExtClear {
-                public final static int CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 3;
+                public final static int CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 2 + 100;
                 public final static int GUID_POINT_CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 2 + 100;
                 public final static int MOVE_LENGTH_CALCULATE_ERROR = 500;
                 
-                public final static boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = false;
+                public final static boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = true;
                 public final static boolean USE_STRAIGHT_ROAD_DETECTION = true;
                 public final static boolean IGNORE_POLICES_RESCUE = true;
                 public final static boolean OPEN_NEAR_BUILDINGS_ENTRANCES = false;
@@ -139,7 +139,7 @@ public class AURConstants {
                         public final static double GAS_STATION = 0.2;
                         public final static double HYDRANT = 0.1;
                         
-                        public final static double WSG_ROAD = 0.2;
+                        public final static double WSG_ROAD = 0.125;
                         public final static double CLUSTER = 0.4;
                         
                         public final static double POLICE_FORCE = 0.1;

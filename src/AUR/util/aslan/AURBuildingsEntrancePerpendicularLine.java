@@ -57,6 +57,7 @@ public class AURBuildingsEntrancePerpendicularLine {
                    AURConstants.Agent.RADIUS > Math.hypot(ai.getX() - lastHomeComing.getX(), ai.getY() - lastHomeComing.getY())
                 ){
                         lastHomeComing = null;
+                        lastHomeComingEntityID = null;
                         lastHomeComingStatus = this.NO_POINT_SELECTED;
                 }
                 else if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT){
@@ -86,7 +87,7 @@ public class AURBuildingsEntrancePerpendicularLine {
                 ){
                         Area targetBuilding = (Area) wi.getEntity(path.get( path.size() - 1 ) );
                         Edge targetBuildingEntrance = targetBuilding.getEdgeTo(path.get( path.size() - 2 ));
-                        System.out.println("Building detected as target"); 
+                        System.out.println("Building detected as target " + targetBuilding.getID()); 
                         return getBuildingEntranceLine(targetBuilding, targetBuildingEntrance);
                 }
                 return null;
@@ -102,7 +103,10 @@ public class AURBuildingsEntrancePerpendicularLine {
                    buildingEntranceLine != null &&
                    isCurrentLineIntersect(buildingEntranceLine,intersect) &&
                    intersect[0] != -1 &&
-                   intersect[1] != -1
+                   intersect[1] != -1 &&
+                   (lastHomeComing == null ||
+                   (lastHomeComing != null &&
+                   AURConstants.Agent.RADIUS > Math.hypot(ai.getX() - lastHomeComing.getX(), ai.getY() - lastHomeComing.getY())))
                 ){
                         decidedLine = new Pair(
                                 new Point2D(intersect[0], intersect[1]),
