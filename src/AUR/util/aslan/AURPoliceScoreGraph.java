@@ -199,7 +199,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void addWSGRoadScores(AURAreaGraph area, double score) {
-                area.baseScore += area.getScore() * score;
+                if(area.isRoad()){
+                        area.baseScore += area.getScore() * score;
+                }
+                else{
+                        area.baseScore += score / 2;
+                }
         }
 
         private void addRefugeScore(AURAreaGraph area, double score) {
