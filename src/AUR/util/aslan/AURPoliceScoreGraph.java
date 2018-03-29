@@ -185,6 +185,9 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         
                         /* Cluster Score */
                         addClusterScore(area, AURConstants.RoadDetector.BaseScore.CLUSTER);
+                        
+                        /* Entrance Number Score */
+                        addEntrancesNumberScore(area, AURConstants.RoadDetector.BaseScore.ENTRANCES_NUMBER);
                 }
                 areasForScoring.addAll(wsg.areas.values());
                 areasForScoring.sort(new AURPoliceAreaScoreComparator());
@@ -393,6 +396,16 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                 }
                         }
                 }
+        }
+
+        private void addEntrancesNumberScore(AURAreaGraph area, double score) {
+                if(area.borders.size() == 0)
+                        return;
+                
+                double coo = 1 - (1 / area.borders.size());
+                score *= coo;
+                
+                area.baseScore += score;
         }
 
 }

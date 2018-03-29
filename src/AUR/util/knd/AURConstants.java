@@ -145,6 +145,8 @@ public class AURConstants {
                         public final static double POLICE_FORCE = 0.1;
                         public final static double AMBULANCE_TEAM = 0.125;
                         public final static double FIRE_BRIGADE = 0.075;
+                        
+                        public final static double ENTRANCES_NUMBER = 0.25;
                 }
                 
                 public static class SecondaryScore {
