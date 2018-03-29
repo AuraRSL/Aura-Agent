@@ -19,6 +19,7 @@ import java.util.HashSet;
 import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.FireBrigade;
@@ -142,6 +143,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 if(ai.getChanged().getChangedEntities() != null){
                         for(EntityID eid : ai.getChanged().getChangedEntities()){
+                                setFiredBuildingsScore(eid, AURConstants.RoadDetector.SecondaryScore.FIRED_BUILDING);
                                 setBlockedHumansScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
                                 setRoadsWithoutBlockadesScore(eid, AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
                                 setOpenBuildingsScore(eid); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
@@ -365,6 +367,21 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
 
                         areaGraph.targetScore = Math.min((all - open) / all, areaGraph.targetScore);
+                }
+        }
+
+        private void setFiredBuildingsScore(EntityID eid, double score) {
+                AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
+                if(areaGraph != null && areaGraph.isBuilding()){
+                        Building b = (Building) areaGraph.area;
+                        if(b.isFierynessDefined()){
+                                if(b.getFieryness() >= 4){
+                                        areaGraph.targetScore = 0;
+                                }
+                                else if (b.getFieryness() > 0){
+                                        areaGraph.secondaryScore += score;
+                                }
+                        }
                 }
         }
 

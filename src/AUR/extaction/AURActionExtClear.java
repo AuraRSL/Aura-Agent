@@ -47,6 +47,7 @@ import rescuecore2.misc.geometry.Vector2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
+import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
@@ -755,7 +756,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
                 if(pathNodes == null && path.size() > 1){
-                        System.out.println("Full Clear Action...");
+                        System.out.println("Full Clear Action... ( " + path.get(1) + " )");
                         return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
                 }
 
@@ -1094,7 +1095,7 @@ public class AURActionExtClear extends ExtAction {
                         for(int j = 0;j < points.size();j ++){
                                 if(
                                         i != j &&
-                                        ! AURGeoTools.intersect(AURPoliceUtil.getClearPolygon(points.get(i), points.get(j)),
+                                        ! AURGeoTools.intersect(AURGeoTools.getClearPolygon(points.get(i), points.get(j), AURConstants.PoliceExtClear.GUID_POINT_CLEAR_POLYGON_HEIGHT ),
                                                 areas
                                         )
                                 ){
@@ -1166,11 +1167,9 @@ public class AURActionExtClear extends ExtAction {
                 Collection<EntityID> objectIDsInRange = worldInfo.getObjectIDsInRange(agentPosition[0], agentPosition[1], distToRescueBlockedAgents);
                 for(EntityID o : objectIDsInRange){
                         StandardEntity se = worldInfo.getEntity(o);
-                        if(se instanceof Human && ! (se instanceof PoliceForce) && ! se.getID().equals(wsg.ai.getID())){
+                        if(se instanceof Human && ! (se instanceof PoliceForce) && ! (se instanceof Civilian) && ! se.getID().equals(wsg.ai.getID())){
                                 int humanPosition[] = new int[]{((Human)se).getX(), ((Human)se).getY()};
                                 if(AURGeoUtil.dist(humanPosition[0], humanPosition[1], agentPosition[0], agentPosition[1]) < distToRescueBlockedAgents){
-                                        
-                                        Rectangle humanPositionBounds = ((Area) worldInfo.getEntity(((Human) se).getPosition())).getShape().getBounds();
                                         if(worldInfo.getEntity(((Human)se).getPosition()) instanceof Road &&
                                            ((Road) worldInfo.getEntity(((Human)se).getPosition())).isBlockadesDefined()){
                                                 for(EntityID b : (((Road) worldInfo.getEntity(((Human)se).getPosition())).getBlockades())){

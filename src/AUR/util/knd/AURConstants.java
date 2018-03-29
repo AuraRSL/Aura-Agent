@@ -66,9 +66,10 @@ public class AURConstants {
          */
         public static class PoliceExtClear {
                 public final static int CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 3;
+                public final static int GUID_POINT_CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 2 + 100;
                 public final static int MOVE_LENGTH_CALCULATE_ERROR = 500;
                 
-                public final static boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = true;
+                public final static boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = false;
                 public final static boolean USE_STRAIGHT_ROAD_DETECTION = true;
         }
         
@@ -136,8 +137,8 @@ public class AURConstants {
                         public final static double GAS_STATION = 0.2;
                         public final static double HYDRANT = 0.1;
                         
-                        public final static double WSG_ROAD = 0.075;
-                        public final static double CLUSTER = 0.5;
+                        public final static double WSG_ROAD = 0.2;
+                        public final static double CLUSTER = 0.4;
                         
                         public final static double POLICE_FORCE = 0.1;
                         public final static double AMBULANCE_TEAM = 0.125;
@@ -151,6 +152,7 @@ public class AURConstants {
                         public final static double SELECTED_TARGET = 0.05;
                         public final static double ROADS_WITHOUT_BLOCKADES = 0.0;
                         public final static double RELEASED_AGENTS_START_POSITION_SCORE = 0.0;
+                        public final static double FIRED_BUILDING = 0.5;
                 }
                 
         }
