@@ -156,7 +156,9 @@ public class K_Viewer extends JFrame {
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getItem() != null && wsgs.size() > 0) {
 					selected = wsgs.get(list.getSelectedIndex());
-					selected_ag = null;
+					if(selected_ag != null) {
+						selected_ag = selected.getAreaGraph(selected_ag.area.getID());
+					}
 					repaint();
 				}
 			}
