@@ -232,7 +232,21 @@ public class AURActionExtClear extends ExtAction {
                 if(blockedAgentInClearArea != null){
                         System.out.println("Get Rescue Agent That Blocked...");
                         this.result = this.cw.getAction(
-                                getRescueBlockedAgentAction(blockedAgentInClearArea)
+                                getOpenPointAction(blockedAgentInClearArea)
+                        );
+                        if(this.result != null)
+                                return this;
+                        System.out.println("Failed!");
+                }
+
+                /**
+                 * if there is buildings that blocked, then open that.
+                 */
+                int[] blockedBuildingsEntranceInClearArea = getblockedBuildingsEntranceInClearArea();
+                if(blockedBuildingsEntranceInClearArea != null){
+                        System.out.println("Get Open Building That Blocked...");
+                        this.result = this.cw.getAction(
+                                getOpenPointAction(blockedBuildingsEntranceInClearArea)
                         );
                         if(this.result != null)
                                 return this;
@@ -360,7 +374,7 @@ public class AURActionExtClear extends ExtAction {
         private boolean equalsPoint(double p1X, double p1Y, double p2X, double p2Y, double range) {
                 return (p2X - range < p1X && p1X < p2X + range) && (p2Y - range < p1Y && p1Y < p2Y + range);
         }
-
+        
         private boolean intersect(double agentX, double agentY, double pointX, double pointY, Area area) {
                 for (Edge edge : area.getEdges()) {
                         double startX = edge.getStartX();
@@ -373,85 +387,6 @@ public class AURActionExtClear extends ExtAction {
                                 if (!equalsPoint(pointX, pointY, midX, midY) && !equalsPoint(agentX, agentY, midX, midY)) {
                                         return true;
                                 }
-                        }
-                }
-                return false;
-        }
-
-        private boolean intersect(Blockade blockade, Blockade another) {
-                if (blockade.isApexesDefined() && another.isApexesDefined()) {
-                        int[] apexes0 = blockade.getApexes();
-                        int[] apexes1 = another.getApexes();
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                        if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                                apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                                return true;
-                                        }
-                                }
-                        }
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                        apexes1[apexes1.length - 2], apexes1[apexes1.length - 1], apexes1[0], apexes1[1])) {
-                                        return true;
-                                }
-                        }
-                        for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[apexes0.length - 2], apexes0[apexes0.length - 1],
-                                        apexes0[0], apexes0[1], apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                        return true;
-                                }
-                        }
-                }
-                return false;
-        }
-
-        private boolean intersect(Blockade blockade, Polygon polygon) {
-
-                if (blockade.isApexesDefined()) {
-                        int[] apexes0 = blockade.getApexes();
-                        int[] apexes1 = new int[2 * polygon.npoints];
-                        for (int i = 0; i < polygon.npoints; i++) {
-                                apexes1[i * 2] = polygon.xpoints[i];
-                                apexes1[i * 2 + 1] = polygon.ypoints[i];
-                        }
-
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                        if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                                apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                                return true;
-                                        }
-                                }
-                        }
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                        apexes1[apexes1.length - 2], apexes1[apexes1.length - 1], apexes1[0], apexes1[1])) {
-                                        return true;
-                                }
-                        }
-                        for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[apexes0.length - 2], apexes0[apexes0.length - 1],
-                                        apexes0[0], apexes0[1], apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                        return true;
-                                }
-                        }
-                }
-                return false;
-        }
-
-        private boolean intersect(double agentX, double agentY, double pointX, double pointY, Blockade blockade) {
-                List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(blockade.getApexes()),
-                        true);
-                for (Line2D line : lines) {
-                        Point2D start = line.getOrigin();
-                        Point2D end = line.getEndPoint();
-                        double startX = start.getX();
-                        double startY = start.getY();
-                        double endX = end.getX();
-                        double endY = end.getY();
-                        if (java.awt.geom.Line2D.linesIntersect(agentX, agentY, pointX, pointY, startX, startY, endX, endY)) {
-                                return true;
                         }
                 }
                 return false;
@@ -989,7 +924,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 Boolean blockadeFlag = false;
                 for(Blockade blockade : blockades){
-                        if(intersect(blockade, clearPolygon)){
+                        if(AURGeoTools.intersect(blockade, clearPolygon)){
                                 blockadeFlag = true;
                                 blockadesThatInClearPolygon.add(blockade);
                         }
@@ -1142,7 +1077,7 @@ public class AURActionExtClear extends ExtAction {
                 );
         }
 
-        private Action getRescueBlockedAgentAction(int[] blockedAgentsPosition) {
+        private Action getOpenPointAction(int[] blockedAgentsPosition) {
                 Vector2D v = new Vector2D(
                         (int) (blockedAgentsPosition[0] - agentPosition[0]), 
                         (int) (blockedAgentsPosition[1] - agentPosition[1])
@@ -1168,7 +1103,7 @@ public class AURActionExtClear extends ExtAction {
                 for(EntityID o : objectIDsInRange){
                         StandardEntity se = worldInfo.getEntity(o);
                         if(se instanceof Human &&
-                           ! (se instanceof PoliceForce) &&
+                           (AURConstants.PoliceExtClear.IGNORE_POLICES_RESCUE || ! (se instanceof PoliceForce)) &&
                            (!(se instanceof Civilian) ||
                            (se instanceof Civilian && isThereGasStation)) &&
                            ! se.getID().equals(wsg.ai.getID())){
@@ -1342,6 +1277,52 @@ public class AURActionExtClear extends ExtAction {
                                 }
                         }
                         return isThereStraightRoad;
+                }
+                return false;
+        }
+
+        private int[] getblockedBuildingsEntranceInClearArea() {
+                if(! AURConstants.PoliceExtClear.OPEN_NEAR_BUILDINGS_ENTRANCES)
+                        return null;
+                
+                Collection<StandardEntity> objectsInRange = worldInfo.getObjectsInRange(agentPosition[0], agentPosition[1], this.clearDistance);
+                int[] result = null;
+                double dis = 0;
+                
+                for(StandardEntity se : objectsInRange){
+                        if(se instanceof Building){
+                                Building b = (Building) se;
+                                for(Edge e : b.getEdges()){
+                                        Point2D edgeMid = AURGeoTools.getEdgeMid(e);
+                                        double disTemp = Math.hypot(edgeMid.getX() - agentInfo.getX(), edgeMid.getY() - agentInfo.getY());
+                                        if(e.isPassable() &&
+                                           disTemp > dis &&
+                                           edgeMid.minus(new Point2D(agentInfo.getX(), agentInfo.getY())).getLength() < this.clearDistance - 50 &&
+                                           isPolygonOnBlockades(AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), edgeMid, AURConstants.Agent.RADIUS * 2 + 100))){
+                                                dis = disTemp;
+                                                result = new int[]{(int) edgeMid.getX(),(int) edgeMid.getY()};
+                                        }
+                                }
+                        }
+                }
+                return result;
+        }
+
+        private boolean isPolygonOnBlockades(Polygon clearPolygon) {
+                Rectangle bounds = clearPolygon.getBounds();
+                Collection<StandardEntity> objectsInRectangle = worldInfo.getObjectsInRectangle(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
+                for(StandardEntity se : objectsInRectangle){
+                        if(se instanceof Road){
+                                Road r = (Road) se;
+                                if(r.isBlockadesDefined()){
+                                        for(EntityID eid : r.getBlockades()){
+                                                Blockade entity = (Blockade) worldInfo.getEntity(eid);
+                                                if(AURGeoTools.intersect(entity, clearPolygon)){
+                                                        return true;
+                                                }
+                                        }
+                                }
+                        }
                 }
                 return false;
         }

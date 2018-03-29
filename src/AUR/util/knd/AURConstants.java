@@ -71,6 +71,8 @@ public class AURConstants {
                 
                 public final static boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = false;
                 public final static boolean USE_STRAIGHT_ROAD_DETECTION = true;
+                public final static boolean IGNORE_POLICES_RESCUE = true;
+                public final static boolean OPEN_NEAR_BUILDINGS_ENTRANCES = false;
         }
         
         /**
