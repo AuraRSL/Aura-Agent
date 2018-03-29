@@ -805,14 +805,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 if(path.size() > 1 &&
                    (
-                        (
-                                ! agentInfo.getPosition().equals(path.get(1)) &&
-                                ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(1))
-                        ) ||
-                        (
-                                agentInfo.getPosition().equals(path.get(1)) &&
-                                ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(2))
-                        )
+                        ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(1))
                    )
                 ){
                         System.out.println("Area Guid Point For First Area Added...");
@@ -1203,15 +1196,39 @@ public class AURActionExtClear extends ExtAction {
                         agentInfo.getPosition(),
                         Lists.newArrayList(nextArea)
                 );
-                if(pathToNext.size() == 2)
+                if(pathToNext.size() <= 2)
                         return new ActionMove(pathToNext);
                 
                 Area pArea = agentInfo.getPositionArea();
+                
                 if(pArea.isBlockadesDefined()){
+                        Blockade selected = null;
+                        double dist = Double.MAX_VALUE;
+                        boolean isInRange = false;
+                        
                         for(EntityID beid : pArea.getBlockades()){
-                                return new ActionClear(beid);
+                                Blockade entity = (Blockade) worldInfo.getEntity(beid);
+                                double disTemp = Math.hypot(entity.getX() - agentPosition[0], entity.getY() - agentPosition[1]);
+                                if(dist > disTemp){
+                                        selected = entity;
+                                        dist = disTemp;
+                                        if(disTemp < this.clearDistance){
+                                                isInRange = true;
+                                        }
+                                        else{
+                                                isInRange = false;
+                                        }
+                                }
+                                
+                        }
+                        if(isInRange){
+                                return new ActionClear(selected);
+                        }
+                        else if(selected != null){
+                                return new ActionMove(Lists.newArrayList(agentInfo.getPosition()), selected.getX(), selected.getY());
                         }
                 }
+                
                 return new ActionMove(
                         wsg.getNoBlockadePathToClosest(
                                 agentInfo.getPosition(),
