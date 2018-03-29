@@ -1156,11 +1156,23 @@ public class AURActionExtClear extends ExtAction {
 
         private int[] getBlockedAgentInClearArea() {
                 int distToRescueBlockedAgents = this.clearDistance - (int) this.agentSize;
+                boolean isThereGasStation = false;
+                for(StandardEntity se : worldInfo.getObjectsInRange(agentPosition[0], agentPosition[1], 50000 + AURConstants.Agent.RADIUS * 3)){
+                        if(se.getStandardURN().equals(StandardEntityURN.GAS_STATION)){
+                                isThereGasStation = true;
+                                break;
+                        }
+                }
                 
                 Collection<EntityID> objectIDsInRange = worldInfo.getObjectIDsInRange(agentPosition[0], agentPosition[1], distToRescueBlockedAgents);
                 for(EntityID o : objectIDsInRange){
                         StandardEntity se = worldInfo.getEntity(o);
-                        if(se instanceof Human && ! (se instanceof PoliceForce) && ! (se instanceof Civilian) && ! se.getID().equals(wsg.ai.getID())){
+                        if(se instanceof Human &&
+                           ! (se instanceof PoliceForce) &&
+                           (!(se instanceof Civilian) ||
+                           (se instanceof Civilian && isThereGasStation)) &&
+                           ! se.getID().equals(wsg.ai.getID())){
+                                
                                 int humanPosition[] = new int[]{((Human)se).getX(), ((Human)se).getY()};
                                 if(AURGeoUtil.dist(humanPosition[0], humanPosition[1], agentPosition[0], agentPosition[1]) < distToRescueBlockedAgents){
                                         if(worldInfo.getEntity(((Human)se).getPosition()) instanceof Road &&
