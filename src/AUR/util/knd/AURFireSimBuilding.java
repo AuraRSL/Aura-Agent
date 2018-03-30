@@ -412,6 +412,12 @@ public class AURFireSimBuilding {
 		if (radEn > getEstimatedEnergy()) {
 			radEn = getEstimatedEnergy();
 		}
+		if(getEstimatedFieryness() == 2) {
+			radEn *= 0.9;
+		}
+		if(getEstimatedFieryness() == 3) {
+			radEn *= 0.5;
+		}
 		return radEn;
 	}
 	
@@ -437,6 +443,13 @@ public class AURFireSimBuilding {
 //			System.out.println("f = " + f);
 //			System.out.println("c = " + (getInitialFuel()*f));
 //		}
+	
+		if(getEstimatedFieryness() == 2) {
+			f *= 0.9;
+		}
+		if(getEstimatedFieryness() == 3) {
+			f *= 0.5;
+		}
 		return getInitialFuel() * f;
 	}
 		
@@ -686,11 +699,16 @@ public class AURFireSimBuilding {
 		return false;
 	}
 	
+//	public boolean simulate() {
+//		if()
+//	}
+	
+	
 	public int getWaterNeeded() {
 		if(isOnFire() == true) {
-			double wq = getWaterNeeded_() * 2;
-			return (int) Math.min(wq, ag.wsg.si.getFireExtinguishMaxSum() - 1);
-			//return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
+//			double wq = getWaterNeeded_() * 2;
+//			return (int) Math.min(wq, ag.wsg.si.getFireExtinguishMaxSum() - 1);
+			return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
 			
 		} else {
 			return 0;

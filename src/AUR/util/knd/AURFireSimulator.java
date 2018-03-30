@@ -152,6 +152,8 @@ public class AURFireSimulator {
 			if(ag.isBuilding()) {
 				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
 				b.tempVar = 0;
+				//ag.isOnFire() || ag.getBuilding().fireSimBuilding.isOnFire()
+				int ef = ag.getBuilding().fireSimBuilding.getEstimatedFieryness();
 				if(ag.isOnFire()) { // || ag.getBuilding().fireSimBuilding.isOnFire()
 					b.tempVar = b.getRadiationEnergy();
 				}

@@ -74,11 +74,12 @@ public class AURFireZone {
 		if(getPerceptTime() <= 2) {
 			return true;
 		}
-		if(g() >= 0.8)  {
-			return true;
-		}
+//		if(g() >= 0.8)  {
+//			return true;
+//		}
 		
-		return false;
+//		return false;\
+		return true;
 	}
 	
 	public double g() {
