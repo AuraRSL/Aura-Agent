@@ -175,6 +175,7 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
+		this.wsg.precompute(precomputeData);
 		return this;
 	}
 
@@ -184,15 +185,17 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
+		this.wsg.resume(precomputeData);
 		return this;
 	}
 
 	@Override
 	public BuildingDetector preparate() {
 		super.preparate();
-		if (this.getCountPrecompute() >= 2) {
+		if (this.getCountPreparate() >= 2) {
 			return this;
 		}
+		this.wsg.preparate();
 		return this;
 	}
 }

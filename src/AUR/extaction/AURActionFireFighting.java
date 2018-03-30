@@ -98,7 +98,7 @@ public class AURActionFireFighting extends ExtAction {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
-		
+		this.wsg.precompute(precomputeData);
 		this.wsg.fireSimulator.precompute(precomputeData);
 		
 		this.pathPlanning.precompute(precomputeData);
@@ -119,7 +119,7 @@ public class AURActionFireFighting extends ExtAction {
 		if (this.getCountResume() >= 2) {
 			return this;
 		}
-		
+		this.wsg.resume(precomputeData);
 		this.wsg.fireSimulator.resume(precomputeData);
 		
 		this.pathPlanning.resume(precomputeData);
@@ -139,6 +139,7 @@ public class AURActionFireFighting extends ExtAction {
 		if (this.getCountPreparate() >= 2) {
 			return this;
 		}
+		this.wsg.preparate();
 		this.pathPlanning.preparate();
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();

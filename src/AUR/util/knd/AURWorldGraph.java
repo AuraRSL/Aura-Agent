@@ -18,7 +18,9 @@ import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
+import adf.agent.precompute.PrecomputeData;
 import adf.component.module.AbstractModule;
+import adf.component.module.algorithm.StaticClustering;
 import java.awt.Polygon;
 import viewer.K_Viewer;
 import rescuecore2.standard.entities.Area;
@@ -55,6 +57,7 @@ public class AURWorldGraph extends AbstractModule {
 	public AURFireSimulator fireSimulator = null;
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
 	public int clusters = 0;
+	public StaticClustering worldClusterer = null;
 
 	public int agentCluster = -1;
 	
@@ -398,16 +401,6 @@ public class AURWorldGraph extends AbstractModule {
 		return result;
 	}
 
-	public AURWorldGraph(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
-		super(ai, wi, si, moduleManager, developData);
-		this.wi = wi;
-		this.ai = ai;
-		this.si = si;
-
-		build();
-		
-	}
-
 	public ArrayList<AURAreaGraph> getUnseens(Collection<EntityID> list) {
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : areas.values()) {
@@ -434,11 +427,6 @@ public class AURWorldGraph extends AbstractModule {
 
 	private ArrayList<StandardEntity> sortedTeamAgents = new ArrayList<>();
 
-	@Override
-	public AbstractModule calc() {
-		return this;
-	}
-
 	public int getAgentColor() {
 		if(agentColor != -1) {
 			return agentColor;
@@ -460,7 +448,12 @@ public class AURWorldGraph extends AbstractModule {
 
 	private int agentColor = -1;
 
+	private boolean build = false;
+	
 	public void build() {
+		if(this.build == true) {
+			return;
+		}
 		long t = System.currentTimeMillis();
 		areas.clear();
 		AURAreaGraph ag;
@@ -512,6 +505,20 @@ public class AURWorldGraph extends AbstractModule {
 			}
 
 		}
+		
+		this.worldClusterer.calc();
+		this.clusters = this.worldClusterer.getClusterNumber();
+		this.agentCluster = this.worldClusterer.getClusterIndex(this.ai.me());
+		for(int ci = 0; ci < this.clusters; ci++) {
+			Collection<EntityID> ids = this.worldClusterer.getClusterEntityIDs(ci);
+			for(EntityID id : ids) {
+				AURAreaGraph ag_ = this.getAreaGraph(id);
+				if(ag_ != null) {
+					ag_.clusterIndex = ci;
+				}
+			}
+		}
+		
 		setNeighbours();
 		addBorders();
 
@@ -548,6 +555,7 @@ public class AURWorldGraph extends AbstractModule {
 		updateInfo(null);
 
 //		System.out.println("walls: " + walls.size());
+		this.build = true;
 		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
 	}
 	
@@ -1215,5 +1223,48 @@ public class AURWorldGraph extends AbstractModule {
 		
 		return result;
 	}
+	
+	public AURWorldGraph(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
+		super(ai, wi, si, moduleManager, developData);
+		this.wi = wi;
+		this.ai = ai;
+		this.si = si;
+		
+//		build();
+		
+		this.worldClusterer = moduleManager.getModule(
+			"SampleSearch.Clustering.Fire",
+			"adf.sample.module.algorithm.SampleKMeans"
+		);
+	}
+	
+	@Override
+	public AbstractModule precompute(PrecomputeData precomputeData) {
+		this.worldClusterer.precompute(precomputeData);
+		build();
+		return this;
+	}
+
+	@Override
+	public AbstractModule resume(PrecomputeData precomputeData) {
+		this.worldClusterer.resume(precomputeData);
+		build();
+		return this;
+	}
+
+	@Override
+	public AbstractModule preparate() {
+		this.worldClusterer.preparate();
+		build();
+		return this;
+	}
+
+	@Override
+	public AbstractModule calc() {
+		build();
+		return this;
+	}
+	
+	
 	
 }

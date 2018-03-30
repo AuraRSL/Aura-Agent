@@ -57,6 +57,7 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
+		this.wsg.precompute(precomputeData);
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {
@@ -71,6 +72,7 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 		if (this.getCountResume() >= 2) {
 			return this;
 		}
+		this.wsg.resume(precomputeData);
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {
@@ -85,6 +87,7 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 		if (this.getCountPreparate() >= 2) {
 			return this;
 		}
+		this.wsg.preparate();
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {

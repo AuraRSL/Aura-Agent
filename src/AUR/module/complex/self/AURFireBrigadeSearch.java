@@ -2,7 +2,7 @@ package AUR.module.complex.self;
 
 import java.util.ArrayList;
 
-import AUR.module.algorithm.AURBuildingClusterer;
+import AUR.module.algorithm.AURWorldClusterer;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURFireSearchValueSetter;
 import AUR.util.knd.AURAreaGraphValue;
@@ -26,7 +26,7 @@ public class AURFireBrigadeSearch extends Search {
 	AURFireSearchValueSetter svs = new AURFireSearchValueSetter();
 	public AgentInfo ai = null;
 
-	AURBuildingClusterer buildingClusterer = null;
+	AURWorldClusterer buildingClusterer = null;
 
 	public AURFireBrigadeSearch(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager,
 			DevelopData developData) {
@@ -103,13 +103,16 @@ public class AURFireBrigadeSearch extends Search {
 	@Override
 	public Search precompute(PrecomputeData precomputeData) {
 		super.precompute(precomputeData);
+		this.buildingClusterer.precompute(precomputeData);
+		this.wsg.precompute(precomputeData);
 		return this;
 	}
 
 	@Override
 	public Search resume(PrecomputeData precomputeData) {
 		super.resume(precomputeData);
-		this.preparate();
+		buildingClusterer.preparate();
+		this.wsg.preparate();
 		this.worldInfo.requestRollback();
 		return this;
 	}
@@ -117,8 +120,8 @@ public class AURFireBrigadeSearch extends Search {
 	@Override
 	public Search preparate() {
 		super.preparate();
-
 		buildingClusterer.preparate();
+		this.wsg.preparate();
 		return this;
 	}
 }
