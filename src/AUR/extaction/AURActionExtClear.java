@@ -1075,7 +1075,6 @@ public class AURActionExtClear extends ExtAction {
                 
                 Polygon clearPolygon = AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), new Point2D(agentInfo.getX() + v.getX(), agentInfo.getY() + v.getY()), AURConstants.Agent.RADIUS * 3);
                 Pair<Boolean, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon);
-                System.out.println("Toooop : " + blockadesList);
                 cw.setBlockadeList(blockadesList.second());
                 
                 return new ActionClear(
