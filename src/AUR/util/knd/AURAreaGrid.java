@@ -659,7 +659,8 @@ public class AURAreaGrid {
 
 
 			if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
-				if(this.areaGraph.polygon.contains(gridPoints[i][j][0], gridPoints[i][j][1]) == true) {
+				int r = 750;
+				if(this.areaGraph.polygon.contains(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, 2 * r, 2 * r) == true) {
 					for(AURBuilding b : perceptibleAreas) {
 						if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
 							int cost = (int) AURGeoUtil.dist(fromX, fromY, gridPoints[i][j][0], gridPoints[i][j][1]);
@@ -761,9 +762,9 @@ public class AURAreaGrid {
 			i = ij[0];
 			j = ij[1];
 
-
 			if(areaGraph.sightableBuildings != null) {
-				if(this.areaGraph.polygon.contains(gridPoints[i][j][0], gridPoints[i][j][1]) == true) {
+				int r = 750;
+				if(this.areaGraph.polygon.contains(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, 2* r, 2 * r) == true) {
 					for(AURBuilding b : sightableAreas) {
 						if(b.getSightAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
 							int cost = (int) AURGeoUtil.dist(fromX, fromY, gridPoints[i][j][0], gridPoints[i][j][1]);
@@ -912,8 +913,8 @@ public class AURAreaGrid {
 			
 			if(false|| (perceptibleAreas != null && perceptibleAreas.size() > 0)
 				|| (sightableAreas != null && sightableAreas.size() > 0)) {
-				
-				if(this.areaGraph.polygon.contains(gridPoints[i][j][0], gridPoints[i][j][1]) == true) {
+				int r = 750;
+				if(this.areaGraph.polygon.contains(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, 2 * r, 2 * r) == true) {
 					
 					if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
 						for(AURBuilding b : perceptibleAreas) {
