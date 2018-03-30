@@ -388,11 +388,16 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(areaGraph != null && areaGraph.isBuilding()){
                         Building b = (Building) areaGraph.area;
                         if(b.isFierynessDefined()){
-                                if(b.getFieryness() >= 4){
+                                if(b.getFieryness() >= 7){
                                         areaGraph.targetScore = 0;
                                 }
                                 else if (b.getFieryness() > 0){
-                                        areaGraph.secondaryScore += score;
+                                        if(isThereCivilanInBuilding(b)){
+                                                areaGraph.secondaryScore += score;
+                                        }
+                                        else{
+                                                areaGraph.targetScore = 0.5;
+                                        }
                                 }
                         }
                 }
@@ -406,6 +411,16 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 score *= coo;
                 
                 area.baseScore += score;
+        }
+
+        private boolean isThereCivilanInBuilding(Building b) {
+                Collection<StandardEntity> entitiesOfType = wi.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+                for(StandardEntity entity : entitiesOfType){
+                        if(entity instanceof Civilian && ((Civilian) entity).getPosition().equals(b.getID())){
+                                return true;
+                        }
+                }
+                return false;
         }
 
 }
