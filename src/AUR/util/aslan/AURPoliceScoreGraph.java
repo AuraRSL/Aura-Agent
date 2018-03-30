@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
+import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.communication.MessageManager;
 import adf.agent.develop.DevelopData;
@@ -25,6 +26,7 @@ import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.FireBrigade;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
+import rescuecore2.standard.entities.Refuge;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -147,6 +149,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                 setBlockedHumansScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
                                 setRoadsWithoutBlockadesScore(eid, AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
                                 setOpenBuildingsScore(eid); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
+                                setBlockedBuildingsThatContainsCiviliansScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_CONTAINS_CIVILANS);
+                                setBuildingsDontContainsCivilianScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_DONT_CONTAINS_CIVILIAN);
                         }
                 }
                 
@@ -407,8 +411,10 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(area.borders.size() == 0)
                         return;
                 
-                double coo = 1 - (1 / area.borders.size());
-                score *= coo;
+                if(area.borders.size() >= 3){
+                        double coo = 1 - (1 / area.borders.size());
+                        score *= coo;
+                }
                 
                 area.baseScore += score;
         }
@@ -421,6 +427,44 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
                 }
                 return false;
+        }
+
+        HashSet<EntityID> visitedCivilians = new HashSet<>();
+        private void setBlockedBuildingsThatContainsCiviliansScore(EntityID eid, double score) {
+                StandardEntity entity = wi.getEntity(eid);
+                if(entity instanceof Civilian && ! visitedCivilians.contains(eid)){
+                        wsg.getAreaGraph(((Civilian) entity).getPosition()).secondaryScore += score;
+                }
+        }
+
+        private void setBuildingsDontContainsCivilianScore(EntityID eid, double score) {
+                StandardEntity entity = wi.getEntity(eid);
+                
+                if(entity instanceof Building && entity instanceof Refuge){
+                        Building b = (Building) entity;
+                        int[] line = new int[]{
+                                (int) ai.getX(),
+                                (int) ai.getY(),
+                                b.getX(),
+                                b.getY()
+                        };
+                        
+                        if(!( b.isBrokennessDefined() && b.getBrokenness() == 0 && ! isThereCivilanInBuilding(b)))
+                                return;
+                        
+                        double len = Math.hypot(line[0] - line[2], line[1] - line[3]);
+                        Collection<StandardEntity> objectsInRange = wi.getObjectsInRectangle(line[0], line[1], line[2], line[3]);
+                        for(StandardEntity se : objectsInRange){
+                                if(se instanceof Building){
+                                        for(Edge e : ((Building)se).getEdges()){
+                                                if(AURGeoUtil.getIntersection(line[0], line[1], line[2], line[3], e.getEndX(), e.getEndY(), e.getStartX(), e.getStartY(), new double[2]))
+                                                        return;
+                                        }
+                                }
+                        }
+                        
+                        wsg.getAreaGraph(eid).secondaryScore = score;
+                }
         }
 
 }

@@ -262,6 +262,10 @@ public class AURActionExtClear extends ExtAction {
                         return this;
                 }
                 
+                if(cw.dontMoveCounter == 8){
+                        this.result = new ActionMove(Lists.newArrayList(agentPosition), agentInfo.getPositionArea().getX(), agentInfo.getPositionArea().getY());
+                        return this;
+                }
                 
                 /**
                  * if agent is standing on the target

@@ -91,7 +91,7 @@ public class AURClearWatcher {
         
         public Action getAction(Action action){
                 Action newAction;
-                if(dontMoveCounter > 7){
+                if(dontMoveCounter > 15){
                         newAction = getDontMoveAction();
                 }
                 else{
