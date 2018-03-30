@@ -19,9 +19,11 @@ public class K_IgnoredFires extends K_ViewerLayer {
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
 		g2.setColor(Color.green);
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if (ag.isBuilding() && ag.getBuilding().fireSimBuilding.ignoreFire() == true) {
-				Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
-				g2.fillPolygon(polygon);
+			if (ag.isBuilding() && ag.getBuilding().fireSimBuilding.isOnFire()) {
+				if(ag.getBuilding().fireSimBuilding.ignoreFire() == true) {	
+					Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
+					g2.fillPolygon(polygon);
+				}
 			}
 
 		}

@@ -43,20 +43,26 @@ public class AURBuilding {
 	}
 	
 	public int getPerceptCost() {
+		if(this.ag.noSeeTime() <= 0 && this.ag.isInExtinguishRange()) {
+			return 0;
+		}
 		if(this.edgeToPereceptAndExtinguish == null) {
-//			if(this.ag.lastDijkstraEntranceNode != null) {
-//				return this.ag.getTravelCost();
-//			}
+			if(this.ag.lastDijkstraEntranceNode != null) {
+				return this.ag.getTravelCost();
+			}
 			return AURConstants.Math.INT_INF;
 		}
 		return this.edgeToPereceptAndExtinguish.standCost;
 	}
 	
 	public int getPerceptTime() {
+		if(this.ag.noSeeTime() <= 0 && this.ag.isInExtinguishRange()) {
+			return 0;
+		}
 		if(this.edgeToPereceptAndExtinguish == null) {
-//			if(this.ag.lastDijkstraEntranceNode != null) {
-//				return this.ag.getTravelTime();
-//			}
+			if(this.ag.lastDijkstraEntranceNode != null) {
+				return this.ag.getTravelTime();
+			}
 			return AURConstants.Math.INT_INF;
 		}
 		return (int) (Math.ceil((double) this.getPerceptCost() / AURConstants.Agent.VELOCITY));

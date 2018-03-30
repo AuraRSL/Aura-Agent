@@ -391,7 +391,9 @@ public class AURActionFireFighting extends ExtAction {
 		AURAreaGraph targetAg = wsg.getAreaGraph(target);
 		
 		if(targetAg.noSeeTime() > 4 && targetAg.getBuilding().edgeToPereceptAndExtinguish != null) {
-			return false;
+			if(targetAg.isRecentlyReportedFire() == false) {
+				return false;
+			}
 		}
 //		
 		if (this.worldInfo.getDistance(agentInfo.me().getID(), target) < max_) {

@@ -83,6 +83,12 @@ public class K_FireSimBuildingInfo extends K_ViewerLayer {
 			
 			result += "LastRealFieryness:\t" + b.lastRealFieryness;
 			result += "\n";
+			
+			result += "EffectiveRadiation:\t" + b.getEffectiveRadiation();
+			result += "\n";
+			
+//			result += "EffectiveRadiationDT:\t" + b.getEffectiveRadiationDT();
+//			result += "\n";
 		
 			
 			if(b.fireZone != null) {

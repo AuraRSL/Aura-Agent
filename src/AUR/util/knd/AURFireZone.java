@@ -1,5 +1,6 @@
 package AUR.util.knd;
 
+import AUR.util.ConcaveHull;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -63,7 +64,11 @@ public class AURFireZone {
 		
 		for(AURBuilding b : buildings) {
 			if(b.fireSimBuilding.ignoreFire() == true) {
-				//continue;
+				continue;
+			}
+			if(b.ag.isRecentlyReportedFire() && b.ag.isInExtinguishRange()) {
+				time = 0;
+				break;
 			}
 			time = Math.min(time, b.getPerceptTime());
 		}
@@ -120,9 +125,9 @@ public class AURFireZone {
 ////		ArrayList<int[]> points = new ArrayList<>();
 //		ArrayList<ConcaveHull.Point> points = new ArrayList<>();
 //		for(AURBuilding b : buildings) {
-//			for(int i = 0; i < b.ag.polygon.npoints; i++) {
-//				points.add(new ConcaveHull.Point((double) b.ag.polygon.xpoints[i], (double) b.ag.polygon.ypoints[i]));
-//			} 
+////			for(int i = 0; i < b.ag.polygon.npoints; i++) {
+////				points.add(new ConcaveHull.Point((double) b.ag.polygon.xpoints[i], (double) b.ag.polygon.ypoints[i]));
+////			} 
 //			points.add(new ConcaveHull.Point((double) b.ag.getX(), (double) b.ag.getY()));
 //		}
 //		ConcaveHull ch = new ConcaveHull();

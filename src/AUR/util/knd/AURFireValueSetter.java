@@ -45,7 +45,8 @@ public class AURFireValueSetter {
 		calc_GasStation(this.points, 1.6);
 		calc_noName(this.points, 1.6);
 		mul_Color(wsg, points, 1.01);
-		mul_Borders(points, 1.5);
+		mul_Borders(points, 1.1);
+		calc_EffectiiveRadiation(points, 0.5);
 		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override
 			public int compare(AURAreaGraphValue o1, AURAreaGraphValue o2) {
@@ -57,7 +58,11 @@ public class AURFireValueSetter {
 	private void add_TravelCost(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		double maxDist = 0;
 		for (AURAreaGraphValue p : points) {
-			p.temp_value = p.ag.getBuilding().getPerceptTime();
+			if(p.ag.isRecentlyReportedFire() && p.ag.isInExtinguishRange()) {
+				p.temp_value = 0;
+			} else {
+				p.temp_value = p.ag.getBuilding().getPerceptTime();
+			}
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
@@ -146,6 +151,22 @@ public class AURFireValueSetter {
 					p.value += 0.001 * coefficient;
 					break;
 				}
+			}
+		}
+	}
+	
+	private void calc_EffectiiveRadiation(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		double max = 0;
+		for (AURAreaGraphValue p : points) {
+			AURFireSimBuilding b = p.ag.getBuilding().fireSimBuilding;
+			p.temp_value = b.getEffectiveRadiation();
+			if (p.temp_value > max) {
+				max = p.temp_value;
+			}
+		}
+		if (max > 0) {
+			for (AURAreaGraphValue p : points) {
+				p.value += ((p.temp_value / max)) * coefficient;
 			}
 		}
 	}

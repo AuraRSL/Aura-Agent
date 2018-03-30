@@ -133,6 +133,16 @@ public class AURAreaGraph {
 		return (int) (Math.ceil((double) this.getNoBlockadeTravelCost() / AURConstants.Agent.VELOCITY));
 	}
 	
+	public boolean isInExtinguishRange() {
+		
+		int er = this.wsg.si.getFireExtinguishMaxDistance() - 1;
+		
+		if(distFromAgent() <= er) {
+			return true;
+		}
+		
+		return false;
+	}
 
 	public boolean isNeighbour(AURAreaGraph ag) {
 		for (AURAreaGraph neiAg : neighbours) {

@@ -675,6 +675,42 @@ public class AURFireSimBuilding {
 		
 		int count = 0;
 		
+//		for(AURBuildingConnection bc : this.connections) {
+//			
+//			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+//			
+//			if(toAg == null || toAg.isBuilding() == false) {
+//				continue;
+//			}
+//			
+//			AURBuilding b = toAg.getBuilding();
+//			
+//			if(b.fireSimBuilding.getEstimatedFieryness() == 8 || b.fireSimBuilding.isOnFire()) {
+//				continue;
+//			}
+//			
+//			count++;
+//		}
+//		
+//		if(count < 1) {
+//			return true;
+//		}
+		
+
+		if(getEffectiveRadiation() < 100) {
+			return true;
+		}
+
+//		if(getEffectiveRadiationDT() < 0.5) {
+//			return true;
+//		}
+
+		return false;
+	}
+	
+	public double getEffectiveRadiation() {
+		double sumW = 0;
+		double raEn = getRadiationEnergy();
 		for(AURBuildingConnection bc : this.connections) {
 			
 			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
@@ -689,15 +725,31 @@ public class AURFireSimBuilding {
 				continue;
 			}
 			
-			count++;
+			sumW += bc.weight;
 		}
-		
-		if(count < 1) {
-			return true;
-		}
-		
-		return false;
+		return sumW * raEn;
 	}
+	
+//	public double getEffectiveRadiationDT() {
+//		double raEn = getRadiationEnergy();
+//		double result = 0;
+//		for(AURBuildingConnection bc : this.connections) {
+//			
+//			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+//			
+//			if(toAg == null || toAg.isBuilding() == false) {
+//				continue;
+//			}
+//			
+//			AURBuilding b = toAg.getBuilding();
+//			
+//			if(b.fireSimBuilding.getEstimatedFieryness() == 8 || b.fireSimBuilding.isOnFire()) {
+//				continue;
+//			}
+//			result += ((bc.weight * raEn) / toAg.getBuilding().fireSimBuilding.getCapacity());
+//		}
+//		return result;
+//	}
 	
 //	public boolean simulate() {
 //		if()
@@ -706,9 +758,9 @@ public class AURFireSimBuilding {
 	
 	public int getWaterNeeded() {
 		if(isOnFire() == true) {
-//			double wq = getWaterNeeded_() * 2;
-//			return (int) Math.min(wq, ag.wsg.si.getFireExtinguishMaxSum() - 1);
-			return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
+			double wq = getWaterNeeded_() * 1;
+			return (int) Math.min(wq, ag.wsg.si.getFireExtinguishMaxSum() - 1);
+//			return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
 			
 		} else {
 			return 0;
