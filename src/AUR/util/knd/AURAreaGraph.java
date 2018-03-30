@@ -4,6 +4,7 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Collection;
@@ -131,6 +132,17 @@ public class AURAreaGraph {
 			return AURConstants.Math.INT_INF;
 		}
 		return (int) (Math.ceil((double) this.getNoBlockadeTravelCost() / AURConstants.Agent.VELOCITY));
+	}
+	
+	public Rectangle getOffsettedBounds(int off) {
+		Rectangle bounds = this.polygon.getBounds();
+		Rectangle result = new Rectangle(
+			(int) bounds.getMinX() - off,
+			(int) bounds.getMinY() - off,
+			(int) bounds.getWidth() + 2 * off,
+			(int) bounds.getHeight() + 2 * off
+		);
+		return result;
 	}
 	
 	public boolean isInExtinguishRange() {
@@ -487,7 +499,7 @@ public class AURAreaGraph {
 	public int fireReportTime = -1;
 	public int lastTemperature = 0;
 	
-	public final static int FIRE_REPORT_FORGET_TIME = 6;
+	public final static int FIRE_REPORT_FORGET_TIME = 3;
 	
 	public boolean isRecentlyReportedFire() {
 		return (wsg.ai.getTime() - fireReportTime) <= FIRE_REPORT_FORGET_TIME;

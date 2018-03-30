@@ -163,6 +163,10 @@ public class AURFireZone {
 		g2.setStroke(new BasicStroke(3));
 		g2.setColor(new Color(150, 0, 0, 255));
 		g2.draw(kst.getTransformedPolygon(getPolygon()));
+//		g2.setColor(Color.CYAN);
+//		for(AURBuilding b : this.buildings) {
+//			g2.draw(kst.getTransformedRectangle(b.ag.getOffsettedBounds(AURConstants.Misc.FIRE_ZONE_BORDER_INTERSECT_THRESHOLD)));
+//		}
 	}
 	
 }

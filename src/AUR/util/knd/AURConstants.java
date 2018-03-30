@@ -9,6 +9,7 @@ public class AURConstants {
 
 	public static class Misc {
 		public final static int CLOSE_BUILDING_THRESHOLD = 25 * 1000;
+		public final static int FIRE_ZONE_BORDER_INTERSECT_THRESHOLD = 5 * 1000;
 	}
 	
 	public static class PathPlanning {

@@ -131,7 +131,6 @@ public class AURGeoUtil {
 		return false;
 	}
 	
-	
 	public static boolean intersectsOrContains(Polygon p, double[] segmentLine) {
 		
 		for(int i = 0; i < p.npoints; i++) {

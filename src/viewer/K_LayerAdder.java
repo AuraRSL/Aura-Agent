@@ -59,6 +59,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MISC, K_AlmostConvex.class, false);
 		viewer.addLayer(TAB_MISC, K_BuildingNeighbourAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_AreaColor.class, false);
+		viewer.addLayer(TAB_MISC, K_FireZoneBorderThreshold.class, false);
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);

@@ -9,8 +9,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import java.util.Collection;
-import rescuecore2.standard.entities.StandardEntity;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 

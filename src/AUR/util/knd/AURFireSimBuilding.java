@@ -65,7 +65,7 @@ public class AURFireSimBuilding {
 		
 		Polygon fireZonePolygon = this.fireZone.getPolygon();
 		
-		if(AURGeoUtil.intersects(this.ag.polygon, fireZonePolygon)) {
+		if(fireZonePolygon.intersects(this.ag.getOffsettedBounds(AURConstants.Misc.FIRE_ZONE_BORDER_INTERSECT_THRESHOLD))) {
 			return true;
 		}
 		return false;
