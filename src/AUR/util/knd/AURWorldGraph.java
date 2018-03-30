@@ -22,6 +22,9 @@ import adf.agent.precompute.PrecomputeData;
 import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.StaticClustering;
 import java.awt.Polygon;
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import rescuecore2.misc.Pair;
 import viewer.K_Viewer;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Building;
@@ -450,6 +453,14 @@ public class AURWorldGraph extends AbstractModule {
 
 	private boolean build = false;
 	
+	public ArrayList<AURAreaGraph> myCluster = null;
+	public ArrayList<Integer> neighbourClusters = null;
+	
+	public double myClusterCx = 0;
+	public double myClusterCy = 0;
+	
+	public AURAreaGraph myClusterCenterArea = null;
+		
 	public void build() {
 		if(this.build == true) {
 			return;
@@ -506,19 +517,6 @@ public class AURWorldGraph extends AbstractModule {
 
 		}
 		
-		this.worldClusterer.calc();
-		this.clusters = this.worldClusterer.getClusterNumber();
-		this.agentCluster = this.worldClusterer.getClusterIndex(this.ai.me());
-		for(int ci = 0; ci < this.clusters; ci++) {
-			Collection<EntityID> ids = this.worldClusterer.getClusterEntityIDs(ci);
-			for(EntityID id : ids) {
-				AURAreaGraph ag_ = this.getAreaGraph(id);
-				if(ag_ != null) {
-					ag_.clusterIndex = ci;
-				}
-			}
-		}
-		
 		setNeighbours();
 		addBorders();
 
@@ -552,11 +550,90 @@ public class AURWorldGraph extends AbstractModule {
 		
 		this.fireZonesCalculator = new AURFireZonesCalculator(this);
 		
+		
+		
 		updateInfo(null);
 
+		setClusters();
+		
 //		System.out.println("walls: " + walls.size());
 		this.build = true;
 		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
+	}
+	
+	
+	public void setClusters() {
+		this.worldClusterer.calc();
+		this.clusters = this.worldClusterer.getClusterNumber();
+		this.agentCluster = this.worldClusterer.getClusterIndex(this.ai.me());
+
+		this.myCluster = new ArrayList<>();
+		this.neighbourClusters = new ArrayList<>();
+
+		for (int ci = 0; ci < this.clusters; ci++) {
+			Collection<EntityID> ids = this.worldClusterer.getClusterEntityIDs(ci);
+			for (EntityID id : ids) {
+				AURAreaGraph ag_ = this.getAreaGraph(id);
+				if (ag_ != null) {
+					ag_.clusterIndex = ci;
+					if (ci == this.agentCluster) {
+						this.myCluster.add(ag_);
+						this.myClusterCx += ag_.getX();
+						this.myClusterCy += ag_.getY();
+					}
+				}
+			}
+		}
+
+		if (this.myCluster.size() > 0) {
+			this.myClusterCx /= this.myCluster.size();
+			this.myClusterCy /= this.myCluster.size();
+			double minDist = AURConstants.Math.INT_INF;
+			for (AURAreaGraph ag_ : this.myCluster) {
+				if (this.myCluster == null) {
+					this.myClusterCenterArea = ag_;
+					minDist = ag_.distFrom(this.myClusterCx, this.myClusterCy);
+				} else {
+					double dist = ag_.distFrom(this.myClusterCx, this.myClusterCy);
+					if (dist < minDist) {
+						this.myClusterCenterArea = ag_;
+						minDist = dist;
+					}
+				}
+			}
+
+		} else {
+			this.myClusterCenterArea = this.areas.get(this.ai.getPosition());
+		}
+		
+		dijkstra(this.myClusterCenterArea.area.getID());
+		
+//		System.out.println(this.myClusterCenterArea.area.getID());
+		
+		int times[][] = new int[this.clusters][2];
+		
+		for(int i = 0; i < this.clusters; i++) {
+			times[i][0] = i;
+			times[i][1] = AURConstants.Math.INT_INF;
+		}
+		
+		for(AURAreaGraph ag : this.areas.values()) {
+			times[ag.clusterIndex][1] = Math.min(times[ag.clusterIndex][1], ag.getTravelTime());
+			System.out.println(ag.getTravelTime());
+		}
+		
+		Arrays.sort(times, new Comparator<int[]>() {
+			@Override
+			public int compare(int[] o1, int[] o2) {
+				return o1[1] - o2[1];
+			}
+		});
+
+		for(int i = 0; i < AURConstants.Misc.NUMBER_OF_NEIGHBOUR_CLUSTERS + 1; i++) {
+			if(times[i][0] != this.agentCluster) {
+				this.neighbourClusters.add(times[i][0]);
+			}
+		}
 	}
 	
 	public void setCommonWalls() {

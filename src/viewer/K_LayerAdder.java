@@ -41,8 +41,11 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MAP, SelectedArea.class, true);
 
 		
+		viewer.addLayer(TAB_CLUSTERING, K_WorldClustering.class, false);
 		viewer.addLayer(TAB_CLUSTERING, K_LayerBuildingsClusterColor.class, false);
 		viewer.addLayer(TAB_CLUSTERING, K_AgentCluster.class, false);
+		viewer.addLayer(TAB_CLUSTERING, K_AgentClusterCenter.class, false);
+		viewer.addLayer(TAB_CLUSTERING, K_NeighbourClusters.class, false);
 		viewer.addLayer(TAB_CLUSTERING, AgentClusterLayer.class, false);
 		
 		viewer.addLayer(TAB_MISC, K_RoadScore.class, false);

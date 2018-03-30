@@ -168,6 +168,14 @@ public class AURAreaGraph {
 	public double distFromAgent() {
 		return Math.hypot(this.getX() - wsg.ai.getX(), this.getY() - wsg.ai.getY());
 	}
+	
+	public double distFrom(AURAreaGraph ag) {
+		return Math.hypot(this.getX() - ag.getX(), this.getY() - ag.getY());
+	}
+	
+	public double distFrom(double x, double y) {
+		return Math.hypot(this.getX() - x, this.getY() - y);
+	}
 
 	public boolean isOnFire() {
 		if (isBuilding() == false) {
