@@ -321,7 +321,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
         
         private void setFireBrigadeScore(double score) {
-                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
+                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE)){
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
                         
                         if(areaGraph.isBuilding()){
@@ -334,7 +334,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void setAmbulanceTeamScore(double score) {
-                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
+                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM)){
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
                         
                         if(areaGraph.isBuilding()){

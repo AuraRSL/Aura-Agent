@@ -1,5 +1,6 @@
 package AUR.util.aslan;
 
+import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -199,16 +200,17 @@ public class AURGeoTools {
         }
         
         public static Polygon getClearPolygon(Point2D p1, Point2D p2, double width) {
-                Vector2D v = p2.minus(p1);
+                Vector2D v = p2.minus(p1).normalised().scale(AURConstants.Agent.RADIUS * 2 / 3);
                 Vector2D vp = AURGeoTools.getUnitPerpendicularVector(v);
                 Polygon p = new Polygon();
+                Point2D head = p1.plus(v);
                 p.addPoint(
-                        (int) (p1.getX() + vp.getX() * width / 2),
-                        (int) (p1.getY() + vp.getY() * width / 2)
+                        (int) (head.getX() + vp.getX() * width / 2),
+                        (int) (head.getY() + vp.getY() * width / 2)
                 );
                 p.addPoint(
-                        (int) (p1.getX() - vp.getX() * width / 2),
-                        (int) (p1.getY() - vp.getY() * width / 2)
+                        (int) (head.getX() - vp.getX() * width / 2),
+                        (int) (head.getY() - vp.getY() * width / 2)
                 );
                 p.addPoint(
                         (int) (p2.getX() - vp.getX() * width / 2),

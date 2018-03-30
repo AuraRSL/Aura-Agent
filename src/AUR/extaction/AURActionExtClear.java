@@ -893,13 +893,13 @@ public class AURActionExtClear extends ExtAction {
                                 moveVector = vectorToTarget.scale(distanceToTarget);
                         else{
                                 moveVector = vectorToTarget.scale(this.clearDistance - agentSize);
-                                for(double to = moveVector.getLength() + AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR;to < distanceToTarget;to += AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR){ // deghate mohasebe toole masire ghabele tey kardan
-                                        if(thereIsNoBlockade(to,vectorToTarget)){
-                                                moveVector = vectorToTarget.scale(to - agentSize - 10);
-                                        }
-                                        else
-                                                break;
-                                }
+//                                for(double to = moveVector.getLength() + AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR;to < distanceToTarget;to += AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR){ // deghate mohasebe toole masire ghabele tey kardan
+//                                        if(thereIsNoBlockade(to,vectorToTarget)){
+//                                                moveVector = vectorToTarget.scale(to - agentSize - 10);
+//                                        }
+//                                        else
+//                                                break;
+//                                }
                         }
                         
                         int[] lastPoint = new int[]{
@@ -911,7 +911,7 @@ public class AURActionExtClear extends ExtAction {
                         
                         return this.cw.getAction(
                                 new ActionMove(
-                                        wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
+                                        wsg.getNoBlockadePathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
                                         lastPoint[0],
                                         lastPoint[1]
                                 )

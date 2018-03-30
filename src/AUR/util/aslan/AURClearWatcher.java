@@ -1,12 +1,16 @@
 package AUR.util.aslan;
 
+import static AUR.util.aslan.AURGeoTools.getNormalVectorWithRadian;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.action.police.ActionClear;
 import adf.agent.info.AgentInfo;
+import com.google.common.collect.Lists;
+import java.awt.Shape;
 import java.util.ArrayList;
+import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Blockade;
 
 /**
@@ -36,6 +40,8 @@ public class AURClearWatcher {
         public int lastTime;
         public int currentTime;
         
+        public int dontMoveCounter = 0;
+                
         public AURClearWatcher(AgentInfo ai) {
                 this.ai = ai;
                 this.lastAction = this.NULL;
@@ -68,6 +74,13 @@ public class AURClearWatcher {
                 this.yCurrentPos = this.ai.getY();
                 this.lastTime = this.currentTime;
                 this.currentTime = this.ai.getTime();
+                
+                if(isMoveLessThanAllowedValue()){
+                        dontMoveCounter ++;
+                }
+                else{
+                        dontMoveCounter = 0;
+                }
         }
         
         public void setBlockadeList(ArrayList<Blockade> blockades){
@@ -77,7 +90,13 @@ public class AURClearWatcher {
         }
         
         public Action getAction(Action action){
-                Action newAction = getNewAction(action);
+                Action newAction;
+                if(dontMoveCounter > 7){
+                        newAction = getDontMoveAction();
+                }
+                else{
+                        newAction = getNewAction(action);
+                }
                 
                 if(this.lastAction == CLEAR_FROM_WATCHER)
                         System.out.println(" -> CLEAR_FROM_WATCHER");
@@ -134,5 +153,18 @@ public class AURClearWatcher {
                         }
                 }
                 return selected;
+        }
+
+        private Action getDontMoveAction() {
+                Shape shape = ai.getPositionArea().getShape();
+                double[] p, agent = new double[]{ai.getX(), ai.getY()};
+                do{
+                        p = AURGeoMetrics.getVectorScaled(AURGeoMetrics.getPointsPlus(
+                                agent,
+                                AURGeoTools.getNormalVectorWithRadian(2 * Math.PI * Math.random())
+                        ),AURConstants.Agent.RADIUS * 2);
+                }while(! shape.contains(p[0], p[1]));
+                
+                return new ActionMove(Lists.newArrayList(ai.getPosition()), (int) p[0], (int) p[1]);
         }
 }
