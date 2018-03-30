@@ -608,27 +608,20 @@ public class AURWorldGraph extends AbstractModule {
 		
 		dijkstra(this.myClusterCenterArea.area.getID());
 		
-//		System.out.println(this.myClusterCenterArea.area.getID());
-		
 		int times[][] = new int[this.clusters][2];
-		
 		for(int i = 0; i < this.clusters; i++) {
 			times[i][0] = i;
 			times[i][1] = AURConstants.Math.INT_INF;
 		}
-		
 		for(AURAreaGraph ag : this.areas.values()) {
 			times[ag.clusterIndex][1] = Math.min(times[ag.clusterIndex][1], ag.getTravelTime());
-			System.out.println(ag.getTravelTime());
 		}
-		
 		Arrays.sort(times, new Comparator<int[]>() {
 			@Override
 			public int compare(int[] o1, int[] o2) {
 				return o1[1] - o2[1];
 			}
 		});
-
 		for(int i = 0; i < AURConstants.Misc.NUMBER_OF_NEIGHBOUR_CLUSTERS + 1; i++) {
 			if(times[i][0] != this.agentCluster) {
 				this.neighbourClusters.add(times[i][0]);

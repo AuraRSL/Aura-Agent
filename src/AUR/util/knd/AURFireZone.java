@@ -79,12 +79,25 @@ public class AURFireZone {
 		if(getPerceptTime() <= 2) {
 			return true;
 		}
+		
+		for(AURBuilding b : buildings) {
+			if(b.ag.isInExtinguishRange()) {
+				return true;
+			}
+			if(b.ag.clusterIndex == b.wsg.agentCluster) {
+				return true;
+			}
+			if(b.wsg.neighbourClusters.contains(b.ag.clusterIndex)) {
+				return true;
+			}
+		}
+		
 //		if(g() >= 0.8)  {
 //			return true;
 //		}
 		
 //		return false;\
-		return true;
+		return false;
 	}
 	
 	public double g() {
