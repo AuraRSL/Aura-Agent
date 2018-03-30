@@ -687,6 +687,35 @@ public class AURWorldGraph extends AbstractModule {
 //		return result;
 //	}
 
+	private void validateStandPoints() {
+		if (ai.getTime() <= 0) {
+			return;
+		}
+		AURAreaGraph agentAg = this.getAreaGraph(this.ai.getPosition());
+		if (agentAg.perceptibleAndExtinguishableBuildings != null) {
+			ArrayList<AURBuilding> dels = new ArrayList<>();
+			for (AURBuilding b : agentAg.perceptibleAndExtinguishableBuildings) {
+				if (b.ag.noSeeTime() >= 0) {
+					if (b.getPerceptibleAndExtinguishableAreaPolygon().contains(ai.getX(), ai.getY())) {
+						dels.add(b);
+					}
+				}
+			}
+			agentAg.perceptibleAndExtinguishableBuildings.removeAll(dels);
+		}
+//		if (agentAg.sightableBuildings != null) {
+//			ArrayList<AURBuilding> dels = new ArrayList<>();
+//			for (AURBuilding b : agentAg.sightableBuildings) {
+//				if () { // todo
+//					if (b.getPerceptibleAndExtinguishableAreaPolygon().contains(ai.getX(), ai.getY())) {
+//						dels.add(b);
+//					}
+//				}
+//			}
+//			agentAg.sightableBuildings.removeAll(dels);
+//		}
+	}
+	
 	@Override
 	synchronized public AbstractModule updateInfo(MessageManager messageManager) {
 		long t = System.currentTimeMillis();
@@ -720,6 +749,9 @@ public class AURWorldGraph extends AbstractModule {
 		}
 		
 //		int count = 0;
+		
+
+		validateStandPoints();
 		
 		for (AURAreaGraph ag : forceUpdate) {
 			ag.needUpdate = true;
