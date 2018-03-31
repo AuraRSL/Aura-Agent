@@ -163,6 +163,7 @@ public class AURConstants {
                         public final static double FIRED_BUILDING = 0.3;
                         public final static double BUILDINGS_THAT_CONTAINS_CIVILANS = 0.2;
                         public final static double BUILDINGS_DONT_CONTAINS_CIVILIAN = 0.05;
+                        public final static double BLOCKED_BUILDINGS = 0.2;
                 }
                 
         }
