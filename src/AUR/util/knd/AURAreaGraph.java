@@ -6,9 +6,7 @@ import AUR.util.FibonacciHeap.Entry;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
@@ -60,6 +58,8 @@ public class AURAreaGraph {
 	public double fb_value;
 	public double fb_value_temp;
 	
+	private boolean passed = false;
+	
 	public int getBlockadeForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
 			case POLICE_FORCE: {
@@ -97,7 +97,14 @@ public class AURAreaGraph {
 		return this.seen;
 	}
 	
+	public void setPassed() {
+		this.passed = true;
+	}
 	
+	public boolean isPassed() {
+		return this.passed;
+	}
+
 	public int getX() {
 		return this.area.getX();
 	}

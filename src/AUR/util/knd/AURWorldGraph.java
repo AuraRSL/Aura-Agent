@@ -22,13 +22,12 @@ import adf.agent.precompute.PrecomputeData;
 import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.StaticClustering;
 import java.awt.Polygon;
-import java.lang.reflect.Array;
 import java.util.Arrays;
-import rescuecore2.misc.Pair;
 import viewer.K_Viewer;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
+import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityConstants.Fieryness;
 import rescuecore2.worldmodel.EntityID;
@@ -794,6 +793,20 @@ public class AURWorldGraph extends AbstractModule {
 //		}
 	}
 	
+	public void setPassedAreas() {
+		AURAreaGraph ag = this.getAreaGraph(this.ai.getPosition());
+		if(ag != null) {
+			ag.setPassed();
+		}
+		ArrayList<StandardEntity> passedAreas = AURUtil.getTravelAreas(this.wi, (Human) this.ai.me());
+		for(StandardEntity sent : passedAreas) {
+			ag = this.getAreaGraph(sent.getID());
+			if(ag != null) {
+				ag.setPassed();
+			}
+		}
+	}
+	
 	@Override
 	synchronized public AbstractModule updateInfo(MessageManager messageManager) {
 		long t = System.currentTimeMillis();
@@ -812,6 +825,7 @@ public class AURWorldGraph extends AbstractModule {
 
 		updateTime = ai.getTime();
 		this.setChangeSetSeen();
+		setPassedAreas();
 		this.setChangeSetIfBurnt();
 
 		lastDijkstraFrom = null;

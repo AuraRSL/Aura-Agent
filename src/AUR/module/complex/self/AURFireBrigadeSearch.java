@@ -15,6 +15,7 @@ import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.agent.precompute.PrecomputeData;
 import adf.component.module.algorithm.PathPlanning;
+import adf.component.module.algorithm.StaticClustering;
 import adf.component.module.complex.Search;
 import rescuecore2.worldmodel.EntityID;
 
@@ -26,7 +27,7 @@ public class AURFireBrigadeSearch extends Search {
 	AURFireSearchValueSetter svs = new AURFireSearchValueSetter();
 	public AgentInfo ai = null;
 
-	AURWorldClusterer buildingClusterer = null;
+	StaticClustering buildingClusterer = null;
 
 	public AURFireBrigadeSearch(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager,
 			DevelopData developData) {

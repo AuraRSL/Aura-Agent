@@ -1,5 +1,6 @@
 package viewer;
 
+import viewer.layers.knd.K_TravelHistory;
 import viewer.layers.knd.K_AreaNoSeeTime;
 import viewer.layers.knd.*;
 import viewer.layers.AmboLayers.*;
@@ -63,6 +64,9 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MISC, K_BuildingNeighbourAreas.class, false);
 		viewer.addLayer(TAB_MISC, K_AreaColor.class, false);
 		viewer.addLayer(TAB_MISC, K_FireZoneBorderThreshold.class, false);
+		viewer.addLayer(TAB_MISC, K_PassedAreas.class, false);
+		viewer.addLayer(TAB_MISC, K_TravelHistory.class, true);
+		viewer.addLayer(TAB_MISC, K_TravelHistoryExt.class, false);
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);
