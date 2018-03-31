@@ -176,6 +176,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                 setOpenBuildingsScore(eid); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
                                 setBlockedBuildingsThatContainsCiviliansScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_CONTAINS_CIVILANS);
                                 setBuildingsDontContainsCivilianScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_DONT_CONTAINS_CIVILIAN);
+                                setBlockedBuildingScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_BUILDINGS);
                         }
                 }
                 
@@ -504,4 +505,14 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
+        HashSet<EntityID> visitedBuildingsThatBlocked = new HashSet<>();
+        private void setBlockedBuildingScore(EntityID eid, double score){
+                AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
+                if(areaGraph != null &&
+                   areaGraph.getTravelCost() == AURConstants.Math.INT_INF &&
+                   ! visitedBuildingsThatBlocked.contains(eid)){
+                        areaGraph.secondaryScore += score;
+                        visitedBuildingsThatBlocked.add(eid);
+                }
+        }
 }
