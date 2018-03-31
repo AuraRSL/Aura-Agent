@@ -75,6 +75,10 @@ public class AURConstants {
                 public final static boolean OPEN_NEAR_BUILDINGS_ENTRANCES = false;
         }
         
+        public static class ClearWatcher {
+                public final static int DONT_MOVE_COUNTER_LIMIT = 20;
+        }
+        
         /**
          * 
          * @author Amir Aslan Aslani - Mar 2018
@@ -151,7 +155,7 @@ public class AURConstants {
                 
                 public static class SecondaryScore {
                         public final static double DEAD_POLICE_CLUSTER = 0.3;
-                        public final static double BLOCKED_HUMAN = 0.4;
+                        public final static double BLOCKED_HUMAN = 0.5;
                         public final static double DISTANCE = 0.075;
                         public final static double SELECTED_TARGET = 0.05;
                         public final static double ROADS_WITHOUT_BLOCKADES = 0.0;

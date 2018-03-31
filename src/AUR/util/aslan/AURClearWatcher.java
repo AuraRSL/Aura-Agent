@@ -91,7 +91,7 @@ public class AURClearWatcher {
         
         public Action getAction(Action action){
                 Action newAction;
-                if(dontMoveCounter > 15){
+                if(dontMoveCounter > AURConstants.ClearWatcher.DONT_MOVE_COUNTER_LIMIT){
                         newAction = getDontMoveAction();
                 }
                 else{

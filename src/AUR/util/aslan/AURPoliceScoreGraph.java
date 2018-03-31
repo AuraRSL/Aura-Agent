@@ -317,7 +317,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((PoliceForce) se).getPosition());
                         
-                        if(areaGraph.isBuilding()){
+                        if(areaGraph.isBuilding() || (areaGraph.isRoad() && areaGraph.goundArea > wsg.worldGridSize * wsg.worldGridSize * 2 && areaGraph.getScore() > 0.8)){
                                 agentsInBuildings.put(se.getID(),areaGraph);
                                 areaGraph.baseScore += score;
                         }
