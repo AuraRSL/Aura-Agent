@@ -53,9 +53,33 @@ public class AgentRateDeterminer {
                 return true;
             }
         }
+        if(otherAgentsRescueEffects(wsg, human)){
+            return true;
+        }
 
         return false;
     }
+
+    public static boolean otherAgentsRescueEffects(AURWorldGraph wsg, Human human){
+
+
+        for(StandardEntity entity: wsg.wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM)){
+            if(entity instanceof AmbulanceTeam){
+                AmbulanceTeam at = (AmbulanceTeam)entity;
+                if(at.getID().equals(wsg.ai.getID())) {
+                    continue;
+                }
+                if(at.isBuriednessDefined() && at.getBuriedness() == 0) {
+                    if (at.isPositionDefined() && at.getPosition().equals(human.getPosition())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static double clusterEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human , double coefficient){
 
         for(StandardEntity entity : rescueInfo.clusterEntity){

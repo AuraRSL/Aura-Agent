@@ -72,7 +72,9 @@ public class RescueInfo extends AbstractModule {
 
     public RescueInfo(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData){
         super(ai, wi, si, moduleManager, developData);
-        this.ambo = new AmbulanceInfo((AmbulanceTeam)ai.me());
+        if(ai.me() instanceof AmbulanceTeam) {
+            this.ambo = new AmbulanceInfo((AmbulanceTeam) ai.me());
+        }
         this.refugesInfo = new HashMap<>();
         this.civiliansInfo = new HashMap<>();
         this.clusterEntity = new HashSet<>();

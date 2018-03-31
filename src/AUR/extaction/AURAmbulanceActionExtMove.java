@@ -73,6 +73,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
         {
             this.kernelTime = -1;
         }
+        this.wsg.precompute(precomputeData);
         return this;
     }
 
@@ -93,6 +94,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
         {
             this.kernelTime = -1;
         }
+        this.wsg.resume(precomputeData);
         return this;
     }
 
@@ -113,6 +115,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
         {
             this.kernelTime = -1;
         }
+        this.wsg.preparate();
         return this;
     }
 
@@ -213,6 +216,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
         {
             return false;
         }
+
         int activeTime = (hp / damage) + ((hp % damage) != 0 ? 1 : 0);
         if (this.kernelTime == -1)
         {

@@ -72,6 +72,7 @@ public class AURActionTransport extends ExtAction {
         } catch (NoSuchConfigOptionException e) {
             this.kernelTime = -1;
         }
+        this.wsg.precompute(precomputeData);
         return this;
     }
 
@@ -86,6 +87,7 @@ public class AURActionTransport extends ExtAction {
         } catch (NoSuchConfigOptionException e) {
             this.kernelTime = -1;
         }
+        this.wsg.resume(precomputeData);
         return this;
     }
 
@@ -100,6 +102,7 @@ public class AURActionTransport extends ExtAction {
         } catch (NoSuchConfigOptionException e) {
             this.kernelTime = -1;
         }
+        this.wsg.preparate();
         return this;
     }
 

@@ -100,7 +100,6 @@ public class AURHumanDetector extends HumanDetector
     @Override
     public HumanDetector calc()
     {
-
         Human transportHuman = this.agentInfo.someoneOnBoard();
         if (transportHuman != null) {
             this.result = transportHuman.getID();
@@ -124,7 +123,6 @@ public class AURHumanDetector extends HumanDetector
         if(st instanceof Human) {
             this.rescueInfo.ambo.workOnIt = (Human)(st);
         }
-
         return this;
     }
 
@@ -331,6 +329,7 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+        this.wsg.precompute(precomputeData);
         return this;
     }
 
@@ -342,7 +341,11 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
-        this.rescueInfo.initCalc();
+        this.wsg.resume(precomputeData);
+        clustering.preparate();
+        rescueInfo.initCalc();
+        int index = clustering.getClusterIndex(agentInfo.me());
+        rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
 
         return this;
     }
@@ -355,6 +358,7 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+        this.wsg.preparate();
         clustering.preparate();
         rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());

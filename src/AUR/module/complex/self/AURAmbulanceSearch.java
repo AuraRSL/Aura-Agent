@@ -116,6 +116,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
+        this.wsg.updateInfo(messageManager);
         if(agentInfo.getTime() < 2 ){
             return this;
         }
@@ -290,6 +291,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
+        this.wsg.precompute(precomputeData);
         return this;
     }
 
@@ -301,6 +303,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
+        this.wsg.resume(precomputeData);
         this.worldInfo.requestRollback();
         this.rescueInfo.initCalc();
         return this;
@@ -314,7 +317,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
-
+        this.wsg.preparate();
         this.worldInfo.requestRollback();
         this.rescueInfo.initCalc();
         return this;

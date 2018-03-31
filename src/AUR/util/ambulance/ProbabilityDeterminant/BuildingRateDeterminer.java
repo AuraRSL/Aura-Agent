@@ -24,17 +24,18 @@ public class BuildingRateDeterminer {
         }
 
 
-        rate += clusterEffect(wsg, rescueInfo, building, 1.1);
+        rate += clusterEffect(wsg, rescueInfo, building, 1.15);
         rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.5);
         rate += distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
         rate += broknessEffect(wsg, rescueInfo, building, 0.35);
         rate += buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
         rate += distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
-        rate += otherAgentPossionEffect(wsg, rescueInfo, building, 1.1);
+        rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.55);
 
         if(rate >= 1){
             rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 1.1);
             rate += distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.2);
+            rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.5);
 
         }
         // more effectess
@@ -66,9 +67,11 @@ public class BuildingRateDeterminer {
             return true;
         }
         AURAreaGraph areaB = wsg.getAreaGraph(building.me.getID());
-        if(areaB.isBuilding()){
-            if(areaB.getBuilding().fireSimBuilding.isOnFire() || areaB.getBuilding().fireSimBuilding.getEstimatedFieryness() == 8 ){
-                return true;
+        if(areaB != null) {
+            if (areaB.isBuilding()) {
+                if (areaB.getBuilding().fireSimBuilding.isOnFire() || areaB.getBuilding().fireSimBuilding.getEstimatedFieryness() == 8) {
+                    return true;
+                }
             }
         }
         if(building.me.isOnFire() || (building.me.isFierynessDefined() && building.me.getFieryness() == 8) ){
