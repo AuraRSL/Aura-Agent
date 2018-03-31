@@ -1,6 +1,5 @@
 package viewer.layers.AmboLayers;
 
-import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.misc.geometry.Line2D;

@@ -1,11 +1,8 @@
 package viewer.layers.AmboLayers;
 
-import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
-import adf.agent.info.ScenarioInfo;
 import rescuecore2.standard.entities.Human;
-import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.worldmodel.EntityID;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;

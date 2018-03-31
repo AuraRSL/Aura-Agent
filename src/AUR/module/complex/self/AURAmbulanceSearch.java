@@ -2,7 +2,6 @@ package AUR.module.complex.self;
 
 import AUR.util.ambulance.AmbulanceUtil;
 import AUR.util.ambulance.Information.BuildingInfo;
-import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
@@ -19,10 +18,12 @@ import adf.component.module.complex.Search;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.*;
-import rescuecore2.standard.view.BuildingLayer;
 import rescuecore2.worldmodel.EntityID;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import static rescuecore2.standard.entities.StandardEntityURN.*;
 
@@ -115,6 +116,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
+        this.wsg.updateInfo(messageManager);
         if(agentInfo.getTime() < 2 ){
             return this;
         }
@@ -126,18 +128,19 @@ public class AURAmbulanceSearch extends Search
 
     private void removeBuringBulding() {
 
-        boolean flag = false;
+        int numberFireB = 0;
+        int numberAllB = 0;
         for(EntityID id : worldInfo.getChanged().getChangedEntities()){
             StandardEntity entity = worldInfo.getEntity(id);
             if(entity instanceof Building){
+                numberAllB += 0;
                 Building b = (Building) entity;
-                if(b.isOnFire()){
-                    flag = true;
-                    break;
+                if(b.isOnFire() || (b.isFierynessDefined() && b.getFieryness() == 8) ){
+                    numberFireB +=1 ;
                 }
             }
         }
-        if(flag == true){
+        if( ((numberFireB*1D)/numberAllB) > 0.65){ //TODO
             for(EntityID id : worldInfo.getChanged().getChangedEntities()){
                 StandardEntity entity = worldInfo.getEntity(id);
                 if(entity instanceof Building){
@@ -220,6 +223,8 @@ public class AURAmbulanceSearch extends Search
         // TODO HaHa:D
 
         this.removeLowRate(builidngs);
+//        if(age Pollice
+        this.removeCantPass(builidngs);
 
         if(builidngs.size() > 0 ){
 
@@ -241,6 +246,28 @@ public class AURAmbulanceSearch extends Search
 //        buildings.removeAll(temp);
         this.rescueInfo.searchList.clear();
         this.rescueInfo.searchList.addAll(temp);
+//        buildings.clear();
+//        buildings.addAll(temp);
+        return buildings;
+    }
+
+
+    private List<BuildingInfo> removeCantPass(List<BuildingInfo> buildings){
+
+        wsg.dijkstra(agentInfo.getPosition());
+
+        Collection<BuildingInfo> temp = new LinkedList<>();
+        for(BuildingInfo bi: buildings){
+            if(bi.travelCostTobulding == Integer.MAX_VALUE){
+                temp.add(bi);
+                continue;
+            }
+
+            if(wsg.getAreaGraph(bi.me.getID()).lastDijkstraEntranceNode == null){
+                temp.add(bi);
+            }
+        }
+        buildings.removeAll(temp);
         return buildings;
     }
 
@@ -264,6 +291,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
+        this.wsg.precompute(precomputeData);
         return this;
     }
 
@@ -275,6 +303,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
+        this.wsg.resume(precomputeData);
         this.worldInfo.requestRollback();
         this.rescueInfo.initCalc();
         return this;
@@ -288,7 +317,7 @@ public class AURAmbulanceSearch extends Search
         {
             return this;
         }
-
+        this.wsg.preparate();
         this.worldInfo.requestRollback();
         this.rescueInfo.initCalc();
         return this;

@@ -1,6 +1,7 @@
 .DS_Store
 .idea/
 Agent.iml
+*.iml
 AgentGit.iml
 LICENSE
 build/

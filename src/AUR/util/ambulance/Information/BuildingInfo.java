@@ -60,7 +60,9 @@ public class BuildingInfo {
     public void updateInformation(){
         this.travelCostTobulding = calcTravelCostToBuilding();
         this.distanceFromFire = calcDistanceFromFire();
-        this.rate = BuildingRateDeterminer.calc(wsg, rescueInfo, this);
+        if(rate != 0 || wsg.ai.getTime() < 3) {
+            this.rate = BuildingRateDeterminer.calc(wsg, rescueInfo, this);
+        }
 
     }
 

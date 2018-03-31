@@ -2,8 +2,8 @@ package viewer.layers.AmboLayers;
 
 
 import AUR.util.ambulance.Information.BuildingInfo;
-import AUR.util.ambulance.ProbabilityDeterminant.BuildingRateDeterminer;
 import AUR.util.ambulance.Information.RescueInfo;
+import AUR.util.ambulance.ProbabilityDeterminant.BuildingRateDeterminer;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.Area;
@@ -51,19 +51,25 @@ public class BuildingInfoLayer extends K_ViewerLayer {
 
         RescueInfo rescueInfo = wsg.rescueInfo;
         double clusterEffect = BuildingRateDeterminer.clusterEffect(wsg, rescueInfo, building, 1);
-        double TravelTime =  BuildingRateDeterminer.TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.7);
-        double distanceFromFire =  BuildingRateDeterminer.distanceFromFireEffect(wsg, rescueInfo, building, 0.3);
+        double travelTime =  BuildingRateDeterminer.TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.4);
+        double distanceFromFire =  BuildingRateDeterminer.distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
         double brokness =   BuildingRateDeterminer.broknessEffect(wsg, rescueInfo, building, 0.35);
-        double teperature =  BuildingRateDeterminer.buildingTemperatureEffect(wsg, rescueInfo, building, 0.3);
+        double teperature =  BuildingRateDeterminer.buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
         double disFormRefuge = BuildingRateDeterminer.distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
-        double disFormRefugeSearch = BuildingRateDeterminer.distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.3);
+        double otherAgent = BuildingRateDeterminer.otherAgentPossionEffect(wsg, rescueInfo, building, 1.4);
+
+        double travelTime2 =  BuildingRateDeterminer.TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.7);
+        double disFormRefugeSearch = BuildingRateDeterminer.distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.2);
 
         rate += "\nclusterEffect :"+clusterEffect;
-        rate += "\nTravelTime :"+TravelTime+"  > " +building.travelCostTobulding ;
+        rate += "\nTravelTime :"+travelTime+"  > " +building.travelCostTobulding ;
         rate += "\ndistanceFromFire :"+distanceFromFire + "  > "  ;
         rate += "\nbrokness :"+brokness + " > " + (building.me.isBrokennessDefined() ? building.me.getBrokenness() : 0);
         rate += "\nteperature :"+teperature + " > "+ (building.me.isTemperatureDefined() ? building.me.getTemperature() : 0 );
         rate += "\ndistance form Refuge : " + disFormRefuge + " > " + building.distanceFromRefuge;
+        rate += "\nother Agent : " + otherAgent;
+
+        rate += "\nTravelTime 2 " + travelTime2 ;
         rate += "\ndistance form Refuge : " + disFormRefugeSearch + " > " ;
 
         rate += " \n Rate : " + building.rate;
@@ -73,7 +79,7 @@ public class BuildingInfoLayer extends K_ViewerLayer {
 
         return rate;
     }
-    public static String ignoreBulding( AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building){
+    public static String ignoreBulding(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building){
         String rate = " ";
         if(rescueInfo == null || wsg == null || building == null){
             return rate;

@@ -8,7 +8,6 @@ import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 
 import java.awt.*;
-import java.util.Random;
 
 /**
  *

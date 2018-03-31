@@ -3,7 +3,6 @@ package AUR.util.ambulance.ProbabilityDeterminant;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.*;
-import rescuecore2.worldmodel.EntityID;
 
 /**
  * Created by armanaxh on 3/17/18.
@@ -32,7 +31,7 @@ public class AgentRateDeterminer {
 
     public static boolean ignoreAgent(AURWorldGraph wsg, RescueInfo rescueInfo, Human human){
 
-        //TODO Fuck
+        //TODO
         if(human.isHPDefined() && human.getHP() < 1000){
             return true;
         }
@@ -54,9 +53,33 @@ public class AgentRateDeterminer {
                 return true;
             }
         }
+        if(otherAgentsRescueEffects(wsg, human)){
+            return true;
+        }
 
         return false;
     }
+
+    public static boolean otherAgentsRescueEffects(AURWorldGraph wsg, Human human){
+
+
+        for(StandardEntity entity: wsg.wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM)){
+            if(entity instanceof AmbulanceTeam){
+                AmbulanceTeam at = (AmbulanceTeam)entity;
+                if(at.getID().equals(wsg.ai.getID())) {
+                    continue;
+                }
+                if(at.isBuriednessDefined() && at.getBuriedness() == 0) {
+                    if (at.isPositionDefined() && at.getPosition().equals(human.getPosition())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static double clusterEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human , double coefficient){
 
         for(StandardEntity entity : rescueInfo.clusterEntity){
@@ -82,7 +105,7 @@ public class AgentRateDeterminer {
         double tempRate = rescueInfo.maxTravelCost;
         return (tempRate/ rescueInfo.maxTravelCost)*coefficient;
     }
-    public static double buriednessEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human ,double coefficient){
+    public static double buriednessEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human , double coefficient){
         if(!human.isBuriednessDefined()){
             return 0;
         }

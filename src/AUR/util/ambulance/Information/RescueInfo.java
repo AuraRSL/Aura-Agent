@@ -1,10 +1,13 @@
 package AUR.util.ambulance.Information;
 
 
+import AUR.util.AURCommunication;
 import AUR.util.ambulance.ProbabilityDeterminant.AgentRateDeterminer;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.common.ActionMove;
+import adf.agent.communication.MessageManager;
+import adf.agent.communication.standard.bundle.information.MessageCivilian;
 import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
@@ -19,7 +22,6 @@ import rescuecore2.worldmodel.EntityID;
 import java.util.*;
 
 import static rescuecore2.standard.entities.StandardEntityURN.*;
-import static rescuecore2.standard.entities.StandardEntityURN.POLICE_OFFICE;
 
 /**
  * Created by armanaxh on 3/3/18.
@@ -47,6 +49,7 @@ public class RescueInfo extends AbstractModule {
 
     public AURWorldGraph wsg;
     public AmbulanceInfo ambo;
+    private AURCommunication acm;
 
 
     public ActionMove temptest;
@@ -69,7 +72,9 @@ public class RescueInfo extends AbstractModule {
 
     public RescueInfo(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData){
         super(ai, wi, si, moduleManager, developData);
-        this.ambo = new AmbulanceInfo((AmbulanceTeam)ai.me());
+        if(ai.me() instanceof AmbulanceTeam) {
+            this.ambo = new AmbulanceInfo((AmbulanceTeam) ai.me());
+        }
         this.refugesInfo = new HashMap<>();
         this.civiliansInfo = new HashMap<>();
         this.clusterEntity = new HashSet<>();
@@ -78,6 +83,7 @@ public class RescueInfo extends AbstractModule {
         this.buildingsInfo = new HashMap<>();
         this.searchList = new HashSet<>();
         this.visitedList = new HashSet<>();
+        this.acm = new AURCommunication(ai, wi, si, developData);
         this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
         this.wsg.rescueInfo = this;
     }
@@ -148,18 +154,33 @@ public class RescueInfo extends AbstractModule {
     }
 
     // Update ***********************************************************************************
-    public void updateInformation(){
+    public void updateInformation(MessageManager messageManager){
 
         if(agentInfo.getTime() > 1 && !this.initB){
             init();
             initB = true;
         }
 
-        this.updateCycle();
+        this.acm.updateInfo(messageManager);
+
         this.updateChanges();
+        this.updateMessageCivilian();
         this.updateBuildingInfo();
+        this.updateCycle();
 
     }
+
+    private void updateMessageCivilian(){
+        for(MessageCivilian cm : acm.getCivilianMessage()){
+            if(cm.isPositionDefined() && cm.isBuriednessDefined() && cm.isHPDefined() && cm.isDamageDefined() ){
+                StandardEntity entity = worldInfo.getEntity(cm.getAgentID());
+                if(entity != null && entity instanceof Civilian) {
+                    updateCivilianInfo((Civilian)entity);
+                }
+            }
+        }
+    }
+
 
     private void updateBuildingInfo(){
         int maxD = 0;
@@ -268,8 +289,10 @@ public class RescueInfo extends AbstractModule {
 
         CivilianInfo civilianInfo = null;
         if(!civiliansInfo.containsKey(civilian.getID())) {
-            civilianInfo =  new CivilianInfo(civilian, this);
-            civiliansInfo.put(civilian.getID(), civilianInfo);
+            if(civilian.isBuriednessDefined() && civilian.isHPDefined() && civilian.isPositionDefined()) {
+                civilianInfo = new CivilianInfo(civilian, this);
+                civiliansInfo.put(civilian.getID(), civilianInfo);
+            }
         }else{
             civilianInfo = civiliansInfo.get(civilian.getID());
         }
