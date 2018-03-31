@@ -1,5 +1,6 @@
 package AUR.module.complex.self;
 
+import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURPoliceScoreGraph;
 import AUR.util.aslan.AURPoliceScenarioAnalyzer;
 import AUR.util.knd.AURAreaGraph;
@@ -39,6 +40,7 @@ public class AURRoadDetector extends RoadDetector {
         private final AURWorldGraph wsg;
         private final AURPoliceScoreGraph psg;
         private final AURPoliceScenarioAnalyzer psa;
+        private final AURClearWatcher cw;
 
         public AURRoadDetector(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
@@ -48,9 +50,11 @@ public class AURRoadDetector extends RoadDetector {
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
                 this.psa = moduleManager.getModule("aslan.PoliceScenarioAnalyzer","AUR.util.aslan.AURPoliceScenarioAnalyzer");
+                this.cw = moduleManager.getModule("aslan.PoliceClearWatcher","AUR.util.aslan.AURClearWatcher");
                 registerModule(this.psg);
                 registerModule(this.psa);
                 registerModule(this.clustering);
+                registerModule(this.cw);
                 
                 this.result = null;
         }

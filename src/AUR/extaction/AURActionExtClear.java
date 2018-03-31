@@ -106,8 +106,8 @@ public class AURActionExtClear extends ExtAction {
 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
+                this.cw = moduleManager.getModule("aslan.PoliceClearWatcher","AUR.util.aslan.AURClearWatcher");
                 
-                this.cw = new AURClearWatcher(ai);
                 this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi, cw, wsg);
                 
         }

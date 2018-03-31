@@ -1,25 +1,26 @@
 package AUR.util.aslan;
 
-import static AUR.util.aslan.AURGeoTools.getNormalVectorWithRadian;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.action.police.ActionClear;
+import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
+import adf.agent.info.ScenarioInfo;
+import adf.agent.info.WorldInfo;
+import adf.agent.module.ModuleManager;
+import adf.component.module.AbstractModule;
 import com.google.common.collect.Lists;
 import java.awt.Shape;
 import java.util.ArrayList;
-import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Blockade;
 
 /**
  *
  * @author Amir Aslan Aslani - Feb 2018
  */
-public class AURClearWatcher {
-        private final AgentInfo ai;
-        
+public class AURClearWatcher extends AbstractModule {
         public final int MOVE = 1,
                          CLEAR = 2,
                          CLEAR_FROM_WATCHER = 3,
@@ -35,15 +36,16 @@ public class AURClearWatcher {
         private double yLastPos = 0;
         
         public double[] lastMoveVector = new double[2];
+        public double[] lastMoveDirection = new double[2];
         
         public int lastAction;
         public int lastTime;
         public int currentTime;
         
         public int dontMoveCounter = 0;
-                
-        public AURClearWatcher(AgentInfo ai) {
-                this.ai = ai;
+
+        public AURClearWatcher(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
+                super(ai, wi, si, moduleManager, developData);
                 this.lastAction = this.NULL;
                 
                 this.lastBlockadePList = new ArrayList<>();
@@ -70,10 +72,10 @@ public class AURClearWatcher {
         public void updateAgentInformations() {
                 this.xLastPos = this.xCurrentPos;
                 this.yLastPos = this.yCurrentPos;
-                this.xCurrentPos = this.ai.getX();
-                this.yCurrentPos = this.ai.getY();
+                this.xCurrentPos = this.agentInfo.getX();
+                this.yCurrentPos = this.agentInfo.getY();
                 this.lastTime = this.currentTime;
-                this.currentTime = this.ai.getTime();
+                this.currentTime = this.agentInfo.getTime();
                 
                 if(dontMoveCounter < 20 && isMoveLessThanAllowedValue()){
                         dontMoveCounter ++;
@@ -110,8 +112,12 @@ public class AURClearWatcher {
                         System.out.println(" -> MOVE");
                         this.lastAction = this.MOVE;
                         if(((ActionMove)newAction).getUsePosition()){
-                                this.lastMoveVector[0] = actionMove.getPosX() - ai.getX();
-                                this.lastMoveVector[1] = actionMove.getPosY() - ai.getY();
+                                this.lastMoveVector[0] = actionMove.getPosX() - agentInfo.getX();
+                                this.lastMoveVector[1] = actionMove.getPosY() - agentInfo.getY();
+                                if(! isMoveLessThanAllowedValue()){
+                                        this.lastMoveDirection[0] = actionMove.getPosX() - agentInfo.getX();
+                                        this.lastMoveDirection[1] = actionMove.getPosY() - agentInfo.getY();
+                                }
                         }
                         else{
                                 // Should Fill
@@ -131,7 +137,7 @@ public class AURClearWatcher {
                 ){
                         if(lastBlockadePList.equals(currentBlockadePList)){
                                 this.lastAction = CLEAR_FROM_WATCHER;
-                                return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(ai, currentBlockadeList));
+                                return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
                         }
                 }
                 this.lastAction = this.NULL;
@@ -143,8 +149,8 @@ public class AURClearWatcher {
         }
 
         private Action getDontMoveAction() {
-                Shape shape = ai.getPositionArea().getShape();
-                double[] p, agent = new double[]{ai.getX(), ai.getY()};
+                Shape shape = agentInfo.getPositionArea().getShape();
+                double[] p, agent = new double[]{agentInfo.getX(), agentInfo.getY()};
                 do{
                         p = AURGeoMetrics.getVectorScaled(AURGeoMetrics.getPointsPlus(
                                 agent,
@@ -152,6 +158,11 @@ public class AURClearWatcher {
                         ),AURConstants.Agent.RADIUS * 2);
                 }while(! shape.contains(p[0], p[1]));
                 
-                return new ActionMove(Lists.newArrayList(ai.getPosition()), (int) p[0], (int) p[1]);
+                return new ActionMove(Lists.newArrayList(agentInfo.getPosition()), (int) p[0], (int) p[1]);
+        }
+
+        @Override
+        public AbstractModule calc() {
+                return this;
         }
 }
