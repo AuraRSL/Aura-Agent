@@ -205,17 +205,21 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
-        private void addWSGRoadScores(AURAreaGraph area, double score) {
+        public static double addWSGRoadScores(AURAreaGraph area, double score) {
                 if(area.isRoad()){
                         area.baseScore += area.getScore() * score;
+                        if(area.getScore() < 0.005)
+                                area.targetScore = 0.2;
+                        return area.getScore() * score;
                 }
                 else{
                         area.baseScore += score / 2;
+                        return score / 2;
                 }
         }
 
-        private void addRefugeScore(AURAreaGraph area, double score) {
-                if(area.isRefuge()){
+        public static double addRefugeScore(AURAreaGraph area, double score) {
+                if(area.isBuilding() && area.isRefuge()){
                         for(AURAreaGraph ag : area.neighbours){
                                 if(ag.isRoad()){
                                         ag.baseScore += score * 2 / 3;
@@ -223,6 +227,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
                         area.baseScore += score;
                 }
+                score = 0;
+                return score;
         }
 
         private void addClusterScore(AURAreaGraph area, double score) {
@@ -265,20 +271,23 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
-        private void addGasStationScore(AURAreaGraph area, double score) {
+        public static double addGasStationScore(AURAreaGraph area, double score) {
                 if(area.isGasStation()){
                         area.baseScore += score;
                         for(AURAreaGraph neigs : area.neighbours){
                                 neigs.baseScore += score;
                         }
+                        return score;
                 }
+                return 0;
         }
 
-        private void addHydrandScore(AURAreaGraph area, double score) {
+        public static double addHydrandScore(AURAreaGraph area, double score) {
                 if(! area.isHydrant()){
                         score = 0;
                 }
                 area.baseScore += score;
+                return score;
         }
 
         private void setDistanceScore(AURAreaGraph area, double score) {
@@ -407,16 +416,19 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
-        private void addEntrancesNumberScore(AURAreaGraph area, double score) {
+        public static double addEntrancesNumberScore(AURAreaGraph area, double score) {
                 if(area.borders.size() == 0)
-                        return;
+                        return 0;
                 
                 if(area.borders.size() >= 3){
                         double coo = 1 - (1 / area.borders.size());
                         score *= coo;
                 }
-                
+                else{
+                        score = 0;
+                }
                 area.baseScore += score;
+                return score;
         }
 
         private boolean isThereCivilanInBuilding(Building b) {

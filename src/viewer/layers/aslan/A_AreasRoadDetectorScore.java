@@ -1,6 +1,8 @@
 package viewer.layers.aslan;
 
+import AUR.util.aslan.AURPoliceScoreGraph;
 import AUR.util.knd.AURAreaGraph;
+import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURWorldGraph;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -35,6 +37,11 @@ public class A_AreasRoadDetectorScore extends K_ViewerLayer {
                         result += " Base Score: " + selected_ag.baseScore;
                         result += " \n Secondary Score: " + selected_ag.secondaryScore;
                         result += " \n Dist Score: " + selected_ag.distanceScore;
+//                        result += " \n Refuge Score: " + AURPoliceScoreGraph.addRefugeScore(selected_ag, AURConstants.RoadDetector.BaseScore.REFUGE);
+//                        result += " \n Gas Station Score: " + AURPoliceScoreGraph.addGasStationScore(selected_ag, AURConstants.RoadDetector.BaseScore.REFUGE);
+//                        result += " \n Hydrant Score: " + AURPoliceScoreGraph.addHydrandScore(selected_ag, AURConstants.RoadDetector.BaseScore.REFUGE);
+//                        result += " \n Entrance Number Score: " + AURPoliceScoreGraph.addEntrancesNumberScore(selected_ag, AURConstants.RoadDetector.BaseScore.REFUGE);
+//                        result += " \n WSG Road Score: " + AURPoliceScoreGraph.addWSGRoadScores(selected_ag, AURConstants.RoadDetector.BaseScore.WSG_ROAD);
                         result += " \n Target Score: " + selected_ag.targetScore + " \n ";
                 }
                 return result;

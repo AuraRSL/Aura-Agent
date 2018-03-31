@@ -144,7 +144,7 @@ public class AURConstants {
                         public final static double HYDRANT = 0.1;
                         
                         public final static double WSG_ROAD = 0.125;
-                        public final static double CLUSTER = 0.5;
+                        public final static double CLUSTER = 0.6;
                         
                         public final static double POLICE_FORCE = 0.1;
                         public final static double AMBULANCE_TEAM = 0.125;
