@@ -4,12 +4,10 @@ import AUR.util.ambulance.Information.BuildingInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.Building;
-import rescuecore2.standard.entities.StandardEntity;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 
 import java.awt.*;
-import java.util.Random;
 
 /**
  *

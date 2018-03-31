@@ -201,8 +201,8 @@ public class CivilianInfo {
     // update **********************************************************************************************
     public void updateCycle(){
         this.saveTime--;
-        this.rateDeterminer.calc();
         this.travelTimeToMe = this.calcTravelTimeToMe();
+        this.rateDeterminer.calc();
 
     }
 

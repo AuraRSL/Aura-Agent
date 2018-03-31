@@ -5,10 +5,10 @@ import AUR.util.ambulance.AmbulanceUtil;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
-import rescuecore2.standard.entities.AmbulanceTeam;
-import rescuecore2.standard.entities.Building;
-import rescuecore2.standard.entities.StandardEntity;
-import rescuecore2.standard.entities.StandardEntityURN;
+import rescuecore2.standard.entities.*;
+import rescuecore2.worldmodel.EntityID;
+
+import java.util.ArrayList;
 
 /**
  *
@@ -35,9 +35,14 @@ public class HumanRateDeterminer {
             civilian.rate = rate;
             return;
         }
+
+        if(test()){
+            civilian.rate = 0.25;
+            return;
+        }
         //Base Rate
         rate += effectAreaType(0.01);
-        rate += effectReverseSaveCycle(2.3);
+        rate += effectReverseSaveTime(2.3);
         rate += effectDamage(0.5);
 
         if(rate > 1) {
@@ -57,16 +62,40 @@ public class HumanRateDeterminer {
 
         civilian.rate = rate;
     }
-
+    public boolean test(){
+        StandardEntity pos = wsg.wi.getEntity(civilian.getPosition());
+        if(pos instanceof Road) {
+            ArrayList<EntityID> path = wsg.getPathToClosest(civilian.getPosition(), wsg.getAllRefuges());
+            if (path == null || path.size() == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
     public boolean ignoreCivilian(){
-        //TODO Fuck
+
         if(civilian.saveTime <= 0){
+            return true;
+        }
+        if(!civilian.me.isHPDefined() || civilian.me.getHP() == 0 ){
             return true;
         }
         if(wsg.wi.getEntity(civilian.getPosition()) instanceof AmbulanceTeam){
             return true;
         }
 
+        Civilian ci = civilian.me;
+        if(ci.isHPDefined() && ci.isBuriednessDefined() && ci.isDamageDefined() ){
+            if(ci.getHP() == RescueInfo.maxHp && ci.getBuriedness() == 0 && ci.getDamage() == 0){
+                return true;
+            }
+        }
+
+
+
+        if(otherAgentsRescueEffects()){
+            return true;
+        }
         StandardEntity posEntity = wsg.wi.getEntity(civilian.getPosition());
         if(posEntity.getStandardURN().equals(StandardEntityURN.REFUGE)){
             return true;
@@ -77,7 +106,31 @@ public class HumanRateDeterminer {
             if (position.isOnFire()) {
                 return true;
             }
+            if(position.isTemperatureDefined() && position.getTemperature() > 44){
+                return true;
+            }
         }
+
+        return false;
+    }
+
+    public boolean otherAgentsRescueEffects(){
+
+
+        for(StandardEntity entity: wsg.wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM)){
+            if(entity instanceof AmbulanceTeam){
+                AmbulanceTeam at = (AmbulanceTeam)entity;
+                if(at.getID().equals(wsg.ai.getID())) {
+                    continue;
+                }
+                if(at.isBuriednessDefined() && at.getBuriedness() == 0) {
+                    if (at.isPositionDefined() && at.getPosition().equals(civilian.getPosition())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
         return false;
     }
 
@@ -93,7 +146,7 @@ public class HumanRateDeterminer {
     }
 
 
-    public double effectReverseSaveCycle(double coefficient){
+    public double effectReverseSaveTime(double coefficient){
         double tempRate = RescueInfo.simulationTime - (civilian.saveTime);
         return (tempRate/ RescueInfo.simulationTime)*coefficient;
     }
@@ -144,4 +197,5 @@ public class HumanRateDeterminer {
         }
         return 0;
     }
+
 }

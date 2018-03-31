@@ -3,6 +3,8 @@ package viewer.layers.AmboLayers;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
+import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.StandardEntity;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;
 
@@ -29,6 +31,12 @@ public class CivilianRate extends K_ViewerLayer {
                 if (ciInfo.me.isXDefined() && ciInfo.me.isYDefined()) {
                     if (ciInfo.me.isXDefined() && ciInfo.me.isYDefined()) {
                         g2.drawString(rate, kst.xToScreen(ciInfo.me.getX() - 5), kst.yToScreen(ciInfo.me.getY()) - 5);
+                    }
+                }else if(ciInfo.me.isPositionDefined()) {
+                    StandardEntity posE = wsg.wi.getEntity(ciInfo.me.getPosition());
+                    if (posE instanceof Area) {
+                        Area pos = (Area) posE;
+                        g2.drawString(rate, kst.xToScreen(pos.getX() - 5), kst.yToScreen(pos.getY()) - 5);
                     }
                 }
             }

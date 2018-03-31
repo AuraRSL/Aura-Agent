@@ -2,7 +2,6 @@ package viewer.layers.AmboLayers;
 
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
-import adf.agent.info.WorldInfo;
 import rescuecore2.standard.entities.*;
 import viewer.K_ScreenTransform;
 import viewer.K_ViewerLayer;

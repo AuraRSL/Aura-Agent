@@ -3,7 +3,6 @@ package AUR.util.ambulance.ProbabilityDeterminant;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
 import rescuecore2.standard.entities.*;
-import rescuecore2.worldmodel.EntityID;
 
 /**
  * Created by armanaxh on 3/17/18.
@@ -32,7 +31,7 @@ public class AgentRateDeterminer {
 
     public static boolean ignoreAgent(AURWorldGraph wsg, RescueInfo rescueInfo, Human human){
 
-        //TODO Fuck
+        //TODO
         if(human.isHPDefined() && human.getHP() < 1000){
             return true;
         }
@@ -82,7 +81,7 @@ public class AgentRateDeterminer {
         double tempRate = rescueInfo.maxTravelCost;
         return (tempRate/ rescueInfo.maxTravelCost)*coefficient;
     }
-    public static double buriednessEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human ,double coefficient){
+    public static double buriednessEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human , double coefficient){
         if(!human.isBuriednessDefined()){
             return 0;
         }

@@ -1,7 +1,6 @@
 package viewer.layers.AmboLayers;
 
 import AUR.util.ambulance.Information.BuildingInfo;
-import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import viewer.K_ScreenTransform;
