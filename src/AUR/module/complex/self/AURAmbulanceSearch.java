@@ -254,7 +254,7 @@ public class AURAmbulanceSearch extends Search
 
     private List<BuildingInfo> removeCantPass(List<BuildingInfo> buildings){
 
-        wsg.dijkstra(agentInfo.getPosition());
+        wsg.KStar(agentInfo.getPosition());
 
         Collection<BuildingInfo> temp = new LinkedList<>();
         for(BuildingInfo bi: buildings){

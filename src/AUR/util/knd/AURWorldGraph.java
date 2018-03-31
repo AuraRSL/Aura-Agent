@@ -259,7 +259,7 @@ public class AURWorldGraph extends AbstractModule {
 		double destX = -1;
 		double destY = -1;
 		
-		dijkstra(from);
+		KStar(from);
 		
 		AUREdgeToStand etp = targetAg.getBuilding().edgeToPereceptAndExtinguish;
 		if(etp == null) {
@@ -299,7 +299,7 @@ public class AURWorldGraph extends AbstractModule {
 		double destX = -1;
 		double destY = -1;
 		
-		dijkstra(from);
+		KStar(from);
 		
 		AUREdgeToStand etp = targetAg.getBuilding().edgeToSeeInside;
 		if(etp == null) {
@@ -605,7 +605,7 @@ public class AURWorldGraph extends AbstractModule {
 			this.myClusterCenterArea = this.areas.get(this.ai.getPosition());
 		}
 		
-		dijkstra(this.myClusterCenterArea.area.getID());
+		KStar(this.myClusterCenterArea.area.getID());
 		
 		int times[][] = new int[this.clusters][2];
 		for(int i = 0; i < this.clusters; i++) {
@@ -729,7 +729,7 @@ public class AURWorldGraph extends AbstractModule {
 	}
 	
 	public ArrayList<AURAreaGraph> getPerceptibleUnburntBuildingIDs() {
-		this.dijkstra(ai.getPosition());
+		this.KStar(ai.getPosition());
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : areas.values()) {
 			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false && ag.getBuilding().fireSimBuilding.isOnFire() == false
@@ -858,7 +858,7 @@ public class AURWorldGraph extends AbstractModule {
 		
 //		System.out.println("2- world graph update time: " + (System.currentTimeMillis() - t) + "\t\t" + count);
 		
-		this.dijkstra(this.ai.getPosition());
+		this.KStar(this.ai.getPosition());
 //		System.out.println("3- world graph update time: " + (System.currentTimeMillis() - t));
 		for (EntityID entID : changes) {
 			AURAreaGraph ag = getAreaGraph(entID);
@@ -910,6 +910,7 @@ public class AURWorldGraph extends AbstractModule {
 				border.CenterNode.cost = AURConstants.Math.INT_INF;
 				border.CenterNode.pre = null;
 				border.CenterNode.pQueEntry = null;
+				border.CenterNode.vis = false;
 			}
 		}
 	}
@@ -927,7 +928,7 @@ public class AURWorldGraph extends AbstractModule {
 	
 	public ArrayList<EntityID> getPathToClosest(EntityID fromID, Collection<EntityID> targets) {
 		ArrayList<EntityID> result = new ArrayList<>();
-		dijkstra(fromID);
+		KStar(fromID);
 		if (targets.contains(fromID)) {
 			result.add(fromID);
 			return result;
@@ -955,7 +956,7 @@ public class AURWorldGraph extends AbstractModule {
 		return result;
 	}
 
-	public void dijkstra(EntityID fromID) {
+	public void KStar(EntityID fromID) {
 		if (lastDijkstraFrom != null && lastDijkstraFrom.equals(fromID)) {
 			return;
 		}
@@ -1154,7 +1155,7 @@ public class AURWorldGraph extends AbstractModule {
 			result.add(fromID);
 			return result;
 		}
-		NoBlockadeDijkstra(fromID);
+		KStarNoBlockade(fromID);
 		ArrayList<AURAreaGraph> targetAgs = getAreaGraph(targets);
 		AURAreaGraph closest = null;
 		for (AURAreaGraph ag : targetAgs) {
@@ -1179,7 +1180,7 @@ public class AURWorldGraph extends AbstractModule {
 		return result;
 	}
 
-	public void NoBlockadeDijkstra(EntityID fromID) {
+	public void KStarNoBlockade(EntityID fromID) {
 		if (lastNoBlockadeDijkstraFrom != null && lastNoBlockadeDijkstraFrom.equals(fromID)) {
 			return;
 		}
@@ -1206,35 +1207,48 @@ public class AURWorldGraph extends AbstractModule {
 		FibonacciHeap<AURNode> que = new FibonacciHeap<>();
 		for (AURNode node : startNodes) {
 			node.pre = startNullNode;
-			node.pQueEntry = que.enqueue(node, node.cost);
+			AUREdge edge = new AUREdge(startNullNode, node, node.cost, fromAg);
+			node.pQueEntry = que.enqueue(node, edge.getNoBlockadePriority());
 		}
 		AURNode qNode = null;
 		AURAreaGraph ag;
 		AURNode toNode = null;
 		while (que.isEmpty() == false) {
 			qNode = que.dequeueMin().getValue();
+			double qNPriority = qNode.pQueEntry.getPriority();
 			qNode.pQueEntry = null;
+			qNode.vis = true;
 			ag = qNode.ownerArea1;
-			if (ag.getNoBlockadeTravelCost() > qNode.cost) {
+			if (ag.lastNoBlockadeDijkstraEntranceNode == null) {
 				ag.lastNoBlockadeDijkstraEntranceNode = qNode;
 			}
 			ag = qNode.ownerArea2;
-			if (ag.getNoBlockadeTravelCost() > qNode.cost) {
+			if (ag.lastNoBlockadeDijkstraEntranceNode == null) {
 				ag.lastNoBlockadeDijkstraEntranceNode = qNode;
 			}
+			
 			for (AUREdge edge : qNode.edges) {
 				toNode = edge.nextNode(qNode);
-				int cost = (qNode.cost + edge.weight) + 0;
-				if (toNode.cost > cost) {
-					toNode.cost = cost;
-
-					if (toNode.pQueEntry == null) {
-						toNode.pQueEntry = que.enqueue(toNode, toNode.cost);
-					} else {
-						que.decreaseKey(toNode.pQueEntry, toNode.cost);
-					}
-					toNode.pre = qNode;
+				if(toNode.vis == true) {
+					continue;
 				}
+
+				int cost = qNode.cost + edge.weight;
+				
+				double p = qNPriority + edge.getNoBlockadePriority();
+				if(toNode.pQueEntry == null) {
+					toNode.cost = cost;
+					toNode.pre = qNode;
+					toNode.pQueEntry = que.enqueue(toNode, p);
+					
+				} else {
+					if(toNode.pQueEntry.getPriority() > p) {
+						toNode.cost = cost;
+						toNode.pre = qNode;
+						que.decreaseKey(toNode.pQueEntry, p);
+					}
+				}
+		
 			}
 		}
 	}
@@ -1313,9 +1327,6 @@ public class AURWorldGraph extends AbstractModule {
 		this.wi = wi;
 		this.ai = ai;
 		this.si = si;
-		
-//		build();
-		
 		this.worldClusterer = moduleManager.getModule(
 			"SampleSearch.Clustering.Fire",
 			"adf.sample.module.algorithm.SampleKMeans"
@@ -1348,7 +1359,5 @@ public class AURWorldGraph extends AbstractModule {
 		build();
 		return this;
 	}
-	
-	
-	
+
 }

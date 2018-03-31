@@ -97,7 +97,7 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 	
 	public LinkedList<AURAreaGraph> getFires_new() {
 		LinkedList<AURAreaGraph> result = new LinkedList<>();
-		wsg.dijkstra(ai.getPosition());
+		wsg.KStar(ai.getPosition());
 		wsg.fireZonesCalculator.update();
 		for(AURFireZone fireZone : wsg.fireZonesCalculator.zones) {
 			if(fireZone.ok()) {

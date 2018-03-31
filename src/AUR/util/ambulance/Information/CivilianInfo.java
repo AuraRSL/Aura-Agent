@@ -150,7 +150,7 @@ public class CivilianInfo {
             return 0;
         }
         if(refuge != null && me.isPositionDefined()){
-            wsg.dijkstra(wsg.ai.getPosition());
+            wsg.KStar(wsg.ai.getPosition());
             //TODO me.getPosioeion
 //            double distance = wsg.getAreaGraph(refuge.refuge.getID()).getLastDijkstraCost();
 //            double distance = wsg.wi.getDistance(me.getPosition(), refuge.refuge.getID());
@@ -170,7 +170,7 @@ public class CivilianInfo {
 
     public int calcTravelTimeToMe(){
         if(me.isPositionDefined()) {
-            wsg.dijkstra(wsg.ai.getPosition());
+            wsg.KStar(wsg.ai.getPosition());
 //            double distance = wsg.getAreaGraph(me.getPosition()).getLastDijkstraCost();
 //            double distance = wsg.wi.getDistance(wsg.ai.getPosition(), me.getPosition());
 //            int tempT = (int)(distance/RescueInfo.moveDistance);

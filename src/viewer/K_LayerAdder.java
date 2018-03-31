@@ -90,11 +90,11 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaGraph.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaGrid.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_AreaBorders.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPath.class, true);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PathTo.class, true);
 		viewer.addLayer(TAB_PATH_PLANNING, K_NoBlockadeShortestPath.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingPerceptibleAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishableBuildings.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathToCheckFire.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PathToCheckFire.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAreaPolygon.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_PerceptibleAndExtinguishablePolygon.class, false);
@@ -113,7 +113,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_ShortestPathSeeInside.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PathToSeeInside.class, false);
 
 
 		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, false);

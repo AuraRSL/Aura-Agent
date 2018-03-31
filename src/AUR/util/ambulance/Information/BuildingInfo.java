@@ -75,7 +75,7 @@ public class BuildingInfo {
 
     public int calcTravelCostToBuilding(){
         if(me != null) {
-            wsg.dijkstra(wsg.ai.getPosition());
+            wsg.KStar(wsg.ai.getPosition());
 
             int tempT = RescueInfo.maxTravelTime;
             StandardEntity pos = wsg.wi.getEntity(me.getID());

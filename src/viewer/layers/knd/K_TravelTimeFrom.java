@@ -27,7 +27,7 @@ public class K_TravelTimeFrom extends K_ViewerLayer {
 		g2.setFont(new Font("Arial", 0, 9));
 		g2.setColor(Color.white);
 
-		wsg.dijkstra(selected_ag.area.getID());
+		wsg.KStar(selected_ag.area.getID());
 		
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			String cost = "inf";

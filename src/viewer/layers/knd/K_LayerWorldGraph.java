@@ -27,7 +27,7 @@ public class K_LayerWorldGraph extends K_ViewerLayer {
         g2.setColor(Color.BLUE);
 //        g2.setStroke(new BasicStroke(2));
         
-        wsg.dijkstra(wsg.ai.getPosition());
+        wsg.KStar(wsg.ai.getPosition());
         
         
         for(AURAreaGraph ag : wsg.areas.values()) {

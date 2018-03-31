@@ -22,7 +22,7 @@ public class K_AreaNoSeeTime extends K_ViewerLayer {
 		g2.setFont(new Font("Arial", 0, 9));
 		g2.setColor(Color.white);
 
-		wsg.dijkstra(wsg.ai.getPosition());
+		wsg.KStar(wsg.ai.getPosition());
 
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			String time = "-1";

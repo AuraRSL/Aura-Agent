@@ -26,7 +26,7 @@ public class AURFireValueSetter {
                 
             
 		wsg.updateInfo(null);
-		wsg.dijkstra(wsg.ai.getPosition());
+		wsg.KStar(wsg.ai.getPosition());
 
                 this.fireSimulatorInstance = wsg.fireSimulator;
                 

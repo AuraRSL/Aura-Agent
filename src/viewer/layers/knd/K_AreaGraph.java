@@ -33,7 +33,7 @@ public class K_AreaGraph extends K_ViewerLayer {
 		}
 		
         g2.setColor(Color.CYAN);
-        wsg.dijkstra(wsg.ai.getPosition());
+        wsg.KStar(wsg.ai.getPosition());
         
         
 		for(AURBorder border : selected_ag.borders) {

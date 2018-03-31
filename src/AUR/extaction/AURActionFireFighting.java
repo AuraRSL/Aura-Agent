@@ -175,7 +175,7 @@ public class AURActionFireFighting extends ExtAction {
 	public ActionMove moveToRefiller() {
 
 		LinkedList<AURAreaGraph> list = wsg.getAllRefillers();
-		wsg.dijkstra(ai.getPositionArea().getID());
+		wsg.KStar(ai.getPositionArea().getID());
 		LinkedList<AURAreaGraphValue> vps = new LinkedList<AURAreaGraphValue>();
 		for (AURAreaGraph ag : list) {
 			vps.add(new AURAreaGraphValue(ag));
@@ -255,7 +255,7 @@ public class AURActionFireFighting extends ExtAction {
 	}
 	
 	public ArrayList<AURAreaGraph> getReachableUnburntBuildingIDs() {
-		wsg.dijkstra(ai.getPosition());
+		wsg.KStar(ai.getPosition());
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false

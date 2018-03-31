@@ -277,7 +277,7 @@ public class AURHumanDetector extends HumanDetector
 
     private List<CivilianInfo> removeCantPass(List<CivilianInfo> civilians){
 
-        wsg.dijkstra(agentInfo.getPosition());
+        wsg.KStar(agentInfo.getPosition());
 
         Collection<CivilianInfo> temp = new LinkedList<>();
         for(CivilianInfo ci: civilians){

@@ -23,7 +23,7 @@ public class AURFireSearchValueSetter {
 		// long t = System.currentTimeMillis();
 
 		wsg.updateInfo(null);
-		wsg.dijkstra(wsg.ai.getPosition());
+		wsg.KStar(wsg.ai.getPosition());
                 
 		this.fireSimulatorInstance = wsg.fireSimulator;
 
@@ -95,7 +95,7 @@ public class AURFireSearchValueSetter {
 
 	public void calcNoBlockade(AURWorldGraph wsg, ArrayList<AURAreaGraphValue> points, Collection<EntityID> initialCluster) {
 		wsg.updateInfo(null);
-		wsg.NoBlockadeDijkstra(wsg.ai.getPosition());
+		wsg.KStarNoBlockade(wsg.ai.getPosition());
 
 		this.points.clear();
 		this.points.addAll(points);

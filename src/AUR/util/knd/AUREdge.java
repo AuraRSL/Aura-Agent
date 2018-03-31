@@ -57,9 +57,31 @@ public class AUREdge {
 			result += w * 40;
 		}
 		
-		result += 3 * (1 - ((double) Math.min(500, ag.noSeeTime()) / 500)) * w;	
+		result += 3 * (1 - ((double) Math.min(500, ag.noSeeTime()) / 500)) * w;
+		
+		if(ag.isPassed()) {
+			result *= 1.1;
+		}
 		
 		return result;
+	}
+	
+	public double getNoBlockadePriority() {
+
+		switch(this.areaGraph.wsg.ai.me().getStandardURN()) {
+			case FIRE_BRIGADE:
+			case AMBULANCE_TEAM: {
+				return getPriority();
+			}
+			case POLICE_FORCE: {
+				double p = getPriority();;
+				if(this.areaGraph.isPassed()) {
+					return p * 1.5;
+				}
+			}
+		}
+		
+		return getPriority();
 	}
 	
 }
