@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
+import adf.agent.info.AgentInfo;
 import adf.agent.info.WorldInfo;
 import java.awt.Polygon;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Collection;
 import rescuecore2.misc.Pair;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.worldmodel.EntityID;
 
@@ -106,5 +108,18 @@ public class AURPoliceUtil {
                 for(EntityID e : wi.getObjectIDsInRange(lastPoint[0], lastPoint[1], 1))
                         return e;
                 return null;
+        }
+        
+        public static Blockade getNearestBlockadeToAgentFromList(AgentInfo ai, ArrayList<Blockade> list){
+                Blockade selected = null;
+                double dis = Double.MAX_VALUE;
+                for(Blockade b : list){
+                        double tdis = Math.hypot(ai.getX() - b.getX(), ai.getY() - b.getY());
+                        if(tdis < dis){
+                                dis = tdis;
+                                selected = b;
+                        }
+                }
+                return selected;
         }
 }

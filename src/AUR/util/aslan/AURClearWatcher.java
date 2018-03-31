@@ -75,7 +75,7 @@ public class AURClearWatcher {
                 this.lastTime = this.currentTime;
                 this.currentTime = this.ai.getTime();
                 
-                if(isMoveLessThanAllowedValue()){
+                if(dontMoveCounter < 20 && isMoveLessThanAllowedValue()){
                         dontMoveCounter ++;
                 }
                 else{
@@ -131,7 +131,7 @@ public class AURClearWatcher {
                 ){
                         if(lastBlockadePList.equals(currentBlockadePList)){
                                 this.lastAction = CLEAR_FROM_WATCHER;
-                                return new ActionClear(getNearestBlockadeToAgentFromList(currentBlockadeList));
+                                return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(ai, currentBlockadeList));
                         }
                 }
                 this.lastAction = this.NULL;
@@ -140,19 +140,6 @@ public class AURClearWatcher {
         
         private boolean isMoveLessThanAllowedValue(){
                 return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.Agent.RADIUS;
-        }
-        
-        private Blockade getNearestBlockadeToAgentFromList(ArrayList<Blockade> list){
-                Blockade selected = null;
-                double dis = Double.MAX_VALUE;
-                for(Blockade b : list){
-                        double tdis = Math.hypot(ai.getX() - b.getX(), ai.getY() - b.getY());
-                        if(tdis < dis){
-                                dis = tdis;
-                                selected = b;
-                        }
-                }
-                return selected;
         }
 
         private Action getDontMoveAction() {

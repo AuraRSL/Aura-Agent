@@ -38,6 +38,7 @@ import java.awt.Rectangle;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
+import java.util.Stack;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.Pair;
 import rescuecore2.misc.geometry.GeometryTools2D;
@@ -883,12 +884,18 @@ public class AURActionExtClear extends ExtAction {
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
                 Polygon clearPolygon = AURPoliceUtil.getClearPolygon(policePoint, clearPoint);
                 
-                Pair<Boolean, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon);
-
-                if(blockadesList.first()){ // Then Clear
+                Pair<Integer, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon, (Area) worldInfo.getEntity(agentInfo.getPosition()));
+                System.out.println(blockadesList.first());
+                System.out.println(agentInfo.getID() + " Blockades Size: " + blockadesList.second().size());
+                if(blockadesList.first() == 1){ // Then Clear
                         this.cw.setBlockadeList(blockadesList.second());
                         return this.cw.getAction(
                                 new ActionClear(agentInfo, vectorToTarget.scale(clearVectorLen))
+                        );
+                }
+                else if(blockadesList.first() == 2){ // Then clear with old function
+                        return this.cw.getAction(
+                                new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, blockadesList.second()))
                         );
                 }
                 else{ // Then Move
@@ -923,44 +930,64 @@ public class AURActionExtClear extends ExtAction {
                 }
         }
         
-        private Pair<Boolean, ArrayList<Blockade> > isThereBlockadesInBlockadesListInIntersectWithClearPolygon(Polygon clearPolygon, ArrayList<Blockade> blockades){
+        private Pair<Integer, ArrayList<Blockade> > isThereBlockadesInBlockadesListInIntersectWithClearPolygon(Polygon clearPolygon, ArrayList<Blockade> blockades){
                 ArrayList<Blockade> blockadesThatInClearPolygon = new ArrayList<>();
+                int resultStatus = 0;
                 
-                Boolean blockadeFlag = false;
                 for(Blockade blockade : blockades){
                         if(AURGeoTools.intersect(blockade, clearPolygon)){
-                                blockadeFlag = true;
+                                if(resultStatus == 0)
+                                        resultStatus = 1;
+                                
+                                blockadesThatInClearPolygon.add(blockade);
+                        }
+                        else if(blockade.getShape().contains(clearPolygon.xpoints[0], clearPolygon.ypoints[0])){
+                                resultStatus = 2;
                                 blockadesThatInClearPolygon.add(blockade);
                         }
                 }
                 
                 return new Pair(
-                        blockadeFlag,
+                        resultStatus,
                         blockadesThatInClearPolygon
                 );
         }
         
-        private Pair<Boolean, ArrayList<Blockade> > isThereBlockadesIntersectWithClearPolygon(Polygon clearPolygon){
-                Pair<ArrayList<Area>, ArrayList<Blockade> > areasAndBlockadesOfClearPolygon = getAreasAndBlockadesInBound(clearPolygon.getBounds());
+        private Pair<Integer, ArrayList<Blockade> > isThereBlockadesIntersectWithClearPolygon(Polygon clearPolygon, Area start){
+                Pair<ArrayList<Area>, ArrayList<Blockade> > areasAndBlockadesOfClearPolygon = getAreasAndBlockadesInBound(clearPolygon.getBounds(), start);
                 return isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesOfClearPolygon.second());
         }
         
-        private Pair<ArrayList<Area>, ArrayList<Blockade>> getAreasAndBlockadesInBound(Rectangle bound){
+        private Pair<ArrayList<Area>, ArrayList<Blockade>> getAreasAndBlockadesInBound(Rectangle bound, Area start){
                 ArrayList<Area> areasList = new ArrayList<>();
                 ArrayList<Blockade> blocksList = new ArrayList<>();
                 
-                for(EntityID eid : worldInfo.getObjectIDsInRectangle(bound.x, bound.y, bound.x + bound.width, bound.y + bound.height)){
-                        StandardEntity entity = worldInfo.getEntity(eid);
-                        if(entity instanceof Area){
-                                areasList.add((Area) entity);
+                Stack<Area> areas = new Stack<>();
+                areas.add(start);
+                areasList.add(start);
+                while (!areas.empty()) {
+                        Area area = areas.pop();
+                                        
+                        for (EntityID id : area.getNeighbours()) {
+                                Area tmp = (Area) worldInfo.getEntity(id);
+                                if (
+                                        (
+                                                tmp.getShape().getBounds().contains(bound) ||
+                                                tmp.getShape().getBounds().intersects(bound) ||
+                                                bound.contains(tmp.getShape().getBounds())
+                                        ) && ! areasList.contains(tmp)) {
+                                        areasList.add(tmp);
+                                }
                         }
                 }
                 
                 for(Area area : areasList){
-                        if(area instanceof Road && ((Road)area).isBlockadesDefined()){
-                                for (EntityID bid : area.getBlockades()) {
-                                        Blockade btmp = (Blockade) worldInfo.getEntity(bid);
-                                        blocksList.add(btmp);
+                        if(area instanceof Road){
+                                if(area.isBlockadesDefined()){
+                                        for (EntityID bid : area.getBlockades()) {
+                                                Blockade btmp = (Blockade) worldInfo.getEntity(bid);
+                                                blocksList.add(btmp);
+                                        }
                                 }
                         }
                 }
@@ -1078,7 +1105,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 
                 Polygon clearPolygon = AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), new Point2D(agentInfo.getX() + v.getX(), agentInfo.getY() + v.getY()), AURConstants.Agent.RADIUS * 3);
-                Pair<Boolean, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon);
+                Pair<Integer, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon, (Area) worldInfo.getEntity(agentInfo.getPosition()));
                 cw.setBlockadeList(blockadesList.second());
                 
                 return new ActionClear(
@@ -1121,18 +1148,6 @@ public class AURActionExtClear extends ExtAction {
                         }
                 }
                 return null;
-        }
-
-        private boolean thereIsNoBlockade(double to, Vector2D vectorToTarget) {
-                double[] v = AURGeoMetrics.getVectorFromVector2D(vectorToTarget);
-                double[] fP = new double[]{agentPosition[0],agentPosition[1]},
-                         tP = AURGeoMetrics.getVectorScaled(v, to);
-                tP[0] += agentPosition[0];
-                tP[1] += agentPosition[1];
-                fP[0] += agentPosition[0];
-                fP[1] += agentPosition[1];
-                Polygon cp = AURPoliceUtil.getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
-                return ! isThereBlockadesIntersectWithClearPolygon(cp).first();
         }
         
         private Action getAreaFullClearActionOrIgnoreBlockades(EntityID nextArea){
@@ -1195,8 +1210,8 @@ public class AURActionExtClear extends ExtAction {
                 
                 for(Point2D p2 : toSet){
                         Polygon clearPolygon = AURPoliceUtil.getClearPolygon(fromP, p2);
-                        Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds());
-                        if(! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
+                        Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
+                        if(0 == isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
                                 return true;
                         }
                 }
@@ -1227,8 +1242,8 @@ public class AURActionExtClear extends ExtAction {
                 for(Point2D p1 : fromSet){
                         for(Point2D p2 : toSet){
                                 Polygon clearPolygon = AURPoliceUtil.getClearPolygon(p1, p2);
-                                Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds());
-                                if(! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
+                                Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
+                                if(0 == isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
                                         return true;
                                 }
                         }
