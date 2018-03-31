@@ -21,6 +21,7 @@ import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
+import adf.agent.precompute.PrecomputeData;
 import adf.component.module.algorithm.Clustering;
 import adf.component.module.algorithm.PathPlanning;
 import adf.component.module.complex.RoadDetector;
@@ -62,12 +63,27 @@ public class AURRoadDetector extends RoadDetector {
         @Override
         public RoadDetector updateInfo(MessageManager messageManager) {
                 super.updateInfo(messageManager);
+                wsg.updateInfo(messageManager);
+                return this;
+        }
+
+        @Override
+        public RoadDetector precompute(PrecomputeData precomputeData) {
+                super.precompute(precomputeData);
+                wsg.precompute(precomputeData);
+                return this;
+        }
+
+        @Override
+        public RoadDetector resume(PrecomputeData precomputeData) {
+                super.resume(precomputeData);
+                wsg.resume(precomputeData);
                 return this;
         }
 
         @Override
         public RoadDetector calc() {
-                
+                wsg.calc();
                 if(psa.isThereBlockadesInMap() == psa.NO){
                         this.result = null;
                         return this;

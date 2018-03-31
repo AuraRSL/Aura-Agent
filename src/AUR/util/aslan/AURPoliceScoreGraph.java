@@ -10,6 +10,7 @@ import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
+import adf.agent.precompute.PrecomputeData;
 import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.Clustering;
 import com.google.common.collect.Lists;
@@ -122,6 +123,28 @@ public class AURPoliceScoreGraph extends AbstractModule {
         
         @Override
         public AbstractModule calc() {
+                wsg.calc();
+                return this;
+        }
+
+        @Override
+        public AbstractModule resume(PrecomputeData precomputeData) {
+                super.resume(precomputeData); 
+                wsg.resume(precomputeData);
+                return this;
+        }
+
+        @Override
+        public AbstractModule precompute(PrecomputeData precomputeData) {
+                super.precompute(precomputeData);
+                wsg.precompute(precomputeData);
+                return this;
+        }
+
+        @Override
+        public AbstractModule preparate() {
+                super.preparate();
+                wsg.preparate();
                 return this;
         }
         
@@ -131,6 +154,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
+                super.updateInfo(messageManager);
+                
                 long sTime = System.currentTimeMillis();
                 System.out.println("Updating RoadDetector Scores...");
                 

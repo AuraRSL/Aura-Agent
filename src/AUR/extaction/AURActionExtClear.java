@@ -115,6 +115,7 @@ public class AURActionExtClear extends ExtAction {
         @Override
         public ExtAction precompute(PrecomputeData precomputeData) {
                 super.precompute(precomputeData);
+                wsg.precompute(precomputeData);
                 if (this.getCountPrecompute() >= 2) {
                         return this;
                 }
@@ -129,6 +130,7 @@ public class AURActionExtClear extends ExtAction {
         @Override
         public ExtAction resume(PrecomputeData precomputeData) {
                 super.resume(precomputeData);
+                wsg.resume(precomputeData);
                 if (this.getCountResume() >= 2) {
                         return this;
                 }
@@ -143,6 +145,7 @@ public class AURActionExtClear extends ExtAction {
         @Override
         public ExtAction preparate() {
                 super.preparate();
+                wsg.preparate();
                 if (this.getCountPreparate() >= 2) {
                         return this;
                 }
@@ -157,6 +160,7 @@ public class AURActionExtClear extends ExtAction {
         @Override
         public ExtAction updateInfo(MessageManager messageManager) {
                 super.updateInfo(messageManager);
+                wsg.updateInfo(messageManager);
                 if (this.getCountUpdateInfo() >= 2) {
                         return this;
                 }
@@ -182,6 +186,7 @@ public class AURActionExtClear extends ExtAction {
 
         @Override
         public ExtAction calc() {
+                wsg.calc();
                 this.agentPosition = new int[]{(int) agentInfo.getX(),(int) agentInfo.getY()};
                 this.cw.updateAgentInformations();
                 
@@ -1252,6 +1257,9 @@ public class AURActionExtClear extends ExtAction {
         }
 
         private boolean isThereStraightRoadExistsOnPath(ArrayList<Pair<Point2D, EntityID>> pathNodes, int index) {
+                if(index == 0)
+                        return false;
+                
                 Pair<Point2D, EntityID> get = pathNodes.get(index);
                 wsg.dijkstra(agentInfo.getPosition());
                 
