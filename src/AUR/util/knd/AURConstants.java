@@ -153,12 +153,12 @@ public class AURConstants {
                 public static class BaseScore {
                         public final static double DISTANCE = 0.1;
                         
-                        public final static double REFUGE = 0.4;
+                        public final static double REFUGE = 0.5;
                         public final static double GAS_STATION = 0.2;
                         public final static double HYDRANT = 0.1;
                         
                         public final static double WSG_ROAD = 0.125;
-                        public final static double CLUSTER = 0.7;
+                        public final static double CLUSTER = 0.5;
                         
                         public final static double POLICE_FORCE = 0.1;
                         public final static double AMBULANCE_TEAM = 0.125;
@@ -170,14 +170,13 @@ public class AURConstants {
                 public static class SecondaryScore {
                         public final static double DEAD_POLICE_CLUSTER = 0.3;
                         public final static double BLOCKED_HUMAN = 0.5;
-                        public final static double DISTANCE = 0.075;
+                        public final static double DISTANCE = 0.15;
                         public final static double SELECTED_TARGET = 0.05;
                         public final static double ROADS_WITHOUT_BLOCKADES = 0.0;
                         public final static double RELEASED_AGENTS_START_POSITION_SCORE = 0.0;
-                        public final static double FIRED_BUILDING = 0.3;
                         public final static double BUILDINGS_THAT_CONTAINS_CIVILANS = 0.3;
                         public final static double BUILDINGS_DONT_CONTAINS_CIVILIAN = 0.05;
-                        public final static double BLOCKED_BUILDINGS = 0.2;
+                        public final static double BLOCKED_BUILDINGS = 0.15;
                 }
                 
         }
