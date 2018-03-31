@@ -20,11 +20,22 @@ public class AURFireSimulator {
 	}
 	
 	public void step() {
+		long t = System.currentTimeMillis();
+		
+		if(wsg.ai.getTime() < 2) {
+			return;
+		}
+		
 		burn();
+//		System.out.println("1- step update time: " + (System.currentTimeMillis() - t));
 		cool();
+//		System.out.println("2- step update time: " + (System.currentTimeMillis() - t));
 		updateGrid();
+//		System.out.println("3- step update time: " + (System.currentTimeMillis() - t));
 		exchangeBuilding();
+//		System.out.println("4- step update time: " + (System.currentTimeMillis() - t));
 		cool();
+//		System.out.println("5- step update time: " + (System.currentTimeMillis() - t));
 	}
 	
 	private void burn() {
@@ -52,31 +63,86 @@ public class AURFireSimulator {
 	}
 	
 	private void waterCooling(AURFireSimBuilding b) {
-		double lWATER_COEFFICIENT = (b.getEstimatedEnergy() > 0 && b.getEstimatedEnergy() < 4 ? AURConstants.FireSim.WATER_COEFFICIENT : AURConstants.FireSim.WATER_COEFFICIENT * AURConstants.FireSim.GAMMA);
-		if (b.getWaterQuantity() > 0) {
+		double lWATER_COEFFICIENT = (b.getEstimatedFieryness() > 0 && b.getEstimatedFieryness() < 4 ? AURConstants.FireSim.WATER_COEFFICIENT : AURConstants.FireSim.WATER_COEFFICIENT * AURConstants.FireSim.GAMMA);
+		if (b.getWaterQuantity() > 0.0) {
 			double dE = b.getEstimatedTemperature() * b.getCapacity();
 			if (dE <= 0) {
 				return;
 			}
 			double effect = b.getWaterQuantity() * lWATER_COEFFICIENT;
-			double consumed = b.getWaterQuantity();
+			int consumed = (int) b.getWaterQuantity();
 			if (effect > dE) {
 				double pc = 1 - ((effect - dE) / effect);
 				effect *= pc;
 				consumed *= pc;
 			}
-			b.setWaterQuantity(b.getWaterQuantity() - consumed);
+			
+			b.setWaterQuantity(b.getWaterQuantity() - consumed);			
 			b.setEstimatedEnergy(b.getEstimatedEnergy() - effect);
 		}
 	}
 	
 	private void updateGrid() {
+		float[][][] airtemp = this.airCells.getCells();
+
+		for (int x = 0; x < airtemp.length; x++) {
+			for (int y = 0; y < airtemp[0].length; y++) {
+				float dt = (averageTemp(x, y) - airtemp[x][y][1]);
+				float change = (dt * AURConstants.FireSim.AIR_TO_AIR_COEFFICIENT * AURConstants.FireSim.TIME_STEP_LENGTH);
+				
+				airtemp[x][y][1] = relTemp(airtemp[x][y][0] + change);
+
+				if (!(airtemp[x][y][1] > -Float.MAX_VALUE && airtemp[x][y][1] < Float.MAX_VALUE)) {
+					airtemp[x][y][1] = Float.MAX_VALUE * 0.75f;
+				}
+
+			}
+		}
+		for (int x = 0; x < airtemp.length; x++) {
+			for (int y = 0; y < airtemp[0].length; y++) {
+				airtemp[x][y][0] = airtemp[x][y][1];
+			}
+		}
 		
 	}
 	
+	
+	private float relTemp(float deltaT) {
+		return Math.max(0, deltaT * AURConstants.FireSim.ENERGY_LOSS * AURConstants.FireSim.TIME_STEP_LENGTH);
+	}
+
+	private float averageTemp(int x, int y) {
+		float rv = neighbourCellAverage(x, y) / weightSummCells(x, y);
+		return rv;
+	}
+	
+	private float neighbourCellAverage(int x, int y) {
+		float total = getTempAt(x + 1, y - 1);
+		total += getTempAt(x + 1, y);
+		total += getTempAt(x + 1, y + 1);
+		total += getTempAt(x, y - 1);
+		total += getTempAt(x, y + 1);
+		total += getTempAt(x - 1, y - 1);
+		total += getTempAt(x - 1, y);
+		total += getTempAt(x - 1, y + 1);
+		return total * AURConstants.FireSim.WEIGHT_GRID;
+	}
+	
+	private float weightSummCells(int x, int y) {
+		return 8 * AURConstants.FireSim.WEIGHT_GRID;
+	}
+
+	protected float getTempAt(int x, int y) {
+		if (x < 0 || y < 0 || x >= this.airCells.getCells().length || y >= this.airCells.getCells()[0].length) {
+			return 0;
+		}
+		return this.airCells.getCells()[x][y][0];
+	}
+
+	
 	private void exchangeBuilding() {
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if(ag.isBuilding() && ag.isOnFire()) {
+			if(ag.isBuilding()) {
 				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
 				exchangeWithAir(b);
 			}
@@ -85,11 +151,16 @@ public class AURFireSimulator {
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			if(ag.isBuilding()) {
 				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
-				b.tempVar = b.getRadiationEnergy();
+				b.tempVar = 0;
+				//ag.isOnFire() || ag.getBuilding().fireSimBuilding.isOnFire()
+				int ef = ag.getBuilding().fireSimBuilding.getEstimatedFieryness();
+				if(ag.isOnFire()) { // || ag.getBuilding().fireSimBuilding.isOnFire()
+					b.tempVar = b.getRadiationEnergy();
+				}
 			}
 		}
 		for (AURAreaGraph ag : wsg.areas.values()) {
-			if(ag.isBuilding()  && ag.isOnFire()) {
+			if(ag.isBuilding()) {
 				AURFireSimBuilding b = ag.getBuilding().fireSimBuilding;
 				double radEn = b.tempVar;
 				
@@ -112,6 +183,34 @@ public class AURFireSimulator {
 	}
 	
 	private void exchangeWithAir(AURFireSimBuilding building) {
+		
+		float oldEnergy = (float) building.getEstimatedEnergy();
+		float energyDelta = 0;
+
+		for (int[] nextCell : building.getAirCells()) {
+			int cellX = nextCell[0];
+			int cellY = nextCell[1];
+			float cellCover = (float) ((float) nextCell[2] / 100.0);
+			float cellTemp = this.airCells.getCells()[cellX][cellY][0];
+			float dT = cellTemp - (float) building.getEstimatedTemperature();
+			float energyTransferToBuilding = dT * AURConstants.FireSim.AIR_TO_BUILDING_COEFFICIENT * AURConstants.FireSim.TIME_STEP_LENGTH * cellCover * AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
+			
+			energyDelta += energyTransferToBuilding;
+			float newCellTemp = cellTemp - energyTransferToBuilding / (AURConstants.FireSim.AIR_CELL_HEAT_CAPACITY * AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
+			
+			if(dT < 0) {
+				if(building.ag.isOnFire()) {
+					this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
+				}
+			} else {
+				this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
+			}
+			
+			this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
+			
+			
+		}
+		building.setEstimatedEnergy(oldEnergy + energyDelta);
 	}
 	
 	public void precompute(PrecomputeData pd) {

@@ -57,6 +57,7 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
+		this.wsg.precompute(precomputeData);
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {
@@ -71,6 +72,7 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 		if (this.getCountResume() >= 2) {
 			return this;
 		}
+		this.wsg.resume(precomputeData);
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {
@@ -85,6 +87,7 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 		if (this.getCountPreparate() >= 2) {
 			return this;
 		}
+		this.wsg.preparate();
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
 		} catch (NoSuchConfigOptionException e) {
@@ -112,6 +115,10 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 	@Override
 	public ExtAction calc() {
 		ActionMove actMove = wsg.getMoveActionToPercept(ai.getPosition(), target);
+//		Collection<EntityID> targets = new ArrayList<>();
+//		targets.add(target);
+//		ActionMove actMove = new ActionMove(wsg.getPathToClosest(ai.getPosition(), targets));
+		
 		if (result == null || false) {
 			//actMove = wsg.getNoBlockadeMoveAction(ai.getPosition(), target);
 		}

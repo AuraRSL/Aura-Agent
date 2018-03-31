@@ -20,7 +20,7 @@ public class k_LayerReachableAreas extends K_ViewerLayer {
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
 		g2.setStroke(new BasicStroke(2));
-		wsg.dijkstra(wsg.ai.getPosition());
+		wsg.KStar(wsg.ai.getPosition());
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			if (ag.lastDijkstraEntranceNode == null) {
 				g2.setColor(Color.red);
@@ -40,7 +40,7 @@ public class k_LayerReachableAreas extends K_ViewerLayer {
 
 		String result = "";
 		
-		wsg.dijkstra(wsg.ai.getPosition());
+		wsg.KStar(wsg.ai.getPosition());
 		
 		int count = 0;
 		

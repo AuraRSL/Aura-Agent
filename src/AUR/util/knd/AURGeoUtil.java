@@ -103,6 +103,33 @@ public class AURGeoUtil {
 		return false;
 	}
 	
+	public static boolean intersects(Polygon p1, Polygon p2) {
+		
+		if(p1.getBounds2D().intersects(p2.getBounds()) == false) {
+			return false;
+		}
+		
+		for(int i = 0; i < p1.npoints; i++) {
+			for(int j = 0; j < p2.npoints; j++) {
+				boolean b = AURGeoUtil.getIntersection(
+						p1.xpoints[i],
+						p1.ypoints[i],
+						p1.xpoints[(i + 1) % p1.npoints],
+						p1.ypoints[(i + 1) % p1.npoints],
+						p2.xpoints[j],
+						p2.ypoints[j],
+						p2.xpoints[(j + 1) % p2.npoints],
+						p2.ypoints[(j + 1) % p2.npoints],
+						__temp__
+				);
+				if(b) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 	
 	public static boolean intersectsOrContains(Polygon p, double[] segmentLine) {
 		
@@ -146,6 +173,45 @@ public class AURGeoUtil {
 		return Math.abs(sum / 2);
 	}
 	
+	public static boolean isAlmostConvex(Polygon p) {
+		if(p.npoints <= 3) {
+			return true;
+		}
+		p = AURGeoUtil.getSimplifiedPolygon(p, 0.1);
+		if(p.npoints <= 3) {
+			return true;
+		}
+		int ori = AURGeoUtil.COLLINEAR;
+		for (int i = 0; i < p.npoints; i++) {
+			if(false&& p.xpoints[i] == p.xpoints[(i + 1) % p.npoints]
+				&& p.ypoints[i] == p.ypoints[(i + 1) % p.npoints]
+			) {
+				continue;
+			}
+			if(false&& p.xpoints[(i + 1) % p.npoints] == p.xpoints[(i + 2) % p.npoints]
+				&& p.ypoints[(i + 1) % p.npoints] == p.ypoints[(i + 2) % p.npoints]
+			) {
+				continue;
+			}
+			int ori_ = AURGeoUtil.getOrientation(
+				p.xpoints[i],
+				p.ypoints[i],
+				p.xpoints[(i + 1) % p.npoints],
+				p.ypoints[(i + 1) % p.npoints],
+				p.xpoints[(i + 2) % p.npoints],
+				p.ypoints[(i + 2) % p.npoints]
+			);
+			if(ori == AURGeoUtil.COLLINEAR) {
+				ori = ori_;
+			}
+			if(ori_ != ori && ori != AURGeoUtil.COLLINEAR && ori_ != AURGeoUtil.COLLINEAR) {
+				return false;
+			}
+		}
+		return true;
+	}
+		
+	
 	public static double getPerimeter(Polygon p) {
 		double sum = 0;
 		for (int i = 0; i < p.npoints; i++) {
@@ -174,6 +240,38 @@ public class AURGeoUtil {
 				ray[3] = ip[1];
 				result = true;
 			}
+		}
+		return result;
+	}
+	
+	public static Polygon getSimplifiedPolygon(Polygon p, double d) {
+		Polygon result = new Polygon();
+		int lastX = p.xpoints[0];
+		int lastY = p.ypoints[0];
+		result.addPoint(lastX, lastY);
+		for(int i = 1; i < p.npoints; i++) {
+			double v1x = p.xpoints[i] - lastX;
+			double v1y = p.ypoints[i] - lastY;
+			double v2x = p.xpoints[(i + 1) % p.npoints] - p.xpoints[i];
+			double v2y = p.ypoints[(i + 1) % p.npoints] - p.ypoints[i];
+			double l1 = Math.hypot(v1x, v1y);
+			double l2 = Math.hypot(v2x, v2y);
+			if (Math.abs(l1) < AURGeoUtil.EPS || Math.abs(l2) < AURGeoUtil.EPS) {
+				continue;
+			}
+			v1x /= l1;
+			v1y /= l1;
+			v2x /= l2;
+			v2y /= l2;
+			double v3x = v2x - v1x;
+			double v3y = v2y - v1y;
+			double l3 = Math.hypot(v3x, v3y);
+			if (l3 < d) {
+				continue;
+			}
+			lastX = p.xpoints[i];
+			lastY = p.ypoints[i];
+			result.addPoint(lastX, lastY);
 		}
 		return result;
 	}
@@ -274,7 +372,7 @@ public class AURGeoUtil {
 		double dy2 = y3 - y2;
 		double s = (dx1 * (y0 - y2) - dy1 * (x0 - x2)) / (dx1 * dy2 - dx2 * dy1);
 		double t = (dx2 * (y0 - y2) - dy2 * (x0 - x2)) / (dx1 * dy2 - dx2 * dy1);
-		if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+		if (s >= 0 - EPS && s <= 1 + EPS && t >= 0 - EPS && t <= 1 + EPS) {
 			intersection[0] = x0 + (t * dx1);
 			intersection[1] = y0 + (t * dy1);
 			return true;

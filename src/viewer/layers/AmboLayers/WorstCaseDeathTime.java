@@ -21,16 +21,16 @@ public class WorstCaseDeathTime extends K_ViewerLayer {
         g2.setStroke(new BasicStroke(4));
         g2.setFont(new Font("Arial", 0, 13));
         g2.setColor(Color.blue);
+        if(wsg.rescueInfo != null) {
+            Collection<CivilianInfo> civilianInfos = wsg.rescueInfo.civiliansInfo.values();
+            for (CivilianInfo ciInfo : civilianInfos) {
+                String deathTime = "" + ciInfo.getWorstCaseDeathTime();
 
-        Collection<CivilianInfo> civilianInfos = wsg.rescueInfo.civiliansInfo.values();
-        for(CivilianInfo ciInfo : civilianInfos ){
-            String deathTime = ""+ciInfo.getWorstCaseDeathTime();
-
-            if(ciInfo.me.isXDefined() && ciInfo.me.isYDefined()) {
-                g2.drawString(deathTime, kst.xToScreen(ciInfo.me.getX() - 5 ), kst.yToScreen(ciInfo.me.getY()) - 5);
+                if (ciInfo.me.isXDefined() && ciInfo.me.isYDefined()) {
+                    g2.drawString(deathTime, kst.xToScreen(ciInfo.me.getX() - 5), kst.yToScreen(ciInfo.me.getY()) - 5);
+                }
             }
         }
-
         g2.setStroke(new BasicStroke(1));
     }
 

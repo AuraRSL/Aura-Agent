@@ -28,13 +28,14 @@ public class AURBuilding {
 	public AURFireSimBuilding fireSimBuilding = null;
 	public Building building = null;
 	
-	
 	public AURBuilding(AURWorldGraph wsg, AURAreaGraph ag) {
 		this.wsg = wsg;
 		this.ag = ag;
 		this.building = (Building) ag.area;
 		this.fireSimBuilding = new AURFireSimBuilding(this);
 
+		
+		
 		commonWall = new boolean[ag.polygon.npoints];
 		for(int i = 0; i < ag.polygon.npoints; i++) {
 			commonWall[i] = false;
@@ -42,14 +43,26 @@ public class AURBuilding {
 	}
 	
 	public int getPerceptCost() {
+		if(this.ag.noSeeTime() <= 0 && this.ag.isInExtinguishRange()) {
+			return 0;
+		}
 		if(this.edgeToPereceptAndExtinguish == null) {
+			if(this.ag.lastDijkstraEntranceNode != null) {
+				return this.ag.getTravelCost();
+			}
 			return AURConstants.Math.INT_INF;
 		}
 		return this.edgeToPereceptAndExtinguish.standCost;
 	}
 	
-	public int getTravelTime() {
+	public int getPerceptTime() {
+		if(this.ag.noSeeTime() <= 0 && this.ag.isInExtinguishRange()) {
+			return 0;
+		}
 		if(this.edgeToPereceptAndExtinguish == null) {
+			if(this.ag.lastDijkstraEntranceNode != null) {
+				return this.ag.getTravelTime();
+			}
 			return AURConstants.Math.INT_INF;
 		}
 		return (int) (Math.ceil((double) this.getPerceptCost() / AURConstants.Agent.VELOCITY));

@@ -19,6 +19,7 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
+import rescuecore2.worldmodel.EntityID;
 import viewer.K_ScreenTransform;
 
 /**
@@ -43,9 +44,33 @@ public class AURFireSimBuilding {
 	public int lastRealFieryness = -1;
 	public double lastRealTemperature = -1;
 	
-	private GaussianGenerator burnRate = new GaussianGenerator(0.142, 0.025, new Random(0));
+	public AURFireZone fireZone = null;
+	
+	
+	public double fireProbability = 0.2;
+	
+	private GaussianGenerator burnRate = new GaussianGenerator(0.15, 0.025, new Random(0));
 	
 	public double tempVar = 0;
+	
+	private static Random rand = new Random(0);
+	
+	public boolean isOnFireZoneBorder() {
+		if(this.fireZone == null) {
+			return false;
+		}
+		if(this.fireZone.buildings.size() <= 4) {
+			return true;
+		}
+		
+		Polygon fireZonePolygon = this.fireZone.getPolygon();
+		
+		if(fireZonePolygon.intersects(this.ag.getOffsettedBounds(AURConstants.Misc.FIRE_ZONE_BORDER_INTERSECT_THRESHOLD))) {
+			return true;
+		}
+		return false;
+	}
+	
 	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
@@ -61,12 +86,16 @@ public class AURFireSimBuilding {
 		this.estimatedFuel = getInitialFuel();
 //		this.ignite = false;
 
-//		if(Math.random() < 0.08) {
+//		if(rand.nextFloat() < 0.09) {
 //			this.ignite();
 //		}
-		
-//		if(this.building.building.getID().getValue() == 51234) {
+//		
+//		if(this.building.building.getID().getValue() == 202035) {
 //			this.ignite();
+//		}
+
+//		if(Math.random() < 0.5) {
+//			this.wsg.wi.getObjectIDsInRectangle(cands);
 //		}
 	}
 
@@ -97,26 +126,73 @@ public class AURFireSimBuilding {
 		}
 		
 
+		if(getEstimatedFieryness() == 8 || this.ag.noSeeTime() <= 1) {
+			this.fireProbability = 0.01;
+		}
+
+		if (isOnFire()) {
+			this.fireProbability = 1;
+		} else {
+			this.fireProbability *= 1.002;
+			
+			if(this.ag.noSeeTime() < 1) {
+				if (this.connections != null) {
+					if (this.getEstimatedTemperature() < 1) {
+						for (AURBuildingConnection bc : this.connections) {
+							AURAreaGraph cAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+							if (cAg != null && cAg.isBuilding() == true) {
+								cAg.getBuilding().fireSimBuilding.fireProbability *= 0.5;
+							}
+						}
+					} else {
+						
+						if(this.getEstimatedFieryness() == 0) {
+							for (AURBuildingConnection bc : this.connections) {
+								AURAreaGraph cAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+								if (cAg != null && cAg.isBuilding() == true) {
+									cAg.getBuilding().fireSimBuilding.fireProbability *= 2;
+								}
+							}
+						}
+						
+
+					}
+
+				}
+			}
+			
+
+
+
+		}
+		
+		
+
+
+		this.fireProbability = Math.min(1, this.fireProbability);
 		
 	}
 	
 	public void onRealFierynessChange(int newFieryness) {
 		switch(newFieryness) {
-			case 0:
-			case 1:
+			case 0: 
+			case 1: {
+				setEstimatedFuel(getInitialFuel());
+				break;
+			}
 			case 4:
 			case 5: {
-				setEstimatedFuel(getInitialFuel());
+				setEstimatedFuel(getInitialFuel() * 0.8);
 				break;
 			}
 			case 2:
 			case 6: {
-				setEstimatedFuel(getInitialFuel() * 0.66);
+				setEstimatedFuel(getInitialFuel() * 0.48);
 				break;
 			}
 			case 3:
 			case 7: {
-				setEstimatedFuel(getInitialFuel() * 0.33);
+				setEstimatedFuel(getInitialFuel() * 0.16);
 				break;
 			}
 			
@@ -132,6 +208,10 @@ public class AURFireSimBuilding {
 			setWaterQuantity(0);
 		}
 		this.setEstimatedEnergy(newTemperature * getCapacity());
+		
+		for (int[] nextCell : getAirCells()) {
+			this.building.wsg.fireSimulator.airCells.getCells()[nextCell[0]][nextCell[1]][0] = (float) newTemperature;
+		}
 	}
 	
 	public void precomputeRadiation(PrecomputeData pd) {
@@ -332,6 +412,12 @@ public class AURFireSimBuilding {
 		if (radEn > getEstimatedEnergy()) {
 			radEn = getEstimatedEnergy();
 		}
+		if(getEstimatedFieryness() == 2) {
+			radEn *= 0.9;
+		}
+		if(getEstimatedFieryness() == 3) {
+			radEn *= 0.5;
+		}
 		return radEn;
 	}
 	
@@ -339,7 +425,8 @@ public class AURFireSimBuilding {
 		if (this.estimatedFuel <= 1e-8) {
 			return 0;
 		}
-		double r = burnRate.nextValue();
+		double r = 0.142;
+		//double r = burnRate.nextValue();
 		float tf = (float) (getEstimatedTemperature() / 1000f);
 		float lf = (float) getEstimatedFuel() / (float) getInitialFuel();
 		
@@ -356,6 +443,13 @@ public class AURFireSimBuilding {
 //			System.out.println("f = " + f);
 //			System.out.println("c = " + (getInitialFuel()*f));
 //		}
+	
+		if(getEstimatedFieryness() == 2) {
+			f *= 0.9;
+		}
+		if(getEstimatedFieryness() == 3) {
+			f *= 0.5;
+		}
 		return getInitialFuel() * f;
 	}
 		
@@ -560,16 +654,142 @@ public class AURFireSimBuilding {
 	}
 	
 	public boolean isOnFire() {
+		
+		if(inflammable() == false) {
+			return false;
+		}
+		
 		int f = getEstimatedFieryness();
+		
+		if(getEstimatedTemperature() >= getIgnitionPoint() * 0.8 && f != 8) {
+			return true;
+		}
+		
 		return f > 0 && f < 4;
 	}
 	
+	public boolean ignoreFire() {
+		if((double) getEstimatedFuel() / getInitialFuel() < 0.1) {
+			return true;
+		}
+		
+		int count = 0;
+		
+//		for(AURBuildingConnection bc : this.connections) {
+//			
+//			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+//			
+//			if(toAg == null || toAg.isBuilding() == false) {
+//				continue;
+//			}
+//			
+//			AURBuilding b = toAg.getBuilding();
+//			
+//			if(b.fireSimBuilding.getEstimatedFieryness() == 8 || b.fireSimBuilding.isOnFire()) {
+//				continue;
+//			}
+//			
+//			count++;
+//		}
+//		
+//		if(count < 1) {
+//			return true;
+//		}
+		
+
+		if(getEffectiveRadiation() < 100) {
+			return true;
+		}
+
+//		if(getEffectiveRadiationDT() < 0.5) {
+//			return true;
+//		}
+
+		return false;
+	}
+	
+	public double getEffectiveRadiation() {
+		double sumW = 0;
+		double raEn = getRadiationEnergy();
+		for(AURBuildingConnection bc : this.connections) {
+			
+			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+			
+			if(toAg == null || toAg.isBuilding() == false) {
+				continue;
+			}
+			
+			AURBuilding b = toAg.getBuilding();
+			
+			if(b.fireSimBuilding.getEstimatedFieryness() == 8 || b.fireSimBuilding.isOnFire()) {
+				continue;
+			}
+			
+			sumW += bc.weight;
+		}
+		return sumW * raEn;
+	}
+	
+//	public double getEffectiveRadiationDT() {
+//		double raEn = getRadiationEnergy();
+//		double result = 0;
+//		for(AURBuildingConnection bc : this.connections) {
+//			
+//			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
+//			
+//			if(toAg == null || toAg.isBuilding() == false) {
+//				continue;
+//			}
+//			
+//			AURBuilding b = toAg.getBuilding();
+//			
+//			if(b.fireSimBuilding.getEstimatedFieryness() == 8 || b.fireSimBuilding.isOnFire()) {
+//				continue;
+//			}
+//			result += ((bc.weight * raEn) / toAg.getBuilding().fireSimBuilding.getCapacity());
+//		}
+//		return result;
+//	}
+	
+//	public boolean simulate() {
+//		if()
+//	}
+	
+	
 	public int getWaterNeeded() {
 		if(isOnFire() == true) {
-			return (ag.wsg.si.getFireExtinguishMaxSum() / 1) * 1;
+			double wq = getWaterNeeded_() * 1;
+			return (int) Math.min(wq, ag.wsg.si.getFireExtinguishMaxSum() - 1);
+//			return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
+			
 		} else {
 			return 0;
 		}
+	}
+	
+	// mrl
+	private int getWaterNeeded_() {
+		int waterNeeded = 0;
+		double currentTemperature = getEstimatedTemperature();
+		int step = 500;
+		while (true) {
+			currentTemperature = waterCooling(currentTemperature, step);
+			waterNeeded += step;
+			if (currentTemperature <= 0) {
+				break;
+			}
+		}
+
+		return waterNeeded;
+	}
+
+	// mrl
+	private double waterCooling(double temperature, int water) {
+		if (water > 0) {
+			double effect = water * AURConstants.FireSim.WATER_COEFFICIENT;
+			return (temperature * getCapacity() - effect) / getCapacity();
+		}
+		return water;
 	}
 	
 }

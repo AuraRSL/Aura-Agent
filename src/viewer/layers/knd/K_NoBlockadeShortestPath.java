@@ -25,7 +25,7 @@ public class K_NoBlockadeShortestPath extends K_ViewerLayer {
 		if (selected_ag == null) {
 			return;
 		}
-		wsg.NoBlockadeDijkstra(wsg.ai.getPosition());
+		wsg.KStarNoBlockade(wsg.ai.getPosition());
 		int lastX = 0;
 		int lastY = 0;
 		int X, Y;

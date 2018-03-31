@@ -4,11 +4,13 @@ import java.awt.Polygon;
 import java.util.ArrayList;
 import AUR.util.FibonacciHeap.Entry;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.Set;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
+import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityConstants.Fieryness;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -22,7 +24,6 @@ import viewer.K_ScreenTransform;
 public class AURAreaGraph {
 	
 	public Area area = null;
-	public int areaCostFactor = 1;
 	public ArrayList<AURBorder> borders = new ArrayList<>();
 	public ArrayList<AURAreaGraph> neighbours = new ArrayList<>();
 	public AURWorldGraph wsg = null;
@@ -51,20 +52,35 @@ public class AURAreaGraph {
 	public Polygon polygon = null;
 	public double goundArea = 0;
 	public double perimeter = 0;
+	private boolean isAlmostConvex = false;
+	private boolean isBuildingNeighbour = false;
 	
-	public int getForgetTime() {
+	public double fb_value;
+	public double fb_value_temp;
+	
+	private boolean passed = false;
+	
+	public int getBlockadeForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
 			case POLICE_FORCE: {
-				return AURConstants.POLICE_FORGET_TIME;
+				return AURConstants.PathPlanning.POLICE_BLOCKADE_FORGET_TIME;
 			}
 			case AMBULANCE_TEAM: {
-				return AURConstants.AMBULANCE_FORGET_TIME;
+				return AURConstants.PathPlanning.AMBULANCE_BLOCKADE_FORGET_TIME;
 			}
 			case FIRE_BRIGADE: {
-				return AURConstants.FIREBRIGADE_FORGET_TIME;
+				return AURConstants.PathPlanning.FIREBRIGADE_BLOCKADE_FORGET_TIME;
 			}
 		}
-		return AURConstants.DEFAULT_FORGET_TIME;
+		return AURConstants.PathPlanning.DEFAULT_BLOCKADE_FORGET_TIME;
+	}
+	
+	public void setBuildingNeighbour() {
+		this.isBuildingNeighbour = true;
+	}
+	
+	public boolean isBuildingNeighbour() {
+		return this.isBuildingNeighbour;
 	}
 	
 	private AURBuilding building = null;
@@ -81,7 +97,14 @@ public class AURAreaGraph {
 		return this.seen;
 	}
 	
+	public void setPassed() {
+		this.passed = true;
+	}
 	
+	public boolean isPassed() {
+		return this.passed;
+	}
+
 	public int getX() {
 		return this.area.getX();
 	}
@@ -118,6 +141,27 @@ public class AURAreaGraph {
 		return (int) (Math.ceil((double) this.getNoBlockadeTravelCost() / AURConstants.Agent.VELOCITY));
 	}
 	
+	public Rectangle getOffsettedBounds(int off) {
+		Rectangle bounds = this.polygon.getBounds();
+		Rectangle result = new Rectangle(
+			(int) bounds.getMinX() - off,
+			(int) bounds.getMinY() - off,
+			(int) bounds.getWidth() + 2 * off,
+			(int) bounds.getHeight() + 2 * off
+		);
+		return result;
+	}
+	
+	public boolean isInExtinguishRange() {
+		
+		int er = this.wsg.si.getFireExtinguishMaxDistance() - 1;
+		
+		if(distFromAgent() <= er) {
+			return true;
+		}
+		
+		return false;
+	}
 
 	public boolean isNeighbour(AURAreaGraph ag) {
 		for (AURAreaGraph neiAg : neighbours) {
@@ -130,6 +174,14 @@ public class AURAreaGraph {
 
 	public double distFromAgent() {
 		return Math.hypot(this.getX() - wsg.ai.getX(), this.getY() - wsg.ai.getY());
+	}
+	
+	public double distFrom(AURAreaGraph ag) {
+		return Math.hypot(this.getX() - ag.getX(), this.getY() - ag.getY());
+	}
+	
+	public double distFrom(double x, double y) {
+		return Math.hypot(this.getX() - x, this.getY() - y);
 	}
 
 	public boolean isOnFire() {
@@ -194,12 +246,30 @@ public class AURAreaGraph {
 		return getBuilding().fireSimBuilding.getWaterNeeded();
 	}
 	
+	public boolean isExtraSmall() {
+		return this.goundArea < 1000 * 1000 * 3;
+	}
+	
 	public boolean isSmall() {
-		return this.goundArea < 1000 * 1000 * 25;
+		if(isExtraSmall()) {
+			return false;
+		}
+		return this.goundArea < 1000 * 1000 * 20;
+	}
+	
+	public boolean isMedium() {
+		if(isExtraSmall() || isSmall() || isBig()) {
+			return false;
+		}
+		return true;
 	}
 	
 	public boolean isBig() {
-		return this.goundArea > (wsg.worldGridSize * wsg.worldGridSize * 4) / 6;
+		return this.goundArea > 1000 * 1000 * 40;
+	}
+	
+	public boolean isAlmostConvex() {
+		return this.isAlmostConvex;
 	} 
 	
 	public AURAreaGraph(Area area, AURWorldGraph wsg, AURAreaGrid instanceAreaGrid) {
@@ -217,6 +287,8 @@ public class AURAreaGraph {
 		if(isBuilding()) {
 			this.building = new AURBuilding(this.wsg, this);
 		}
+		
+		this.isAlmostConvex = AURGeoUtil.isAlmostConvex(this.polygon);
 	}
 	
 	public final AURBuilding getBuilding() {
@@ -326,68 +398,69 @@ public class AURAreaGraph {
 		return minDist;
 	}
 
+	public ArrayList<AURBuilding> getCloseBuildings() {
+		Rectangle2D bounds = this.polygon.getBounds();
+		int a = AURConstants.Misc.CLOSE_BUILDING_THRESHOLD;
+		Collection<StandardEntity> cands = wsg.wi.getObjectsInRectangle(
+			(int) bounds.getMinX() - a,
+			(int) bounds.getMinY() - a,
+			(int) bounds.getMaxX() + a,
+			(int) bounds.getMaxY() + a
+		);
+		ArrayList<AURBuilding> result = new ArrayList<>();
+		for(StandardEntity sent : cands) {
+			if(AURUtil.isBuilding(sent)) {
+				AURAreaGraph ag_ = this.wsg.getAreaGraph(sent.getID());
+				if(ag_ != null && ag_.isBuilding()) {
+					result.add(ag_.getBuilding());
+				}
+			}
+		}
+		return result;
+	}
+	
 	private int lastSeen = 0;
 
 	public int noSeeTime() {
 		return wsg.ai.getTime() - lastSeen;
 	}
 
+	int lastHashCode = 1;
+	
+	public int getCurrentAliveBlockadesHashCode() {
+		int hash = 1;
+		if(isBuilding() == true) {
+			return hash;
+		}
+		ArrayList<Polygon> blockades = getAliveBlockades();
+		for(Polygon bp : blockades) {
+			for(int i = 0; i < bp.npoints; i++) {
+				hash = 31 * hash + bp.xpoints[i];
+				hash = 31 * hash + bp.ypoints[i];
+			}
+		}
+		return hash;
+	}
+	
 	public void update(AURWorldGraph wsg) {
 		lastDijkstraEntranceNode = null;
 		lastNoBlockadeDijkstraEntranceNode = null;
 		pQueEntry = null;
 		this.needUpdate = false;
-		if (wsg.changes.contains(area.getID()) || updateTime < 0) {
-			updateTime = wsg.ai.getTime();
-			this.needUpdate = true;
-		}
-		if (this.needUpdate || longTimeNoSee()) {
-			/*
-			 * if(longTimeNoSee()) { addedBlockaeds.clear(); }
-			 */
-			areaCostFactor = 5;
+		int currentHashCode = getCurrentAliveBlockadesHashCode();
+		
+		if (lastHashCode != currentHashCode || updateTime < 0) {
 			for (AURBorder border : borders) {
 				border.reset();
 			}
-			if (this.needUpdate == true) {
-
-				if (isOnFire()) {
-					areaCostFactor = 10;
-				}
-				updateTime = wsg.ai.getTime();
-				if (area.getBlockades() != null) {
-					/*
-					 * if(true &&
-					 * wsg.ai.me().getStandardURN().equals(StandardEntityURN.
-					 * FIRE_BRIGADE)) { // #toDo int a = (int)
-					 * (wsg.si.getPerceptionLosMaxDistance() / 4.1); // #toDo
-					 * Rectangle bvrb = new Rectangle( (int) (wsg.ai.getX() -
-					 * a), (int) (wsg.ai.getY() - a), (int) (2 * a), (int) (2 *
-					 * a) ); Polygon bPolygon; for(EntityID entId :
-					 * area.getBlockades()) { Blockade b = (Blockade)
-					 * wsg.wi.getEntity(entId); bPolygon = (Polygon)
-					 * (b.getShape()); if(false||
-					 * addedBlockaeds.contains(b.getID()) ||
-					 * bPolygon.intersects(bvrb) ||
-					 * bvrb.contains(bPolygon.getBounds())) {
-					 * areaBlockadePolygons.add(bPolygon);
-					 * addedBlockaeds.add(b.getID()); } } } else {
-					 */
-//					for (EntityID entId : area.getBlockades()) {
-//						Blockade b = (Blockade) wsg.wi.getEntity(entId);
-//						areaBlockadePolygons.add((Polygon) (b.getShape()));
-//					}
-					// }
-
-				}
-			}
+			updateTime = wsg.ai.getTime();
 			this.needUpdate = true;
 		}
+		lastHashCode = currentHashCode;
 		
 		if(isBuilding()) {
 			int temp = 0;
 			Building b = ((Building) (this.area));
-			temp = 0;
 			if(b.isTemperatureDefined()) {
 				temp = b.getTemperature();
 			}
@@ -399,15 +472,28 @@ public class AURAreaGraph {
 				this.fireReportTime = -1;
 			}
 			lastTemperature = temp;
-		}
-		if(this.isBuilding() == true) {
+			
 			this.getBuilding().update();
 		}
 	}
 
-	// toDo
 	public ArrayList<Polygon> getBlockades() {
 		ArrayList<Polygon>  result = new ArrayList<>();
+		if(this.area.isBlockadesDefined() == false) {
+			return result;
+		}
+		for (EntityID entId : this.area.getBlockades()) {
+			Blockade b = (Blockade) wsg.wi.getEntity(entId);
+			result.add((Polygon) (b.getShape()));
+		}
+		return result;
+	}
+	
+	public ArrayList<Polygon> getAliveBlockades() {
+		ArrayList<Polygon>  result = new ArrayList<>();
+		if(longTimeNoSee()) {
+			return result;
+		}
 		if(this.area.isBlockadesDefined() == false) {
 			return result;
 		}
@@ -428,14 +514,10 @@ public class AURAreaGraph {
 	public int fireReportTime = -1;
 	public int lastTemperature = 0;
 	
-	public final static int FIRE_REPORT_FORGET_TIME = 6;
+	public final static int FIRE_REPORT_FORGET_TIME = 3;
 	
 	public boolean isRecentlyReportedFire() {
 		return (wsg.ai.getTime() - fireReportTime) <= FIRE_REPORT_FORGET_TIME;
-	}
-	
-	public void initForReCalc() {
-		this.needUpdate = true;
 	}
 
 	public void addBorderCenterEdges() {
@@ -458,30 +540,24 @@ public class AURAreaGraph {
 	
 	public double getScore() {
 		double perceptScore = 0;
-		int p = 1;
+		double p = 0.5;
 		if(perceptibleAndExtinguishableBuildings != null) {
 			perceptScore = (double) Math.pow(perceptibleAndExtinguishableBuildings.size(), p) / Math.pow(wsg.getMaxPerceptibleBuildings(), p);
 		}
 		
-		double aScore = 1 - (Math.pow(AURGeoUtil.getArea((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadArea(), p));
+		//double aScore = 1 - (Math.pow(AURGeoUtil.getArea((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadArea(), p));
 		
-		double perimeterScore = 1 - (Math.pow(AURGeoUtil.getPerimeter((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadPerimeter(), p));
+		//double perimeterScore = 1 - (Math.pow(AURGeoUtil.getPerimeter((Polygon) area.getShape()), p) / Math.pow(wsg.getMaxRoadPerimeter(), p));
 		
 		
 		//pScore = Math.pow(pScore, 0.1);
-		double score = 1.0 * perceptScore * perimeterScore;
+		double score = 1.0 * perceptScore * 1;
 		
 		return score;
 	}
 
 	public boolean longTimeNoSee() {
-		if (this.needUpdate == true) {
-			return false;
-		}
-		if (this.hasBlockade() == false) {
-			return false;
-		}
-		return (wsg.ai.getTime() - updateTime) > getForgetTime();
+		return (wsg.ai.getTime() - updateTime) > getBlockadeForgetTime();
 	}
 	
 	public void paint(Graphics2D g2, K_ScreenTransform kst) {
@@ -506,4 +582,5 @@ public class AURAreaGraph {
                 return baseScore * secondaryScore * distanceScore * targetScore;
         }
         // End of section added by Amir Aslan Aslani
+
 }

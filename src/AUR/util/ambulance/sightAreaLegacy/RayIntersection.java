@@ -1,4 +1,4 @@
-package AUR.util.ambulance.sightArea;
+package AUR.util.ambulance.sightAreaLegacy;
 
 import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;

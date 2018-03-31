@@ -15,18 +15,18 @@ import viewer.K_ViewerLayer;
 
 public class K_BigAreas extends K_ViewerLayer {
 
-    @Override
-    public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
-        for(AURAreaGraph ag : wsg.areas.values()) {
-            if(ag.isBig()) {
-                Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
-                g2.setColor(Color.CYAN);
-                g2.fillPolygon(polygon);
-                g2.setColor(Color.black);
-                g2.drawPolygon(polygon);
-            }
+	@Override
+	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
+		for (AURAreaGraph ag : wsg.areas.values()) {
+			if (ag.isBig()) {
+				Polygon polygon = kst.getTransformedPolygon(ag.area.getShape());
+				g2.setColor(Color.CYAN);
+				g2.fillPolygon(polygon);
+				g2.setColor(Color.black);
+				g2.drawPolygon(polygon);
+			}
 
-        }
-    }
-    
+		}
+	}
+
 }

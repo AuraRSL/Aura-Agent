@@ -131,6 +131,7 @@ public class SampleTacticsAmbulanceTeam extends TacticsAmbulanceTeam
     @Override
     public Action think(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, MessageManager messageManager, DevelopData developData)
     {
+        System.out.println("think "+ agentInfo.getTime() +" -------------------------------------");
         this.messageTool.reflectMessage(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendRequestMessages(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendInformationMessages(agentInfo, worldInfo, scenarioInfo, messageManager);

@@ -3,9 +3,13 @@ package AUR.util.ambulance.Information;
 import AUR.util.ambulance.DeathTime.FireDeathTime;
 import AUR.util.ambulance.DeathTime.SimpleDeathTime;
 import AUR.util.ambulance.DeathTime.ZJUParticleFilter;
+import AUR.util.ambulance.ProbabilityDeterminant.HumanRateDeterminer;
 import AUR.util.knd.AURWorldGraph;
 import maps.convert.legacy2gml.BuildingInfo;
+import rescuecore2.standard.entities.AmbulanceTeam;
+import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Civilian;
+import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.worldmodel.EntityID;
 
 import java.util.ArrayList;
@@ -18,7 +22,7 @@ import java.util.Collection;
 
 public class CivilianInfo {
 
-    public Civilian me = null;
+    public final Civilian me;
     private RescueInfo rescueInfo;
     private AURWorldGraph wsg;
     private boolean isDead = false;
@@ -136,23 +140,29 @@ public class CivilianInfo {
         }
         return null;//TODO
     }
+
+    // Calc *******************************************************************************************
     public int calcTravelTimeToRefuge(RefugeInfo refuge){
         if(refuge == null || refuge.refuge == null){
             return RescueInfo.maxTravelTime;
         }
         if(me.getPosition().equals(refuge.refuge.getID())){
-            return RescueInfo.maxTravelTime;
+            return 0;
         }
         if(refuge != null && me.isPositionDefined()){
-            wsg.dijkstra(me.getPosition());
+            wsg.KStar(wsg.ai.getPosition());
+            //TODO me.getPosioeion
 //            double distance = wsg.getAreaGraph(refuge.refuge.getID()).getLastDijkstraCost();
-            double distance = wsg.wi.getDistance(me.getPosition(), refuge.refuge.getID());
-            int tempT = (int)(distance/RescueInfo.moveDistance);
-            if(tempT == 0){
-                if(!me.getPosition().equals(refuge.refuge.getID())){
-                    tempT =  1;
-                }
-            }
+//            double distance = wsg.wi.getDistance(me.getPosition(), refuge.refuge.getID());
+//            int tempT = (int)(distance/RescueInfo.moveDistance);
+            int tempT = wsg.getAreaGraph(refuge.refuge.getID()).getTravelTime();
+
+
+//            if(tempT == 0){
+//                if(!me.getPosition().equals(refuge.refuge.getID())){
+//                    tempT =  1;
+//                }
+//            }
             return tempT;
         }
         return RescueInfo.maxTravelTime;
@@ -160,15 +170,27 @@ public class CivilianInfo {
 
     public int calcTravelTimeToMe(){
         if(me.isPositionDefined()) {
-            wsg.dijkstra(wsg.ai.getPosition());
+            wsg.KStar(wsg.ai.getPosition());
 //            double distance = wsg.getAreaGraph(me.getPosition()).getLastDijkstraCost();
-            double distance = wsg.wi.getDistance(wsg.ai.getPosition(), me.getPosition());
-            int tempT = (int)(distance/RescueInfo.moveDistance);
-            if(tempT == 0){
-                if(!me.getPosition().equals(wsg.ai.getPosition())){
-                    tempT =  1;
+//            double distance = wsg.wi.getDistance(wsg.ai.getPosition(), me.getPosition());
+//            int tempT = (int)(distance/RescueInfo.moveDistance);
+            int tempT = RescueInfo.maxTravelTime;
+            StandardEntity pos = wsg.wi.getEntity(me.getPosition());
+            if(pos instanceof Area) {
+                if(wsg.getAreaGraph(me.getPosition()) != null) {
+                    tempT = wsg.getAreaGraph(me.getPosition()).getTravelTime();
+                }
+            }else if(pos instanceof AmbulanceTeam){
+                AmbulanceTeam amtPos = (AmbulanceTeam)pos;
+                if(wsg.getAreaGraph(amtPos.getPosition()) != null) {
+                    tempT = wsg.getAreaGraph(amtPos.getPosition()).getTravelTime();
                 }
             }
+//            if(tempT == 0){
+//                if(!me.getPosition().equals(wsg.ai.getPosition())){
+//                    tempT =  1;
+//                }
+//            }
             return tempT;
         }
         return RescueInfo.maxTravelTime;
@@ -179,8 +201,9 @@ public class CivilianInfo {
     // update **********************************************************************************************
     public void updateCycle(){
         this.saveTime--;
-        this.rateDeterminer.calc();
         this.travelTimeToMe = this.calcTravelTimeToMe();
+        this.rateDeterminer.calc();
+
     }
 
 
@@ -194,6 +217,7 @@ public class CivilianInfo {
         this.updateSaveTime();
         this.updatePredictor();
         this.updateFirePredictor();
+        this.travelTimeToRefuge = this.calcTravelTimeToRefuge(bestRefuge);
 
     }
 
@@ -201,8 +225,8 @@ public class CivilianInfo {
 
         int deathTimeBuri = this.getDeadTime();
         int deathTimeFire = this.getDeadTimeFire();//
-        int travelTime = (int)this.travelTimeToMe;
-        int travelTimeToRefuge = (int)this.travelTimeToRefuge;
+        int travelTime = this.travelTimeToMe;
+        int travelTimeToRefuge = this.travelTimeToRefuge;
         int buriedness = this.getBuriedness(); //Time for rescueing Civilian
 
         int deadLine = 420;

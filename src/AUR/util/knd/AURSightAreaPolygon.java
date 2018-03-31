@@ -20,7 +20,7 @@ import viewer.K_ScreenTransform;
 
 public class AURSightAreaPolygon {
 	
-	private static final int RAY_PER_EDGE = 13;
+	private static final double RAY_RATE = 0.005;
 	private static final int R = 1500;
 	
 	public static Polygon get(AURBuilding building) {
@@ -35,7 +35,7 @@ public class AURSightAreaPolygon {
 			g2.setStroke(new BasicStroke(1));
 		}
 		
-		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS;
+		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS - R;
 
 		Polygon result = new Polygon();
 		Polygon bp = building.ag.polygon;
@@ -61,10 +61,10 @@ public class AURSightAreaPolygon {
 		
 		cands.remove(building.ag.area);
 		
-		ArrayList<Polygon> q1 = new ArrayList<>();
-		ArrayList<Polygon> q2 = new ArrayList<>();
-		ArrayList<Polygon> q3 = new ArrayList<>();
-		ArrayList<Polygon> q4 = new ArrayList<>();
+		ArrayList<Building> q1 = new ArrayList<>();
+		ArrayList<Building> q2 = new ArrayList<>();
+		ArrayList<Building> q3 = new ArrayList<>();
+		ArrayList<Building> q4 = new ArrayList<>();
 		
 		
 		double cx = building.ag.area.getX();
@@ -82,16 +82,16 @@ public class AURSightAreaPolygon {
 			Polygon p = (Polygon) ((Building) sent).getShape();
 			Rectangle2D pBounds = p.getBounds();
 			if(pBounds.intersects(bounds1)) {
-				q1.add(p);
+				q1.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds2)) {
-				q2.add(p);
+				q2.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds3)) {
-				q3.add(p);
+				q3.add((Building) sent);
 			}
 			if(pBounds.intersects(bounds4)) {
-				q4.add(p);
+				q4.add((Building) sent);
 			}
 		}
 		
@@ -99,7 +99,8 @@ public class AURSightAreaPolygon {
 		ArrayList<Edge> blockingEdges = new ArrayList<>();
 		
 		for(Edge edge : ((Building) building.ag.area).getEdges()) {
-			
+			double len = AURGeoUtil.dist(edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY());
+			int rays = (int) (len * RAY_RATE);
 			if(edge.isPassable() == true) {
 				
 				double dx = edge.getEndX() - edge.getStartX();
@@ -128,8 +129,8 @@ public class AURSightAreaPolygon {
 				ecdy /= l2;
 				
 				blockingEdges.add(new Edge(
-					(int) (edge.getStartX()),
-					(int) (edge.getStartY()),
+					(int) (edge.getStartX() - ecdx * 10),
+					(int) (edge.getStartY() - ecdy * 10),
 					(int) (edge.getStartX() + maxViewDistance * 1 * ecdx),
 					(int) (edge.getStartY() + maxViewDistance * 1 * ecdy)
 				));
@@ -142,17 +143,17 @@ public class AURSightAreaPolygon {
 				ecdy /= l2;
 				
 				blockingEdges.add(new Edge(
-					(int) (edge.getEndX()),
-					(int) (edge.getEndY()),
+					(int) (edge.getEndX() - ecdx * 10),
+					(int) (edge.getEndY() - ecdy * 10),
 					(int) (edge.getEndX() + maxViewDistance * 1 * ecdx),
 					(int) (edge.getEndY() + maxViewDistance * 1 * ecdy)
 				));
 				
 				
-				dx *= (l / (RAY_PER_EDGE - 1));
-				dy *= (l / (RAY_PER_EDGE - 1));
+				dx *= (l / (rays - 1));
+				dy *= (l / (rays - 1));
 				
-				for(int i = 0; i < RAY_PER_EDGE; i++) {
+				for(int i = 0; i < rays; i++) {
 					double px = edge.getStartX() + i * dx;
 					double py = edge.getStartY() + i * dy;
 					double rdx = px - cx;
@@ -181,7 +182,7 @@ public class AURSightAreaPolygon {
 				Edge jEdge = blockingEdges.get(j);
 				double dx = iEdge.getStartX() - jEdge.getStartX();
 				double dy = iEdge.getStartY() - jEdge.getStartY();
-				if(Math.hypot(dx, dy) < 1) {
+				if(Math.hypot(dx, dy) < 30) {
 					dels.add(iEdge);
 					dels.add(jEdge);
 					continue;
@@ -206,12 +207,14 @@ public class AURSightAreaPolygon {
 
 		result.addPoint((int) cx, (int) cy);
 		
+		//double 
+		
 		for(Double r : rs) {
 			
 			rx = cx + Math.cos(r) * maxViewDistance;
 			ry = cy + Math.sin(r) * maxViewDistance;
 
-			ArrayList<Polygon> candi = null;
+			ArrayList<Building> candi = null;
 			if(r >= 0 && r <= Math.PI / 2) {
 				candi = q1;
 			} else if(r >= Math.PI / 2 && r <= Math.PI / 1) {
@@ -264,13 +267,13 @@ public class AURSightAreaPolygon {
 			}
 			
 
-			for(Polygon po : candi) {
+			for(Building bu : candi) {
 				ray[0] = cx;
 				ray[1] = cy;
 				ray[2] = rx;
 				ray[3] = ry;
 
-				if(AURGeoUtil.hitRayAllEdges(po, ray)) {
+				if(AURGeoUtil.hitRayWalls(bu, ray)) {
 					rx = ray[2];
 					ry = ray[3];
 					if(Math.abs(rx - cx) < 1 && Math.abs(ry - cy) < 1) {
@@ -281,7 +284,7 @@ public class AURSightAreaPolygon {
 			
 			result.addPoint((int) rx, (int) ry);
 		}
-		
-		return result;
+
+		return AURGeoUtil.getSimplifiedPolygon(result, 0.1);
 	}
 }

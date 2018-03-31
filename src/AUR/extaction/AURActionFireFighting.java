@@ -6,7 +6,8 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import AUR.util.knd.AURAreaGraph;
-import AUR.util.knd.AURValuePoint;
+import AUR.util.knd.AURAreaGraphValue;
+import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWalkWatcher;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
@@ -97,7 +98,7 @@ public class AURActionFireFighting extends ExtAction {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
-		
+		this.wsg.precompute(precomputeData);
 		this.wsg.fireSimulator.precompute(precomputeData);
 		
 		this.pathPlanning.precompute(precomputeData);
@@ -118,7 +119,7 @@ public class AURActionFireFighting extends ExtAction {
 		if (this.getCountResume() >= 2) {
 			return this;
 		}
-		
+		this.wsg.resume(precomputeData);
 		this.wsg.fireSimulator.resume(precomputeData);
 		
 		this.pathPlanning.resume(precomputeData);
@@ -138,6 +139,7 @@ public class AURActionFireFighting extends ExtAction {
 		if (this.getCountPreparate() >= 2) {
 			return this;
 		}
+		this.wsg.preparate();
 		this.pathPlanning.preparate();
 		try {
 			this.kernelTime = this.scenarioInfo.getKernelTimesteps();
@@ -173,29 +175,29 @@ public class AURActionFireFighting extends ExtAction {
 	public ActionMove moveToRefiller() {
 
 		LinkedList<AURAreaGraph> list = wsg.getAllRefillers();
-		wsg.dijkstra(ai.getPositionArea().getID());
-		LinkedList<AURValuePoint> vps = new LinkedList<AURValuePoint>();
+		wsg.KStar(ai.getPositionArea().getID());
+		LinkedList<AURAreaGraphValue> vps = new LinkedList<AURAreaGraphValue>();
 		for (AURAreaGraph ag : list) {
-			vps.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
+			vps.add(new AURAreaGraphValue(ag));
 		}
 
-		for (AURValuePoint vp : vps) {
-			vp.value = (vp.areaGraph.getTravelCost()) + 1000;
-			if (vp.areaGraph.isRefuge()) {
-				vp.value *= 1 + ((1 - wsg.colorCoe[wsg.getAgentColor()][vp.areaGraph.color])) / 2;
+		for (AURAreaGraphValue vp : vps) {
+			vp.value = (vp.ag.getTravelCost()) + 1000;
+			if (vp.ag.isRefuge()) {
+				vp.value *= 1 + ((1 - wsg.colorCoe[wsg.getAgentColor()][vp.ag.color])) / 2;
 			} else {
-				int coe = (Math.abs((vp.areaGraph.ownerAgent - wsg.agentOrder)));
+				int coe = (Math.abs((vp.ag.ownerAgent - wsg.agentOrder)));
 				
 				
 				
-				if(vp.areaGraph.ownerAgent == wsg.agentOrder) {
+				if(vp.ag.ownerAgent == wsg.agentOrder) {
 					vp.value *= 1e8;
 				} else {
 					vp.value *= (1e20 + coe * 1e20);
 					//System.out.println(vp.value);
 				}
 				
-				if(vp.areaGraph.isSmall()) {
+				if(vp.ag.isSmall()) {
 					vp.value *= (1e6);
 				}
 				
@@ -203,9 +205,9 @@ public class AURActionFireFighting extends ExtAction {
 
 		}
 
-		vps.sort(new Comparator<AURValuePoint>() {
+		vps.sort(new Comparator<AURAreaGraphValue>() {
 			@Override
-			public int compare(AURValuePoint o1, AURValuePoint o2) {
+			public int compare(AURAreaGraphValue o1, AURAreaGraphValue o2) {
 				return Double.compare(o1.value, o2.value);
 			}
 		});
@@ -215,7 +217,7 @@ public class AURActionFireFighting extends ExtAction {
 		}
 
 		Collection<EntityID> targets = new ArrayList<>();
-		targets.add(vps.get(0).areaGraph.area.getID());
+		targets.add(vps.get(0).ag.area.getID());
 
 		this.pathPlanning.setFrom(ai.getPositionArea().getID());
 		this.pathPlanning.setDestination(targets);
@@ -253,7 +255,7 @@ public class AURActionFireFighting extends ExtAction {
 	}
 	
 	public ArrayList<AURAreaGraph> getReachableUnburntBuildingIDs() {
-		wsg.dijkstra(ai.getPosition());
+		wsg.KStar(ai.getPosition());
 		ArrayList<AURAreaGraph> result = new ArrayList<>();
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
@@ -346,23 +348,38 @@ public class AURActionFireFighting extends ExtAction {
 			return this;
 		}
 
-		if (exCount >= 7) {
-			exCount = 0;
-			return this;
-		}
+//		if (exCount >= 7) {
+//			exCount = 0;
+//			return this;
+//		}
 
 		if (target == null) {
 			exCount = 0;
 			return this;
 		}
 		
-		if (badCount < 5 && ai.getPosition().equals(beforeLastBadSituationPos) == false && badSituation()) {
-			beforeLastBadSituationPos = lastBadSituationPos;
-			lastBadSituationPos = ai.getPosition();
-			badCount++;
-			return this;
-		}
-		badCount = 0;
+//		for (StandardEntity sent : wsg.wi.getEntitiesOfType(StandardEntityURN.FIRE_BRIGADE)) {
+//			FireBrigade fb = (FireBrigade) sent;
+//			if (fb.isXDefined() && fb.isYDefined() && fb.isPositionDefined()) {
+//				if (fb.getID().getValue() < ai.me().getID().getValue()) {
+//
+//					double dist = AURGeoUtil.dist(ai.getX(), ai.getY(), fb.getX(), fb.getY());
+//
+//					if (fb.getPosition().equals(ai.getPosition())) { // 
+//						return this;
+//					}
+//				}
+//			}
+//		}
+
+//		
+//		if (badCount < 30 && ai.getPosition().equals(beforeLastBadSituationPos) == false && badSituation()) {
+//			beforeLastBadSituationPos = lastBadSituationPos;
+//			lastBadSituationPos = ai.getPosition();
+//			badCount++;
+//			return this;
+//		}
+//		badCount = 0;
 		
 		this.result = this.calcExtinguish(agent, this.pathPlanning, this.target);
 		return this;
@@ -371,6 +388,15 @@ public class AURActionFireFighting extends ExtAction {
 	public boolean readyExtinguishing() {
 		int max_ = scenarioInfo.getFireExtinguishMaxDistance();
 
+		
+		AURAreaGraph targetAg = wsg.getAreaGraph(target);
+		
+		if(targetAg.noSeeTime() > 4 && targetAg.getBuilding().edgeToPereceptAndExtinguish != null) {
+			if(targetAg.isRecentlyReportedFire() == false) {
+				return false;
+			}
+		}
+//		
 		if (this.worldInfo.getDistance(agentInfo.me().getID(), target) < max_) {
 			if (agentInfo.getWater() > 1) {
 				return true;
@@ -398,7 +424,9 @@ public class AURActionFireFighting extends ExtAction {
 			return new ActionExtinguish(target, w);
 		} else {
 			exCount = 0;
-			return this.getMoveAction(pathPlanning, agentPosition, target);
+			ActionMove actMove = wsg.getMoveActionToPercept(ai.getPosition(), target);
+			//return this.getMoveAction(pathPlanning, agentPosition, target);
+			return actMove;
 		}
 	}
 

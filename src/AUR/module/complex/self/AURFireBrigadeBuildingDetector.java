@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import AUR.util.AURCommunication;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURFireValueSetter;
-import AUR.util.knd.AURValuePoint;
+import AUR.util.knd.AURAreaGraphValue;
+import AUR.util.knd.AURBuilding;
+import AUR.util.knd.AURFireZone;
 import adf.agent.communication.MessageManager;
 import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
@@ -47,37 +49,97 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		return this;
 	}
 
-	public LinkedList<AURAreaGraph> getCloseFires() {
+//	public LinkedList<AURAreaGraph> getFires() {
+//		LinkedList<AURAreaGraph> result = new LinkedList<>();
+//		wsg.dijkstra(ai.getPosition());
+//		for (AURAreaGraph ag : wsg.areas.values()) {
+//			if(ag.isBuilding() == false) {
+//				continue;
+//			}
+//			if (ag.getBuilding().fireSimBuilding.isOnFire()) {
+//
+////				if (ag.noSeeTime() <= 4) { //  || ag.isRecentlyReportedFire()
+//					result.add(ag);
+////				}
+//			}/* else {
+//				if(ag.noSeeTime() == 0 && ag.isBuilding()) {
+//					Building b = (Building) (ag.area);
+//					if(b.isTemperatureDefined() && b.getTemperature() >= 40) {
+//						result.add(ag); // check refuge & ...
+//					}
+//				}
+//			}*/
+//		}
+//		return result;
+//	}
+	
+	public boolean good(AURAreaGraph ag) {
+		
+		boolean result = true;
+		
+		if(ag.getBuilding().fireSimBuilding.ignoreFire() == true) {
+			return false;
+		}
+		
+		boolean noPath = ag.getBuilding().edgeToPereceptAndExtinguish == null && ag.lastDijkstraEntranceNode == null;
+		
+		double dist = ag.distFromAgent();
+		double er = this.scenarioInfo.getFireExtinguishMaxDistance() - 1;
+		if(noPath == true && dist > er) {
+			return false;
+		}
+		
+		//if(ag.isRecentlyReportedFire())
+		
+		return result;
+		
+	}
+	
+	public LinkedList<AURAreaGraph> getFires_new() {
 		LinkedList<AURAreaGraph> result = new LinkedList<>();
-		wsg.dijkstra(ai.getPosition());
-		for (AURAreaGraph ag : wsg.areas.values()) {
-			if(ag.isBuilding() == false) {
-				continue;
-			}
-			if (ag.isOnFire() || ag.getBuilding().fireSimBuilding.isOnFire()) {
-
-				if (ag.noSeeTime() <= 4 || ag.isRecentlyReportedFire()) {
-					result.add(ag);
-				}
-			}/* else {
-				if(ag.noSeeTime() == 0 && ag.isBuilding()) {
-					Building b = (Building) (ag.area);
-					if(b.isTemperatureDefined() && b.getTemperature() >= 40) {
-						result.add(ag); // check refuge & ...
+		wsg.KStar(ai.getPosition());
+		wsg.fireZonesCalculator.update();
+		for(AURFireZone fireZone : wsg.fireZonesCalculator.zones) {
+			if(fireZone.ok()) {
+				for(AURBuilding b : fireZone.buildings) {
+					if (good(b.ag)) { //  || ag.isRecentlyReportedFire()
+						result.add(b.ag);
 					}
 				}
-			}*/
+			}
 		}
+		
+//		for (AURAreaGraph ag : wsg.areas.values()) {
+//			if(ag.isBuilding() == false) {
+//				continue;
+//			}
+//			
+////			if() && ag.noSeeTime() > 0 && ag.isRecentlyReportedFire() == false) {
+////				continue;
+////			}
+//			
+//			if (ag.getBuilding().fireSimBuilding.isOnFire()) {
+//
+//
+//			}/* else {
+//				if(ag.noSeeTime() == 0 && ag.isBuilding()) {
+//					Building b = (Building) (ag.area);
+//					if(b.isTemperatureDefined() && b.getTemperature() >= 40) {
+//						result.add(ag); // check refuge & ...
+//					}
+//				}
+//			}*/
+//		}
 		return result;
 	}
 	
 	@Override
 	public BuildingDetector calc() {
 
-		ArrayList<AURValuePoint> points = new ArrayList<>();
-		LinkedList<AURAreaGraph> closeFires = getCloseFires();
+		ArrayList<AURAreaGraphValue> points = new ArrayList<>();
+		LinkedList<AURAreaGraph> closeFires = getFires_new();
 		for (AURAreaGraph ag : closeFires) {
-			points.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
+			points.add(new AURAreaGraphValue(ag));
 		}
 
 		if (points.size() > 0) {
@@ -88,13 +150,14 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 				return this;
 			}
 
-			for (int i = 0; i < vs.points.size(); i++) {
-				if (vs.points.get(i).areaGraph.distFromAgent() < maxExtDist) {
-					this.result = vs.points.get(i).areaGraph.area.getID();
+			//for (int i = 0; i < vs.points.size(); i++) {
+				//if (vs.points.get(i).ag.distFromAgent() < maxExtDist) {
+					//this.result = vs.points.get(i).ag.area.getID();
+					this.result = vs.points.get(0).ag.area.getID();
 					return this;
-				}
+				//}
 
-			}
+			//}
 
 		}
 		this.result = null;
@@ -112,6 +175,7 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
+		this.wsg.precompute(precomputeData);
 		return this;
 	}
 
@@ -121,15 +185,17 @@ public class AURFireBrigadeBuildingDetector extends BuildingDetector {
 		if (this.getCountPrecompute() >= 2) {
 			return this;
 		}
+		this.wsg.resume(precomputeData);
 		return this;
 	}
 
 	@Override
 	public BuildingDetector preparate() {
 		super.preparate();
-		if (this.getCountPrecompute() >= 2) {
+		if (this.getCountPreparate() >= 2) {
 			return this;
 		}
+		this.wsg.preparate();
 		return this;
 	}
 }

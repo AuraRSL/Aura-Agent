@@ -20,19 +20,18 @@ import viewer.K_ScreenTransform;
 public class AURAreaGrid {
 
 	public final static int GRID_SIZE = 450;
-	private final static int defaultSizeM = 351;
-	private final static int defaultSizeN = 503;
-	private int currentSizeM = defaultSizeM;
-	private int currentSizeN = defaultSizeN;
+	private final static int DEFAULT_GRID_ROWS = 351;
+	private final static int DEFAULT_GRID_COLS = 503;
+	private int currentSizeM = DEFAULT_GRID_ROWS;
+	private int currentSizeN = DEFAULT_GRID_COLS;
 	public Area area = null;
 	public final int CELL_FREE = 0;
 	public final int CELL_BLOCK = 1;
 	public final int CELL_AREA_EDGE = 2;
 	public final int CELL_NODE = 4;
 	public final int CELL_OUT = 8;
-	private Polygon areaPolygon;
-	public int gridPoints[][][] = new int[defaultSizeM][defaultSizeN][2];
-	public int gridIntInfo[][][] = new int[defaultSizeM][defaultSizeN][2];
+	public int gridPoints[][][] = new int[DEFAULT_GRID_ROWS][DEFAULT_GRID_COLS][2];
+	public int gridIntInfo[][][] = new int[DEFAULT_GRID_ROWS][DEFAULT_GRID_COLS][2];
 	public int edgePoint[][] = new int[100][3];
 	public AURNode edgePointObject[] = new AURNode[100];
 	private int gridM = 0;
@@ -43,13 +42,10 @@ public class AURAreaGrid {
 	double boundsY0 = 0;
 	double boundsX1 = 0;
 	double boundsY1 = 0;
-	private int setCenter_temp[] = {0, 0};
 	private int getCellResult[] = new int[2];
 	public int edgePointsSize = 0;
 	public static final int TYPE = 0;
 	public static final int COST = 1;
-	public static long _word_size = 1000000;
-	public final int INF = 1000 * 1000 * 1000;
 	public final double lineStepSize = GRID_SIZE / 4;
 	private Queue<Long> que = new LinkedList<Long>();
 	private ArrayList<Polygon> blockaePolygons = new ArrayList<Polygon>();
@@ -73,50 +69,27 @@ public class AURAreaGrid {
 	};
 
 	public final static int dij_8[][] = {
-		{ -1, +1 },
-		{ +0, +1 },
-		{ +1, +1 },
-		{ -1, +0 },
-		{ +1, +0 },
-		{ -1, -1 },
-		{ +0, -1 },
-		{ +1, -1 }
-	};
-	
-//	public final static double dij_8_costCoefficient[] = {
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2
-//	};
-	
-	public final static int[][] dij_9 = {
-		{-1, +1},
 		{+0, +1},
-		{+1, +1},
 		{-1, +0},
-		{+0, +0},
 		{+1, +0},
-		{-1, -1},
 		{+0, -1},
+		{-1, +1},
+		{+1, +1},
+		{-1, -1},
 		{+1, -1}
 	};
-	
-//	public final static double dij_9_costCoefficient[] = {
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		0,
-//		1,
-//		AURConstants.Math.sqr2,
-//		1,
-//		AURConstants.Math.sqr2,
-//	};
+
+	public final static int[][] dij_9 = {
+		{+0, +0},
+		{+0, +1},
+		{-1, +0},
+		{+1, +0},
+		{+0, -1},
+		{-1, +1},
+		{+1, +1},
+		{-1, -1},
+		{+1, -1}
+	};
 	
 	private void checkGridArraySize(int m, int n) {
 		if (currentSizeM >= m && currentSizeN >= n) {
@@ -269,7 +242,6 @@ public class AURAreaGrid {
 	public Point2D getPointInRange(AURAreaGraph areaGraph, double rcx, double rcy, double r, double fromX,
 			double fromY) {
 		this.areaGraph = areaGraph;
-		this.areaPolygon = (Polygon) (area.getShape());
 		edgePointsSize = 0;
 		blockaePolygons.clear();
 		this.area = areaGraph.area;
@@ -311,7 +283,7 @@ public class AURAreaGrid {
 			ip = i + dij_9[d][0];
 			jp = j + dij_9[d][1];
 
-			if (inside(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
+			if (insideGrid(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
 				gridIntInfo[ip][jp][TYPE] = CELL_FREE;
 			}
 
@@ -319,12 +291,12 @@ public class AURAreaGrid {
 
 		gridIntInfo[i][j][COST] = 0;
 
-		que.add(ijToInt(i, j));
+		que.add(IJToLong(i, j));
 		long heap_top = 0;
 
 		while (que.isEmpty() == false) {
 			heap_top = que.poll();
-			intToIj(heap_top, ij);
+			longToIJ(heap_top, ij);
 			i = ij[0];
 			j = ij[1];
 
@@ -336,12 +308,12 @@ public class AURAreaGrid {
 			for (int d = 0; d < 8; d++) {
 				ip = i + dij_8[d][0];
 				jp = j + dij_8[d][1];
-				if (false || (inside(ip, jp) == false) || gridIntInfo[ip][jp][COST] > -1
+				if (false || (insideGrid(ip, jp) == false) || gridIntInfo[ip][jp][COST] > -1
 						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
 				}
 				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + 1;
-				que.add(ijToInt(ip, jp));
+				que.add(IJToLong(ip, jp));
 			}
 		}
 
@@ -386,7 +358,7 @@ public class AURAreaGrid {
 	}
 
 	public void initGrid() {
-		AuraBound bounds = new AuraBound(areaPolygon);
+		AuraBound bounds = new AuraBound(this.areaGraph.polygon);
 
 		boundsX0 = bounds.minX;
 		boundsY0 = bounds.minY;
@@ -423,7 +395,7 @@ public class AURAreaGrid {
 		for (int i = 0; i < gridM; i++) {
 			for (int j = 0; j < gridN; j++) {
 				if (gridIntInfo[i][j][TYPE] == CELL_FREE) {
-					if (areaPolygon.contains(gridPoints[i][j][0], gridPoints[i][j][1]) == false) {
+					if (this.areaGraph.polygon.contains(gridPoints[i][j][0], gridPoints[i][j][1]) == false) {
 						gridIntInfo[i][j][TYPE] = CELL_OUT; // #toDo
 					}
 				}
@@ -432,12 +404,11 @@ public class AURAreaGrid {
 	}
 
 	public void addAreaBlockades(AURAreaGraph ag) {
-		addBlockades(ag.getBlockades());
+		addBlockades(ag.getAliveBlockades());
 	}
 
 	public void init(AURAreaGraph areaGraph) {
 		this.areaGraph = areaGraph;
-		this.areaPolygon = (Polygon) (areaGraph.area.getShape());
 		edgePointsSize = 0;
 		blockaePolygons.clear();
 		this.area = areaGraph.area;
@@ -472,16 +443,16 @@ public class AURAreaGrid {
 			markLine(border.Ax, border.Ay, border.Bx, border.By, CELL_AREA_EDGE);
 		}
 
-		addBlockades(areaGraph.getBlockades());
+		addBlockades(areaGraph.getAliveBlockades());
 
 		for (AURAreaGraph ag : areaGraph.neighbours) {
-			addBlockades(ag.getBlockades());
+			addBlockades(ag.getAliveBlockades());
 		}
 	}
 
 	public void addBlockades(ArrayList<Polygon> blockades) {
 		blockaePolygons.addAll(blockades);
-		double delta = 250;
+		double delta = 300;
 		for (int i = 0; i < gridM; i++) {
 			for (int j = 0; j < gridN; j++) {
 				if (gridIntInfo[i][j][TYPE] != CELL_BLOCK) {
@@ -522,7 +493,7 @@ public class AURAreaGrid {
 		for (int d = 0; d < 9; d++) {
 			ip = i + dij_9[d][0];
 			jp = j + dij_9[d][1];
-			if (inside(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
+			if (insideGrid(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
 				gridIntInfo[ip][jp][TYPE] = CELL_FREE;
 			}
 		}
@@ -534,12 +505,12 @@ public class AURAreaGrid {
 			}
 		}
 		gridIntInfo[i][j][COST] = 0;
-		que.add(ijToInt(i, j));
+		que.add(IJToLong(i, j));
 		long heap_top = 0;
 
 		while (que.isEmpty() == false) {
 			heap_top = que.poll();
-			intToIj(heap_top, ij);
+			longToIJ(heap_top, ij);
 			i = ij[0];
 			j = ij[1];
 
@@ -555,17 +526,77 @@ public class AURAreaGrid {
 			for (int d = 0; d < 9; d++) {
 				ip = i + dij_9[d][0];
 				jp = j + dij_9[d][1];
-				if (false || (inside(ip, jp) == false) || gridIntInfo[ip][jp][COST] > -1
+				if (false || (insideGrid(ip, jp) == false) || gridIntInfo[ip][jp][COST] > -1
 						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
 					continue;
 				}
 				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + 1;
-				que.add(ijToInt(ip, jp));
+				que.add(IJToLong(ip, jp));
 			}
 		}
 		return result;
 	}
 	
+	// very very bad version
+	public void optimizeStandPoints(AURNode fromNode) {
+		if(fromNode == null) {
+			return;
+		}
+		ArrayList<AUREdgeToStand> edgesToPercept = fromNode.edgesToPerceptAndExtinguish;
+		ArrayList<AUREdgeToStand> edgesToSeeInside = fromNode.edgesToSeeInside;
+		
+		if(edgesToPercept != null) {
+			for (int ii = 0; ii < edgesToPercept.size(); ii++) {
+				AUREdgeToStand iiE = edgesToPercept.get(ii);
+				for (int jj = ii + 1; jj < edgesToPercept.size(); jj++) {
+					AUREdgeToStand jjE = edgesToPercept.get(jj);
+					Polygon iiP = iiE.toSeeAreaGraph.getBuilding().getPerceptibleAndExtinguishableAreaPolygon();
+					if (iiE.fromNode == jjE.fromNode && iiE.ownerAg == jjE.ownerAg) {
+
+						if (iiP.contains(jjE.standX, jjE.standY)) {
+							iiE.standX = jjE.standX;
+							iiE.standY = jjE.standY;
+							iiE.weight = jjE.weight;
+						} else {
+							Polygon jjP = jjE.toSeeAreaGraph.getBuilding().getPerceptibleAndExtinguishableAreaPolygon();
+							if (jjP.contains(iiE.standX, iiE.standY)) {
+								jjE.standX = iiE.standX;
+								jjE.standY = iiE.standY;
+								jjE.weight = iiE.weight;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if(edgesToSeeInside != null) {
+			for (int ii = 0; ii < edgesToSeeInside.size(); ii++) {
+				AUREdgeToStand iiE = edgesToSeeInside.get(ii);
+				for (int jj = ii + 1; jj < edgesToSeeInside.size(); jj++) {
+					AUREdgeToStand jjE = edgesToSeeInside.get(jj);
+					Polygon iiP = iiE.toSeeAreaGraph.getBuilding().getSightAreaPolygon();
+					if (iiE.fromNode == jjE.fromNode && iiE.ownerAg == jjE.ownerAg) {
+
+						if (iiP.contains(jjE.standX, jjE.standY)) {
+							iiE.standX = jjE.standX;
+							iiE.standY = jjE.standY;
+							iiE.weight = jjE.weight;
+						} else {
+							Polygon jjP = jjE.toSeeAreaGraph.getBuilding().getSightAreaPolygon();
+							if (jjP.contains(iiE.standX, iiE.standY)) {
+								jjE.standX = iiE.standX;
+								jjE.standY = iiE.standY;
+								jjE.weight = iiE.weight;
+							}
+						}
+					}
+				}
+			}
+		}
+
+	}
+
 	public ArrayList<AUREdgeToStand> getEdgesToPerceptiblePolygons(AURAreaGraph ag, int fromX, int fromY) {
 		AURNode fromNode = new AURNode(fromX, fromY, ag, ag);
 		ArrayList<AUREdgeToStand> result = new ArrayList<>();
@@ -574,7 +605,6 @@ public class AURAreaGrid {
 		}
 		
 		this.areaGraph = ag;
-		this.areaPolygon = this.areaGraph.polygon;
 		edgePointsSize = 0;
 		blockaePolygons.clear();
 
@@ -602,7 +632,7 @@ public class AURAreaGrid {
 			ip = i + dij_9[d][0];
 			jp = j + dij_9[d][1];
 
-			if (inside(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
+			if (insideGrid(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
 				gridIntInfo[ip][jp][TYPE] = CELL_FREE;
 			}
 
@@ -610,7 +640,7 @@ public class AURAreaGrid {
 
 		gridIntInfo[i][j][COST] = 0;
 
-		que.add(ijToInt(i, j));
+		que.add(IJToLong(i, j));
 		long heap_top = 0;
 
 		ArrayList<AURBuilding> perceptibleAreas = null;
@@ -623,35 +653,43 @@ public class AURAreaGrid {
 		
 		while (que.isEmpty() == false) {
 			heap_top = que.poll();
-			intToIj(heap_top, ij);
+			longToIJ(heap_top, ij);
 			i = ij[0];
 			j = ij[1];
 
 
 			if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
-				for(AURBuilding b : perceptibleAreas) {
-					if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
-						int cost = (int) AURGeoUtil.dist(fromX, fromY, gridPoints[i][j][0], gridPoints[i][j][1]);
-						AUREdgeToStand toSeeEdge = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
-						if(fromNode.edgesToPerceptAndExtinguish == null) {
-							fromNode.edgesToPerceptAndExtinguish = new ArrayList<>();
+				int r = 750;
+				if(this.areaGraph.polygon.contains(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, 2 * r, 2 * r) == true) {
+					for(AURBuilding b : perceptibleAreas) {
+						if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
+							int cost = (int) AURGeoUtil.dist(fromX, fromY, gridPoints[i][j][0], gridPoints[i][j][1]);
+							AUREdgeToStand toSeeEdge = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
+							if(fromNode.edgesToPerceptAndExtinguish == null) {
+								fromNode.edgesToPerceptAndExtinguish = new ArrayList<>();
+							}
+							remove.add(b);
+							fromNode.edgesToPerceptAndExtinguish.add(toSeeEdge);
 						}
-						remove.add(b);
-						fromNode.edgesToPerceptAndExtinguish.add(toSeeEdge);
 					}
+					perceptibleAreas.removeAll(remove);
 				}
-				perceptibleAreas.removeAll(remove);
 			}
 			
 			for (int d = 0; d < 8; d++) {
 				ip = i + dij_8[d][0];
 				jp = j + dij_8[d][1];
-				if (false || (inside(ip, jp) == false) || gridIntInfo[ip][jp][COST] > -1
-					|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
+				if (false
+					|| (insideGrid(ip, jp) == false)
+					|| gridIntInfo[ip][jp][COST] > -1
+					|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK
+					|| gridIntInfo[ip][jp][TYPE] == CELL_OUT
+				) {
 					continue;
 				}
+				
 				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + 1;
-				que.add(ijToInt(ip, jp));
+				que.add(IJToLong(ip, jp));
 			}
 		}
 
@@ -659,7 +697,7 @@ public class AURAreaGrid {
 		if(fromNode.edgesToPerceptAndExtinguish != null) {
 			result.addAll(fromNode.edgesToPerceptAndExtinguish);
 		}
-		
+		optimizeStandPoints(fromNode);
 		return result;
 	}
 	
@@ -671,7 +709,6 @@ public class AURAreaGrid {
 		}
 		
 		this.areaGraph = ag;
-		this.areaPolygon = this.areaGraph.polygon;
 		edgePointsSize = 0;
 		blockaePolygons.clear();
 
@@ -699,7 +736,7 @@ public class AURAreaGrid {
 			ip = i + dij_9[d][0];
 			jp = j + dij_9[d][1];
 
-			if (inside(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
+			if (insideGrid(ip, jp) && gridIntInfo[ip][jp][TYPE] != CELL_NODE) {
 				gridIntInfo[ip][jp][TYPE] = CELL_FREE;
 			}
 
@@ -707,7 +744,7 @@ public class AURAreaGrid {
 
 		gridIntInfo[i][j][COST] = 0;
 
-		que.add(ijToInt(i, j));
+		que.add(IJToLong(i, j));
 		long heap_top = 0;
 
 		ArrayList<AURBuilding> sightableAreas = null;
@@ -721,35 +758,41 @@ public class AURAreaGrid {
 		
 		while (que.isEmpty() == false) {
 			heap_top = que.poll();
-			intToIj(heap_top, ij);
+			longToIJ(heap_top, ij);
 			i = ij[0];
 			j = ij[1];
 
-
 			if(areaGraph.sightableBuildings != null) {
-				for(AURBuilding b : sightableAreas) {
-					if(b.getSightAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
-						int cost = (int) AURGeoUtil.dist(fromX, fromY, gridPoints[i][j][0], gridPoints[i][j][1]);
-						AUREdgeToStand toSeeEdge = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
-						if(fromNode.edgesToSeeInside == null) {
-							fromNode.edgesToSeeInside = new ArrayList<>();
+				int r = 750;
+				if(this.areaGraph.polygon.contains(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, 2* r, 2 * r) == true) {
+					for(AURBuilding b : sightableAreas) {
+						if(b.getSightAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
+							int cost = (int) AURGeoUtil.dist(fromX, fromY, gridPoints[i][j][0], gridPoints[i][j][1]);
+							AUREdgeToStand toSeeEdge = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
+							if(fromNode.edgesToSeeInside == null) {
+								fromNode.edgesToSeeInside = new ArrayList<>();
+							}
+							remove_.add(b);
+							fromNode.edgesToSeeInside.add(toSeeEdge);
 						}
-						remove_.add(b);
-						fromNode.edgesToSeeInside.add(toSeeEdge);
 					}
+					sightableAreas.removeAll(remove_);
 				}
-				sightableAreas.removeAll(remove_);
 			}
 			
 			for (int d = 0; d < 8; d++) {
 				ip = i + dij_8[d][0];
 				jp = j + dij_8[d][1];
-				if (false || (inside(ip, jp) == false) || gridIntInfo[ip][jp][COST] > -1
-					|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
+				if (false
+					|| (insideGrid(ip, jp) == false)
+					|| gridIntInfo[ip][jp][COST] > -1
+					|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK
+					|| gridIntInfo[ip][jp][TYPE] == CELL_OUT
+				) {
 					continue;
 				}
 				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + 1;
-				que.add(ijToInt(ip, jp));
+				que.add(IJToLong(ip, jp));
 			}
 		}
 
@@ -757,7 +800,7 @@ public class AURAreaGrid {
 		if(fromNode.edgesToSeeInside != null) {
 			result.addAll(fromNode.edgesToSeeInside);
 		}
-		
+		optimizeStandPoints(fromNode);
 		return result;
 	}
 	
@@ -795,9 +838,15 @@ public class AURAreaGrid {
 		b = b || (this.areaGraph.sightableBuildings != null && this.areaGraph.sightableBuildings.size() > 0);
 		b = b || (this.blockaePolygons != null && this.blockaePolygons.size() > 0);
 		if (b) {
+			
+			//long t = System.currentTimeMillis();
+			
 			for (int i = 0; i < edgePointsSize; i++) {
 				bfs(i);
 			}
+			
+			//System.out.println(System.currentTimeMillis() - t);
+			
 		} else {
 			int cost = 0;
 			AURNode iNode;
@@ -807,8 +856,7 @@ public class AURAreaGrid {
 				for (int j = i + 1; j < edgePointsSize; j++) {
 					iNode = edgePointObject[i];
 					jNode = edgePointObject[j];
-					cost = Math.abs(edgePoint[i][0] - edgePoint[j][0]) + Math.abs(edgePoint[i][1] - edgePoint[j][1]);
-					cost = cost * GRID_SIZE;
+					cost = (int) AURGeoUtil.dist(iNode.x, iNode.y, jNode.x, jNode.y);
 					edge = new AUREdge(iNode, jNode, cost, areaGraph);
 					iNode.edges.add(edge);
 					jNode.edges.add(edge);
@@ -833,7 +881,7 @@ public class AURAreaGrid {
 		i = edgePoint[from][0];
 		j = edgePoint[from][1];
 		gridIntInfo[i][j][COST] = 0;
-		que.add(ijToInt(i, j));
+		que.add(IJToLong(i, j));
 		long heap_top = 0;
 		AUREdge edge = null;
 		
@@ -843,6 +891,7 @@ public class AURAreaGrid {
 			perceptibleAreas = new ArrayList<>();
 			perceptibleAreas.addAll(areaGraph.perceptibleAndExtinguishableBuildings);
 			remove = new ArrayList<AURBuilding>();
+			
 		}
 		
 		ArrayList<AURBuilding> sightableAreas = null;
@@ -855,50 +904,50 @@ public class AURAreaGrid {
 		
 		while (que.isEmpty() == false) {
 			heap_top = que.poll();
-			intToIj(heap_top, ij);
+			longToIJ(heap_top, ij);
 			i = ij[0];
 			j = ij[1];
 			
 			
 			
 			
-			
-			
-			
-			
-			if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
-				for(AURBuilding b : perceptibleAreas) {
-					if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
-						int cost = (int) AURGeoUtil.dist(fromNode.x, fromNode.y, gridPoints[i][j][0], gridPoints[i][j][1]);
-						AUREdgeToStand etp = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
-						if(fromNode.edgesToPerceptAndExtinguish == null) {
-							fromNode.edgesToPerceptAndExtinguish = new ArrayList<>();
+			if(false|| (perceptibleAreas != null && perceptibleAreas.size() > 0)
+				|| (sightableAreas != null && sightableAreas.size() > 0)) {
+				int r = 750;
+				if(this.areaGraph.polygon.contains(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, 2 * r, 2 * r) == true) {
+					
+					if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
+						for(AURBuilding b : perceptibleAreas) {
+							if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
+								int cost = (int) AURGeoUtil.dist(fromNode.x, fromNode.y, gridPoints[i][j][0], gridPoints[i][j][1]);
+								AUREdgeToStand etp = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
+								if(fromNode.edgesToPerceptAndExtinguish == null) {
+									fromNode.edgesToPerceptAndExtinguish = new ArrayList<>();
+								}
+								remove.add(b);
+								fromNode.edgesToPerceptAndExtinguish.add(etp);
+							}
 						}
-						remove.add(b);
-						fromNode.edgesToPerceptAndExtinguish.add(etp);
+						perceptibleAreas.removeAll(remove);
 					}
-				}
-				perceptibleAreas.removeAll(remove);
-			}
-			
-			
-			
-			
-			if(areaGraph.sightableBuildings != null) {
-				for(AURBuilding b : sightableAreas) {
-					if(b.getSightAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
-						int cost = (int) AURGeoUtil.dist(fromNode.x, fromNode.y, gridPoints[i][j][0], gridPoints[i][j][1]);
-						AUREdgeToStand ets = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
-						if(fromNode.edgesToSeeInside == null) {
-							fromNode.edgesToSeeInside = new ArrayList<>();
+					
+					if(areaGraph.sightableBuildings != null) {
+						for(AURBuilding b : sightableAreas) {
+							if(b.getSightAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {
+								int cost = (int) AURGeoUtil.dist(fromNode.x, fromNode.y, gridPoints[i][j][0], gridPoints[i][j][1]);
+								AUREdgeToStand ets = new AUREdgeToStand(this.areaGraph, b.ag, cost, fromNode, gridPoints[i][j][0], gridPoints[i][j][1]);
+								if(fromNode.edgesToSeeInside == null) {
+									fromNode.edgesToSeeInside = new ArrayList<>();
+								}
+								remove_.add(b);
+								fromNode.edgesToSeeInside.add(ets);
+							}
 						}
-						remove_.add(b);
-						fromNode.edgesToSeeInside.add(ets);
+						sightableAreas.removeAll(remove_);
 					}
+				
 				}
-				sightableAreas.removeAll(remove_);
 			}
-			
 			
 
 			if (gridIntInfo[i][j][0] == CELL_NODE) {
@@ -921,24 +970,29 @@ public class AURAreaGrid {
 			for (int d = 0; d < 9; d++) {
 				ip = i + dij_9[d][0];
 				jp = j + dij_9[d][1];
-				if (false || (inside(ip, jp) == false) || gridIntInfo[ip][jp][COST] > -1
-						|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK || gridIntInfo[ip][jp][TYPE] == CELL_OUT) {
+				if (false
+					|| (insideGrid(ip, jp) == false)
+					|| gridIntInfo[ip][jp][COST] > -1
+					|| gridIntInfo[ip][jp][TYPE] == CELL_BLOCK
+					|| gridIntInfo[ip][jp][TYPE] == CELL_OUT
+				) {
 					continue;
 				}
 				
 				gridIntInfo[ip][jp][COST] = gridIntInfo[i][j][COST] + 1;
-				que.add(ijToInt(ip, jp));
+				que.add(IJToLong(ip, jp));
 			}
 		}
+		optimizeStandPoints(fromNode);
 	}
 
-	public static long ijToInt(int i, int j) {
-		return i * _word_size + j;
+	public static long IJToLong(int i, int j) {
+		return (((long) i) << 32) | (j & 0xFFFFFFFFL);
 	}
 
-	public static void intToIj(long int_, int result[]) {
-		result[0] = (int) (int_ / _word_size);
-		result[1] = (int) (int_ % _word_size);
+	public static void longToIJ(long long_, int result[]) {
+		result[0] = (int) (long_ >> 32);
+		result[1] = (int) (long_);
 	}
 
 	public void markLine(double x0, double y0, double x1, double y1, int type) {
@@ -1055,9 +1109,7 @@ public class AURAreaGrid {
 	}
 
 	public void setCenter(int Ai, int Aj, int Bi, int Bj, byte type) {
-		setCenter_temp[0] = (Ai + Bi) / 2;
-		setCenter_temp[1] = (Aj + Bj) / 2;
-		markCell(setCenter_temp, type);
+		markCell((Ai + Bi) / 2, (Aj + Bj) / 2, type);
 	}
 	
 	public void markEdgeOpenCenters(AURBorder border, double x0, double y0, double x1, double y1) {
@@ -1194,8 +1246,12 @@ public class AURAreaGrid {
 	public void markCell(int[] ij, int type) {
 		gridIntInfo[ij[0]][ij[1]][TYPE] = type;
 	}
+	
+	public void markCell(int i, int j, int type) {
+		gridIntInfo[i][j][TYPE] = type;
+	}
 
-	public boolean inside(int i, int j) {
+	public boolean insideGrid(int i, int j) {
 		if (i < 0 || j < 0 || i >= gridM || j >= gridN) {
 			return false;
 		}
@@ -1246,4 +1302,5 @@ public class AURAreaGrid {
 
 	}
 	
+
 }

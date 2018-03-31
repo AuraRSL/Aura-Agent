@@ -21,6 +21,8 @@ public class AURNode {
 	public AURNode pre = null;
 
 	public Entry<AURNode> pQueEntry = null;
+	
+	public boolean vis = false;
 
 	public AURNode(int x, int y, AURAreaGraph ownerArea1, AURAreaGraph ownerArea2) {
 		edges = new ArrayList<AUREdge>();
@@ -29,7 +31,7 @@ public class AURNode {
 		this.x = x;
 		this.y = y;
 	}
-
+	
 	public AURAreaGraph getPreAreaGraph() {
 		if (pre == null) {
 			return null;

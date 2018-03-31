@@ -50,10 +50,8 @@ public class AURWalkWatcher extends AbstractModule {
 				return false;
 			}
 			Step step = (Step) obj;
-			/* return this.fromID == step.fromID && this.toID == step.toID; */
-			double dist2 = (step.fromX - this.fromX) * (step.fromX - this.fromX);
-			dist2 += (step.fromY - this.fromY) * (step.fromY - this.fromY);
-			return dist2 < 750 * 750;
+			double dist = AURGeoUtil.dist(step.fromX, step.fromY, this.fromX, this.fromY);
+			return dist < 100;
 		}
 	}
 

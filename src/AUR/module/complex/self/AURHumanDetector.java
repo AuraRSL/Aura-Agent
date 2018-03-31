@@ -1,9 +1,8 @@
 package AUR.module.complex.self;
 
 import AUR.util.ambulance.AmbulanceUtil;
-import AUR.util.ambulance.Information.BuldingInfo;
-import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.ambulance.Information.CivilianInfo;
+import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.communication.MessageManager;
 import adf.agent.develop.DevelopData;
@@ -17,13 +16,17 @@ import adf.component.module.complex.HumanDetector;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import static rescuecore2.standard.entities.StandardEntityURN.AMBULANCE_TEAM;
+import static rescuecore2.standard.entities.StandardEntityURN.REFUGE;
+
 /**
  * Created by armanaxh on 2018.
  */
-
-import java.util.*;
-
-import static rescuecore2.standard.entities.StandardEntityURN.*;
 
 /**
  *
@@ -57,7 +60,7 @@ public class AURHumanDetector extends HumanDetector
         }
         this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
         this.rescueInfo = moduleManager.getModule("ambulance.RescueInfo", "AUR.util.ambulance.Information.RescueInfo");
-        this.wsg.rescueInfo = rescueInfo;
+
 
         registerModule(this.clustering);
 
@@ -84,11 +87,10 @@ public class AURHumanDetector extends HumanDetector
 
         this.wsg.updateInfo(messageManager);
         this.clustering.updateInfo(messageManager);
-        this.rescueInfo.updateInformation();//2
+        this.rescueInfo.updateInformation(messageManager);
+
         return this;
     }
-
-
 
     //DEBUG
 
@@ -98,89 +100,133 @@ public class AURHumanDetector extends HumanDetector
     @Override
     public HumanDetector calc()
     {
-
         Human transportHuman = this.agentInfo.someoneOnBoard();
         if (transportHuman != null) {
             this.result = transportHuman.getID();
             return this;
         }
 
-        if (this.result != null)
-        {
-            Human target = (Human) this.worldInfo.getEntity(this.result);
-            if (target != null)
-            {
-                if (!target.isHPDefined() || target.getHP() == 0)
-                {
-                    this.result = null;
-                }
-                else if (!target.isPositionDefined())
-                {
-                    this.result = null;
-                }
-                else
-                {
-                    StandardEntity position = this.worldInfo.getPosition(target);
-                    if (position != null)
-                    {
-                        StandardEntityURN positionURN = position.getStandardURN();
-                        if (positionURN == REFUGE || positionURN == AMBULANCE_TEAM)
-                        {
-                            this.result = null;
-                        }
-
-                        //TODO
-                        if (position instanceof Building){
-                            Building b = (Building)position;
-                            if(b.isOnFire()) {
-                                this.result = null;
-                            }
-                        }
-
-                        if(!position.getID().equals(agentInfo.getPosition())){
-                            this.result = null;
-                        }
-                    }
-                }
-            }
+        if (this.nullResult()) {
+            this.result = null;
         }
+
         if (this.result == null)
         {
-            if (clustering == null)
-            {
-                this.result = this.calcTargetInWorld();
-                return this;
-            }
-            this.result = this.calcTargetInCluster(clustering);
-            if (this.result == null)
-            {
-                this.result = this.calcTargetInWorld();
+            this.result = this.calcTargetAgent();
+
+            if(this.result == null) {
+                this.result = this.calcTarget();
             }
         }
 
-
-        this.rescueInfo.ambo.workOnIt = rescueInfo.civiliansInfo.get(result);
+        StandardEntity st = worldInfo.getEntity(result);
+        if(st instanceof Human) {
+            this.rescueInfo.ambo.workOnIt = (Human)(st);
+        }
         return this;
     }
+
+
 
     private boolean chackAmboWork(){
         return true;
     }
 
 
-    private EntityID calcTargetInCluster(Clustering clustering)
+    private boolean nullResult() {
+
+        if (this.result != null) {
+            Human target = (Human) this.worldInfo.getEntity(this.result);
+            if (target != null) {
+                if (!target.isHPDefined() || target.getHP() == 0) {
+                    return true;
+                } else if (!target.isPositionDefined()) {
+                    return true;
+                } else if(rescueInfo.civiliansInfo.get(result) == null){
+                    return true;
+                }
+                else {
+                    StandardEntity position = this.worldInfo.getPosition(target);
+                    if (position != null) {
+                        StandardEntityURN positionURN = position.getStandardURN();
+                        if (positionURN.equals(REFUGE) || positionURN.equals(AMBULANCE_TEAM)) {
+                            return true;
+                        }
+                    }
+                    if(position instanceof Road){
+                        return true;
+                    }
+                    if (position instanceof Building) {
+                        Building b = (Building) position;
+                        if (b.isOnFire()) {
+                            // TODO FIRE
+                            return true;
+                        }
+                        if (b.isTemperatureDefined() && b.getTemperature() > 44) {
+                            return true;
+                        }
+                    }
+
+                    if(!position.getID().equals(agentInfo.getPosition())){
+                        return true;
+                    }
+
+
+                }
+
+                if (target instanceof AmbulanceTeam
+                        || target instanceof FireBrigade
+                        || target instanceof PoliceForce) {
+                    if (target.isBuriednessDefined() && target.getBuriedness() == 0) {
+                        return true;
+                    }
+                }
+
+
+                if(agentInfo.me() instanceof AmbulanceTeam) {
+                    AmbulanceTeam loadAmbulance = (AmbulanceTeam) agentInfo.me();
+                    for (EntityID entityID : worldInfo.getChanged().getChangedEntities()) {
+                        StandardEntity entity = worldInfo.getEntity(entityID);
+                        if (entity instanceof AmbulanceTeam && worldInfo.getPosition(target) != null) {
+                            AmbulanceTeam at = (AmbulanceTeam) entity;
+                            if (at.getPosition().equals(worldInfo.getPosition(target).getID())) {
+                                if (entityID.getValue() < loadAmbulance.getID().getValue()) {
+                                    loadAmbulance = at;
+                                }
+                            }
+                        }
+                    }
+                    if(!loadAmbulance.getID().equals(agentInfo.me().getID())){
+                        return true;
+                    }
+                }
+
+
+            }
+        }
+
+        return false;
+    }
+
+    private boolean changeCivilianView() {
+
+        return false;
+    }
+
+    private EntityID calcTarget()
     {
 
         List<CivilianInfo> civilians = new LinkedList<>();
         civilians.addAll(rescueInfo.civiliansInfo.values());
-        Collections.sort(civilians , AmbulanceUtil.RateSorter);
-
+        
 
         // TODO HaHa:D
         this.removeCantRescue(civilians);
-
         this.removeLowRate(civilians);
+        this.removeCantPass(civilians);
+        //TODO You Shall Not Pass  (Gandalf the grey)
 
+        Collections.sort(civilians , AmbulanceUtil.CivilianRateSorter);
         if(civilians.size() > 0 ){
 
             return civilians.get(0).getID();
@@ -190,8 +236,32 @@ public class AURHumanDetector extends HumanDetector
         return null;
     }
 
+    private EntityID calcTargetAgent() {
+
+        List<EntityID> agents = new LinkedList<>();
+        agents.addAll(rescueInfo.agentsRate.keySet());
+
+        EntityID maxAgent = null;
+        double maxValue = 0;
+        for(EntityID id : agents) {
+            if (rescueInfo.agentsRate.get(id).doubleValue() > 1) {
+                if (rescueInfo.agentsRate.get(id).doubleValue() > maxValue) {
+                    maxValue = rescueInfo.agentsRate.get(id);
+                    maxAgent = id;
+                }
+            }
+        }
+
+        if(maxAgent != null){
+            return maxAgent;
+        }
+        return null;
+    }
+
+
     private List<CivilianInfo> removeCantRescue(List<CivilianInfo> civilians){
 
+        rescueInfo.canNotRescueCivilian.clear();
         Collection<CivilianInfo> temp = new LinkedList<>();
         for(CivilianInfo civilian : civilians){
             if(civilian.saveTime <= 0){
@@ -202,6 +272,25 @@ public class AURHumanDetector extends HumanDetector
         }
         civilians.removeAll(temp);
 
+        return civilians;
+    }
+
+    private List<CivilianInfo> removeCantPass(List<CivilianInfo> civilians){
+
+        wsg.KStar(agentInfo.getPosition());
+
+        Collection<CivilianInfo> temp = new LinkedList<>();
+        for(CivilianInfo ci: civilians){
+            if(ci.travelTimeToMe == Integer.MAX_VALUE){
+                temp.add(ci);
+                continue;
+            }
+
+            if(wsg.getAreaGraph(ci.getPosition()).lastDijkstraEntranceNode == null){
+                temp.add(ci);
+            }
+        }
+        civilians.removeAll(temp);
         return civilians;
     }
 
@@ -222,6 +311,10 @@ public class AURHumanDetector extends HumanDetector
         return null;
     }
 
+
+
+
+    // preprate & precompute **************************************************************************
     @Override
     public EntityID getTarget()
     {
@@ -236,6 +329,7 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+        this.wsg.precompute(precomputeData);
         return this;
     }
 
@@ -247,6 +341,11 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+        this.wsg.resume(precomputeData);
+        clustering.preparate();
+        rescueInfo.initCalc();
+        int index = clustering.getClusterIndex(agentInfo.me());
+        rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
 
         return this;
     }
@@ -259,7 +358,9 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+        this.wsg.preparate();
         clustering.preparate();
+        rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());
         rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
         return this;

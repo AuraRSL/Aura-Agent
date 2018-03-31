@@ -20,6 +20,7 @@ public class K_AirCells extends K_ViewerLayer {
 		g2.setColor(new Color(200, 200, 0, 100));
 		g2.setStroke(new BasicStroke(1));
 		wsg.fireSimulator.airCells.paintJustCells(g2, kst);
+		wsg.fireSimulator.airCells.paintTemperatures(g2, kst);
 	}
 
 	@Override
@@ -30,6 +31,7 @@ public class K_AirCells extends K_ViewerLayer {
 		result += "rows: " + wsg.fireSimulator.airCells.getCells().length;
 		result += "\n";
 		result += "cols: " + wsg.fireSimulator.airCells.getCells()[0].length;
+		result += "\n";
 		return result;
 	}
 

@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package viewer.layers.knd;
 
 import AUR.util.knd.AURAreaGraph;
-import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURWorldGraph;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -28,8 +22,8 @@ public class K_TravelTime extends K_ViewerLayer {
 		g2.setFont(new Font("Arial", 0, 9));
 		g2.setColor(Color.white);
 
-		wsg.dijkstra(wsg.ai.getPosition());
-
+		wsg.KStar(wsg.ai.getPosition());
+		
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			String cost = "inf";
 			cost = ag.getTravelTime() + "";

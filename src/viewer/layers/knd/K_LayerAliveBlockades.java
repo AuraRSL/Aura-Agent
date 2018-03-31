@@ -21,7 +21,7 @@ public class K_LayerAliveBlockades extends K_ViewerLayer {
 		g2.setColor(Color.black);
 		g2.setStroke(new BasicStroke(3));
 		for(AURAreaGraph ag : wsg.areas.values()) {
-			for(Polygon p : ag.getBlockades()) {
+			for(Polygon p : ag.getAliveBlockades()) {
 				Polygon polygon = kst.getTransformedPolygon(p);
 				g2.draw(polygon);
 				g2.fillPolygon(polygon);

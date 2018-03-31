@@ -3,13 +3,13 @@ package viewer.layers.AmboLayers;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.info.WorldInfo;
-import viewer.K_ScreenTransform;
-import viewer.K_ViewerLayer;
 import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.StandardEntity;
+import rescuecore2.standard.entities.StandardEntityURN;
+import viewer.K_ScreenTransform;
+import viewer.K_ViewerLayer;
 
 import java.awt.*;
-import rescuecore2.standard.entities.StandardEntityURN;
 
 /**
  * Created by armanaxh on 12/20/17.
@@ -26,7 +26,7 @@ public class CivilianLayer extends K_ViewerLayer {
 		for (StandardEntity e : wi.getAllEntities()) {
 			if (e.getStandardURN().equals(StandardEntityURN.CIVILIAN)) {
 				Civilian c = (Civilian) e;
-				if (c.isXDefined() == false || c.isYDefined() == false) {
+				if (c.isXDefined() == false || c.isYDefined() == false || c.isHPDefined() == false) {
 					continue;
 				}
 				int r = 5;
@@ -34,7 +34,7 @@ public class CivilianLayer extends K_ViewerLayer {
 					if(c.getHP() == 0 ){
 						g2.setColor(new Color(87, 34, 7));
 					}else {
-						g2.setColor(new Color(0, (255 * c.getHP()) / 10000, 0));
+						g2.setColor(new Color(0, (int)255 * (c.getHP() / 10000), 0));
 					}
 				}else{
 					g2.setColor(Color.green);

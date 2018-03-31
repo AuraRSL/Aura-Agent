@@ -23,7 +23,7 @@ public class K_NoBlockadeWorldGraph extends K_ViewerLayer {
 
 		g2.setColor(Color.BLUE);
 		
-		wsg.NoBlockadeDijkstra(wsg.ai.getPosition());
+		wsg.KStarNoBlockade(wsg.ai.getPosition());
 
 		for (AURAreaGraph ag : wsg.areas.values()) {
 			for (AURBorder border : ag.borders) {

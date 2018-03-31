@@ -1,4 +1,4 @@
-package AUR.util.ambulance.sightArea;
+package AUR.util.ambulance.sightAreaLegacy;
 
 
 import rescuecore2.misc.geometry.Line2D;

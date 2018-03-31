@@ -2,10 +2,10 @@ package AUR.module.complex.self;
 
 import java.util.ArrayList;
 
-import AUR.module.algorithm.AURBuildingClusterer;
+import AUR.module.algorithm.AURWorldClusterer;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURFireSearchValueSetter;
-import AUR.util.knd.AURValuePoint;
+import AUR.util.knd.AURAreaGraphValue;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.communication.MessageManager;
 import adf.agent.develop.DevelopData;
@@ -15,6 +15,7 @@ import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.agent.precompute.PrecomputeData;
 import adf.component.module.algorithm.PathPlanning;
+import adf.component.module.algorithm.StaticClustering;
 import adf.component.module.complex.Search;
 import rescuecore2.worldmodel.EntityID;
 
@@ -26,7 +27,7 @@ public class AURFireBrigadeSearch extends Search {
 	AURFireSearchValueSetter svs = new AURFireSearchValueSetter();
 	public AgentInfo ai = null;
 
-	AURBuildingClusterer buildingClusterer = null;
+	StaticClustering buildingClusterer = null;
 
 	public AURFireBrigadeSearch(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager,
 			DevelopData developData) {
@@ -61,18 +62,18 @@ public class AURFireBrigadeSearch extends Search {
 		buildingClusterer.calc();
 		this.result = null;
 		wsg.updateInfo(null);
-		ArrayList<AURValuePoint> list = new ArrayList<>();
+		ArrayList<AURAreaGraphValue> list = new ArrayList<>();
 		AURAreaGraph agentAg = wsg.getAreaGraph(ai.getPosition());
 		ArrayList<AURAreaGraph> rubs = wsg.getPerceptibleUnburntBuildingIDs();
 		rubs.remove(agentAg);
 		for (AURAreaGraph ag : rubs) {
-			list.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
+			list.add(new AURAreaGraphValue(ag));
 		}
 		int initialClusterIndex = buildingClusterer.getClusterIndex(ai.me());
 		if (rubs.size() > 0) {
 			svs.calc(wsg, list, buildingClusterer.getClusterEntityIDs(initialClusterIndex), lastTarget);
 			if (svs.points.size() > 0) {
-				this.result = svs.points.get(0).areaGraph.area.getID();
+				this.result = svs.points.get(0).ag.area.getID();
 				lastTarget = this.result;
 				return this;
 			}
@@ -103,13 +104,16 @@ public class AURFireBrigadeSearch extends Search {
 	@Override
 	public Search precompute(PrecomputeData precomputeData) {
 		super.precompute(precomputeData);
+		this.buildingClusterer.precompute(precomputeData);
+		this.wsg.precompute(precomputeData);
 		return this;
 	}
 
 	@Override
 	public Search resume(PrecomputeData precomputeData) {
 		super.resume(precomputeData);
-		this.preparate();
+		buildingClusterer.preparate();
+		this.wsg.preparate();
 		this.worldInfo.requestRollback();
 		return this;
 	}
@@ -117,8 +121,8 @@ public class AURFireBrigadeSearch extends Search {
 	@Override
 	public Search preparate() {
 		super.preparate();
-
 		buildingClusterer.preparate();
+		this.wsg.preparate();
 		return this;
 	}
 }

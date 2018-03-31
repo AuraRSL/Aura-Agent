@@ -1,8 +1,7 @@
 package AUR.extaction;
 
-import AUR.util.ambulance.RunPoint;
 import AUR.util.knd.AURWalkWatcher;
-import AUR.util.ambulance.StayPoint;
+import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.action.common.ActionRest;
@@ -16,51 +15,33 @@ import adf.agent.precompute.PrecomputeData;
 import adf.component.extaction.ExtAction;
 import adf.component.module.algorithm.PathPlanning;
 import rescuecore2.config.NoSuchConfigOptionException;
-import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.standard.entities.*;
-import rescuecore2.standard.entities.Area;
 import rescuecore2.worldmodel.EntityID;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-/**
- * Created by armanaxh in 2017
- */
-
-public class AURAmbulanceActionExtMove extends ExtAction {
+public class AURAmbulanceActionExtMove extends ExtAction
+{
     private PathPlanning pathPlanning;
-    private RunPoint runPoint;
+
     private int thresholdRest;
     private int kernelTime;
     private AURWalkWatcher walkWatcher = null;
+    private AURWorldGraph wsg;
 
-    private class EdgeView {
-        public EdgeView(Edge e, int t) {
-            this.time = t;
-            this.edge = e;
-        }
+    private EntityID target;
 
-        public Edge edge;
-        public int time;
-    }
 
-    private Collection<EdgeView> edgeViewList;
-    private Collection<Edge> edgeView;
-    private Area target;
-    private Area roadTarget;
-    private StayPoint stayPoint;
-
-    public AURAmbulanceActionExtMove(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData) {
+    public AURAmbulanceActionExtMove(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, DevelopData developData)
+    {
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
-        this.edgeViewList = new LinkedList<>();
-        this.edgeView = new LinkedList<>();
-        this.runPoint = new RunPoint(agentInfo , worldInfo );
         this.target = null;
-        this.roadTarget = null;
-        stayPoint = new StayPoint(worldInfo);
         this.thresholdRest = developData.getInteger("ActionExtMove.rest", 100);
-        this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
-        switch (scenarioInfo.getMode()) {
+
+        switch (scenarioInfo.getMode())
+        {
             case PRECOMPUTATION_PHASE:
                 this.pathPlanning = moduleManager.getModule("ActionExtMove.PathPlanning", "adf.sample.module.algorithm.SamplePathPlanning");
                 break;
@@ -71,201 +52,232 @@ public class AURAmbulanceActionExtMove extends ExtAction {
                 this.pathPlanning = moduleManager.getModule("ActionExtMove.PathPlanning", "adf.sample.module.algorithm.SamplePathPlanning");
                 break;
         }
+        this.wsg = moduleManager.getModule("knd.AuraWorldGraph", "AUR.util.knd.AURWorldGraph");
+        this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
     }
 
     @Override
-    public ExtAction precompute(PrecomputeData precomputeData) {
+    public ExtAction precompute(PrecomputeData precomputeData)
+    {
         super.precompute(precomputeData);
-        if (this.getCountPrecompute() >= 2) {
+        if (this.getCountPrecompute() >= 2)
+        {
             return this;
         }
         this.pathPlanning.precompute(precomputeData);
-        try {
+        try
+        {
             this.kernelTime = this.scenarioInfo.getKernelTimesteps();
-        } catch (NoSuchConfigOptionException e) {
+        }
+        catch (NoSuchConfigOptionException e)
+        {
             this.kernelTime = -1;
         }
+        this.wsg.precompute(precomputeData);
         return this;
     }
 
     @Override
-    public ExtAction resume(PrecomputeData precomputeData) {
+    public ExtAction resume(PrecomputeData precomputeData)
+    {
         super.resume(precomputeData);
-        if (this.getCountResume() >= 2) {
+        if (this.getCountResume() >= 2)
+        {
             return this;
         }
         this.pathPlanning.resume(precomputeData);
-        try {
+        try
+        {
             this.kernelTime = this.scenarioInfo.getKernelTimesteps();
-        } catch (NoSuchConfigOptionException e) {
+        }
+        catch (NoSuchConfigOptionException e)
+        {
             this.kernelTime = -1;
         }
+        this.wsg.resume(precomputeData);
         return this;
     }
 
     @Override
-    public ExtAction preparate() {
+    public ExtAction preparate()
+    {
         super.preparate();
-        if (this.getCountPreparate() >= 2) {
+        if (this.getCountPreparate() >= 2)
+        {
             return this;
         }
         this.pathPlanning.preparate();
-        try {
+        try
+        {
             this.kernelTime = this.scenarioInfo.getKernelTimesteps();
-        } catch (NoSuchConfigOptionException e) {
+        }
+        catch (NoSuchConfigOptionException e)
+        {
             this.kernelTime = -1;
         }
+        this.wsg.preparate();
         return this;
     }
 
     @Override
-    public ExtAction updateInfo(MessageManager messageManager) {
+    public ExtAction updateInfo(MessageManager messageManager)
+    {
         super.updateInfo(messageManager);
-        if (this.getCountUpdateInfo() >= 2) {
+        if (this.getCountUpdateInfo() >= 2)
+        {
             return this;
         }
-        Collection<EdgeView> temp = new LinkedList<>();
-        for (EdgeView edgeView : this.edgeViewList) {
-            if (agentInfo.getTime() - edgeView.time > 15) {
-                this.edgeView.remove(edgeView.edge);
-                temp.add(edgeView);
-            }
-        }
-        this.edgeViewList.removeAll(temp);
-
-        for (Edge edge : agentInfo.getPositionArea().getEdges())
-            if (this.cheakAgentAchieveTarget(edge)) {
-                this.edgeView.add(edge);
-                this.edgeViewList.add(new EdgeView(edge, agentInfo.getTime()));
-                continue;
-            }
         this.pathPlanning.updateInfo(messageManager);
         return this;
     }
 
     @Override
-    public ExtAction setTarget(EntityID target) {
+    public ExtAction setTarget(EntityID target)
+    {
         this.target = null;
         StandardEntity entity = this.worldInfo.getEntity(target);
-        if (entity != null) {
-            if (entity.getStandardURN().equals(StandardEntityURN.BLOCKADE)) {
+        if (entity != null)
+        {
+            if (entity.getStandardURN().equals(StandardEntityURN.BLOCKADE))
+            {
                 entity = this.worldInfo.getEntity(((Blockade) entity).getPosition());
-            } else if (entity instanceof Human) {
+            }
+            else if (entity instanceof Human)
+            {
                 entity = this.worldInfo.getPosition((Human) entity);
             }
-            if (entity != null && entity instanceof Area) {
-                this.target = (Area) entity;
+            if (entity != null && entity instanceof Area)
+            {
+                this.target = entity.getID();
             }
         }
         return this;
     }
 
     @Override
-    public ExtAction calc() {
+    public ExtAction calc()
+    {
         this.result = null;
-
         Human agent = (Human) this.agentInfo.me();
 
-        if (this.needRest(agent)) {
-            this.result = this.calcRest();
-            if (this.result != null) {
+        if (this.needRest(agent))
+        {
+            this.result = this.calcRest(agent, this.pathPlanning, this.target);
+            if (this.result != null)
+            {
                 return this;
             }
         }
-
-        if (this.target == null) {
-            if(this.result == null ) {
-                List<EntityID> runPath = runPoint.find().getPath();
-                this.result = walkWatcher.check(new ActionMove(runPath));
-            }
+        if (this.target == null)
+        {
             return this;
         }
-        this.pathPlanning.setFrom(agent.getPosition());
-        this.pathPlanning.setDestination(this.target.getID());
-        List<EntityID> path = this.pathPlanning.calc().getResult();
-        if (path != null && path.size() > 1) {
-            this.roadTarget = (Area) worldInfo.getEntity(path.get(path.size() - 2));
-            path.remove(path.size() - 1);
-        } else {
-            return this;
-        }
-        if (path != null && path.size() > 0) {
-            for (Edge edge : this.roadTarget.getEdges()) {
-                if (worldInfo.getEntity(edge.getNeighbour()) instanceof Building) {
-                    if (!this.edgeView.contains(edge)) {
-                        Point2D distinationPoint = this.stayPoint.calc(this.roadTarget, edge);
-                        if (distinationPoint != null) {
-                            ActionMove action = walkWatcher.check(new ActionMove(path, (int) distinationPoint.getX(), (int) distinationPoint.getY()));
-                            this.result = action;
-                            break;
-                        }
-                    }
-                }
 
+        StandardEntity se = worldInfo.getEntity(this.target);
+
+        if(se instanceof Building) {
+            ActionMove actionMove = wsg.getMoveActionToSeeInside(agent.getPosition(), this.target);
+
+            if (actionMove != null && actionMove.getPath().size() > 0) {
+                this.result = actionMove;
             }
-            if (this.result == null) {
-                ActionMove action = walkWatcher.check(new ActionMove(path));
-                this.result = action;
+        }else if(se instanceof Road){
+
+            this.pathPlanning.setFrom(agent.getPosition());
+            this.pathPlanning.setDestination(this.target);
+            List<EntityID> path = this.pathPlanning.calc().getResult();
+            if(path != null && path.size() > 0){
+                this.result = new ActionMove(path);
+            }
+        }else if(se instanceof Human){
+            Human human = (Human) worldInfo.getEntity(this.target);
+            this.pathPlanning.setFrom(agent.getPosition());
+            this.pathPlanning.setDestination(human.getPosition());
+            List<EntityID> path = this.pathPlanning.calc().getResult();
+            if(path != null && path.size() > 0){
+                this.result = new ActionMove(path, human.getX() , human.getY());
             }
         }
-        if(this.result == null ) {
-            List<EntityID> runPath = runPoint.find().getPath();
-            this.result = walkWatcher.check(new ActionMove(runPath));
+        if(this.result instanceof ActionMove){
+
+//            this.result = walkWatcher.check((ActionMove)result);//TODO BUG Paris first ambu //ActionMove [usePosition=true, posX=104400, posY=659700, path=[48211, 4388, 14665, 503]]
+//            ActionMove [usePosition=true, posX=119436, posY=669433, path=[48211]]
         }
+
+        this.wsg.rescueInfo.temptest = (ActionMove) this.result;
         return this;
     }
 
-    private boolean cheakAgentAchieveTarget(Edge edge) {
-
-        final int distanceOfRoad = 1500;
-        Area agentPosition = agentInfo.getPositionArea();
-        StandardEntity e = worldInfo.getEntity(edge.getNeighbour());
-        if (e instanceof Building) {
-            Double midX, midY, agentX, agentY;
-            midX = Double.valueOf((edge.getStartX() + edge.getEndX()) / 2);
-            midY = Double.valueOf((edge.getStartY() + edge.getEndY()) / 2);
-            agentX = Double.valueOf((int) agentInfo.getX());
-            agentY = Double.valueOf((int) agentInfo.getY());
-            Double distanceFormola = (midX - agentX) * (midX - agentX) + (midY - agentY) * (midY - agentY);
-            if (distanceFormola < distanceOfRoad * distanceOfRoad && distanceFormola > -1) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean needRest(Human agent) {
+    private boolean needRest(Human agent)
+    {
         int hp = agent.getHP();
         int damage = agent.getDamage();
-        if (hp == 0 || damage == 0) {
+        if (hp == 0 || damage == 0)
+        {
             return false;
         }
+
         int activeTime = (hp / damage) + ((hp % damage) != 0 ? 1 : 0);
-        if (this.kernelTime == -1) {
-            try {
+        if (this.kernelTime == -1)
+        {
+            try
+            {
                 this.kernelTime = this.scenarioInfo.getKernelTimesteps();
-            } catch (NoSuchConfigOptionException e) {
+            }
+            catch (NoSuchConfigOptionException e)
+            {
                 this.kernelTime = -1;
             }
         }
         return damage >= this.thresholdRest || (activeTime + this.agentInfo.getTime()) < this.kernelTime;
     }
 
-    private Action calcRest() {
-        EntityID position = agentInfo.getPosition();
+    private Action calcRest(Human human, PathPlanning pathPlanning, EntityID target)
+    {
+        EntityID position = human.getPosition();
         Collection<EntityID> refuges = this.worldInfo.getEntityIDsOfType(StandardEntityURN.REFUGE);
         int currentSize = refuges.size();
-        if (refuges.contains(position)) {
+        if (refuges.contains(position))
+        {
             return new ActionRest();
         }
-        this.pathPlanning.setFrom(position);
-        this.pathPlanning.setDestination(refuges);
-        List<EntityID> path = this.pathPlanning.calc().getResult();
-        if (path != null && path.size() > 0) {
-            ActionMove action = walkWatcher.check(new ActionMove(path));
-            this.result = action;
+        List<EntityID> firstResult = null;
+        while (refuges.size() > 0)
+        {
+            pathPlanning.setFrom(position);
+            pathPlanning.setDestination(refuges);
+            List<EntityID> path = pathPlanning.calc().getResult();
+            if (path != null && path.size() > 0)
+            {
+                if (firstResult == null)
+                {
+                    firstResult = new ArrayList<>(path);
+                    if (target == null)
+                    {
+                        break;
+                    }
+                }
+                EntityID refugeID = path.get(path.size() - 1);
+                pathPlanning.setFrom(refugeID);
+                pathPlanning.setDestination(target);
+                List<EntityID> fromRefugeToTarget = pathPlanning.calc().getResult();
+                if (fromRefugeToTarget != null && fromRefugeToTarget.size() > 0)
+                {
+                    return new ActionMove(path);
+                }
+                refuges.remove(refugeID);
+                //remove failed
+                if (currentSize == refuges.size())
+                {
+                    break;
+                }
+                currentSize = refuges.size();
+            }
+            else
+            {
+                break;
+            }
         }
-        return null;
+        return firstResult != null ? new ActionMove(firstResult) : null;
     }
 }

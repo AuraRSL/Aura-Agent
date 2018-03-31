@@ -19,7 +19,7 @@ public class AURPerceptibleArea {
 	// the main idea is the same as the SensibleArea of SOS (2014)
 	public static Polygon get(AURBuilding building) {
 		
-		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS;
+		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS * 6;
 		
 		Polygon result = new Polygon();
 		Polygon bp = building.ag.polygon;
@@ -58,7 +58,7 @@ public class AURPerceptibleArea {
 		Rectangle bounds4 = new Rectangle((int) cx, (int) cy - r_, r_, r_);
 		
 		for(StandardEntity sent : cands) {
-			if(isBuilding(sent) == false) {
+			if(AURUtil.isBuilding(sent) == false) {
 				continue;
 			}
 			Polygon p = (Polygon) ((Building) sent).getShape();
@@ -76,13 +76,6 @@ public class AURPerceptibleArea {
 				q4.add(p);
 			}
 		}
-		
-		double lastX = 0;
-		double lastY = 0;
-		double lastInsertedX = 0;
-		double lastInsertedY = 0;
-		
-		int count = 0;
 
 		double rx = 0;
 		double ry = 0;
@@ -159,67 +152,11 @@ public class AURPerceptibleArea {
 				}
 			}
 			
-			if(count > 0) {
-				boolean co = isCollinear(lastInsertedX, lastInsertedY, lastX, lastY, rx, ry);
-
-				if(co) {
-					lastX = rx;
-					lastY = ry;
-				} else {
-					result.addPoint((int) lastX, (int) lastY);
-					count++;
-					lastInsertedX = lastX;
-					lastInsertedY = lastY;
-					lastX = rx;
-					lastY = ry;
-				}
-			} else {
-				lastInsertedX = rx;
-				lastInsertedY = ry;
-				lastX = rx;
-				lastY = ry;
-				result.addPoint((int) lastInsertedX, (int) lastInsertedY);
-				count++;
-			}
+			result.addPoint((int) rx, (int) ry);
 			r += dr;
 		}
 		
-		return result;
-	}
-	
-	private static boolean isBuilding(StandardEntity sent) {
-		StandardEntityURN urn = sent.getStandardURN();
-		return (false
-			|| urn.equals(StandardEntityURN.BUILDING)
-			|| urn.equals(StandardEntityURN.GAS_STATION)
-			|| urn.equals(StandardEntityURN.REFUGE)
-			|| urn.equals(StandardEntityURN.POLICE_OFFICE)
-			|| urn.equals(StandardEntityURN.AMBULANCE_CENTRE)
-			|| urn.equals(StandardEntityURN.FIRE_STATION)
-		);
-	}
-	
-	private static boolean isCollinear(double x1, double y1, double x2, double y2, double x3, double y3) {
-		double v1x = x2 - x1;
-		double v1y = y2 - y1;
-		double v2x = x3 - x2;
-		double v2y = y3 - y2;
-		double l1 = Math.hypot(v1x, v1y);
-		double l2 = Math.hypot(v2x, v2y);
-		if(Math.abs(l1) < AURGeoUtil.EPS || Math.abs(l2) < AURGeoUtil.EPS) {
-			return true;
-		}
-		v1x /= l1;
-		v1y /= l1;
-		v2x /= l2;
-		v2y /= l2;
-		double v3x = v2x - v1x;
-		double v3y = v2y - v1y;
-		double l3 = Math.hypot(v3x, v3y);
-		if(l3 < 0.20) {
-			return true;
-		}
-		return false;
+		return AURGeoUtil.getSimplifiedPolygon(result, 0.2);
 	}
 	
 }
