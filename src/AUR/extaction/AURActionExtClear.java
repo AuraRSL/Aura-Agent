@@ -890,8 +890,6 @@ public class AURActionExtClear extends ExtAction {
                 Polygon clearPolygon = AURPoliceUtil.getClearPolygon(policePoint, clearPoint);
                 
                 Pair<Integer, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon, (Area) worldInfo.getEntity(agentInfo.getPosition()));
-                System.out.println(blockadesList.first());
-                System.out.println(agentInfo.getID() + " Blockades Size: " + blockadesList.second().size());
                 if(blockadesList.first() == 1){ // Then Clear
                         this.cw.setBlockadeList(blockadesList.second());
                         return this.cw.getAction(
@@ -1261,7 +1259,7 @@ public class AURActionExtClear extends ExtAction {
                         return false;
                 
                 Pair<Point2D, EntityID> get = pathNodes.get(index);
-                wsg.dijkstra(agentInfo.getPosition());
+                wsg.KStar(agentInfo.getPosition());
                 
                 ArrayList<EntityID> list1 = new ArrayList<>();
                 for(int i = 0;i <= index;i ++){

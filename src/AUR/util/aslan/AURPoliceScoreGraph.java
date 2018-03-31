@@ -61,8 +61,9 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.wi = wi;
                 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
+                this.wsg.calc();
                 
-                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURMapClusterer");
+                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURWorldClusterer");
                 this.cluseterIndex = this.clustering.calc().getClusterIndex(ai.me());
                 this.clusterEntityIDs = this.clustering.getClusterEntityIDs(cluseterIndex);
                 
@@ -160,8 +161,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 System.out.println("Updating RoadDetector Scores...");
                 
                 wsg.updateInfo(messageManager);
-                wsg.NoBlockadeDijkstra(ai.getPosition());
-                wsg.dijkstra(ai.getPosition());
+                wsg.KStarNoBlockade(ai.getPosition());
+                wsg.KStar(ai.getPosition());
                 
                 // Set dynamic scores
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
@@ -193,7 +194,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         private void setScores() {
                 long sTime = System.currentTimeMillis();
                 
-                wsg.NoBlockadeDijkstra(ai.getPosition());
+                wsg.KStarNoBlockade(ai.getPosition());
                 
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 
@@ -279,7 +280,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
 
         private void setTargetAsReached(EntityID entity,double score){
-                this.areas.get(entity).targetScore = score;
+                AURAreaGraph get = this.areas.get(entity);
+                get.targetScore = score;
                 visitedAreas.add(entity);
         }
         
