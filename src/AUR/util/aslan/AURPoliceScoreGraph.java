@@ -171,6 +171,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 if(ai.getChanged().getChangedEntities() != null){
                         for(EntityID eid : ai.getChanged().getChangedEntities()){
+                                
+                                setPolicesClusterThatMaybeBlockedWhenSeeThatNotBlockedLooool(eid, - AURConstants.RoadDetector.BaseScore.CLUSTER);
                                 setFiredBuildingsScore(eid, AURConstants.RoadDetector.SecondaryScore.FIRED_BUILDING);
                                 setBlockedHumansScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
                                 setRoadsWithoutBlockadesScore(eid, AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
@@ -201,6 +203,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 setPoliceForceScore(AURConstants.RoadDetector.BaseScore.POLICE_FORCE);
                 setFireBrigadeScore(AURConstants.RoadDetector.BaseScore.FIRE_BRIGADE);
                 setAmbulanceTeamScore(AURConstants.RoadDetector.BaseScore.AMBULANCE_TEAM);
+                setPolicesClusterThatMaybeBlocked(AURConstants.RoadDetector.BaseScore.CLUSTER);
                 
                 for(AURAreaGraph area : wsg.areas.values()){
                         /* Distance Score */
@@ -264,12 +267,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
                 else{
                         double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
-                        score *= (1 - distanceFromCluster) * 2 / 3;
+                        score *= (1 - distanceFromCluster) * 1 / 2;
                 }
                 
-                if(area.isRoad()){
-                        score /= 2;
-                }
+//                if(area.isRoad()){
+//                        score /= 2;
+//                }
                 
                 area.baseScore += score;
         }
@@ -390,7 +393,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
         private void setRoadsWithoutBlockadesScore(EntityID eid, double score) {
                 AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
 
-                if(areaGraph != null && areaGraph.isRoad() &&
+                if(areaGraph != null &&
+                   areaGraph.isRoad() &&
                    areaGraph.area.isBlockadesDefined() &&
                    areaGraph.area.getBlockades().isEmpty()){
 
@@ -473,7 +477,17 @@ public class AURPoliceScoreGraph extends AbstractModule {
         private void setBlockedBuildingsThatContainsCiviliansScore(EntityID eid, double score) {
                 StandardEntity entity = wi.getEntity(eid);
                 if(entity instanceof Civilian && ! visitedCivilians.contains(eid)){
-                        wsg.getAreaGraph(((Civilian) entity).getPosition()).secondaryScore += score;
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(((Civilian) entity).getPosition());
+                        if(areaGraph.isBuilding()){
+                                if(((Civilian)entity).getHP() > 20 &&
+                                   areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                        areaGraph.secondaryScore += score;
+                                        areaGraph.targetScore = 1;
+                                }
+                                else{
+                                        areaGraph.targetScore = 0;
+                                }
+                        }
                 }
         }
 
@@ -515,6 +529,48 @@ public class AURPoliceScoreGraph extends AbstractModule {
                    ! visitedBuildingsThatBlocked.contains(eid)){
                         areaGraph.secondaryScore += score;
                         visitedBuildingsThatBlocked.add(eid);
+                }
+        }
+
+        HashSet<EntityID> policesMaybeBlocked = new HashSet<>();
+        private void setPolicesClusterThatMaybeBlocked(double score) {
+                if(wsg.neighbourClusters.isEmpty())
+                        return;
+                
+                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.POLICE_FORCE)){
+                        PoliceForce p = (PoliceForce) se;
+                        
+                        if(p.getID().equals(ai.me().getID()))
+                                continue;
+                        
+                        AURAreaGraph entity = wsg.getAreaGraph(p.getPosition());
+                        if(entity.isBuilding() && ! entity.isRefuge()){
+                                int clusterIndex = clustering.getClusterIndex(se.getID());
+                                if(wsg.neighbourClusters.contains(new Integer(clusterIndex))){
+                                        policesMaybeBlocked.add(se.getID());
+                                        for(AURAreaGraph ag : wsg.getAreaGraph(clustering.getClusterEntityIDs(clusterIndex))){
+                                                if(ag != null){
+                                                        ag.baseScore += score;
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+
+        private void setPolicesClusterThatMaybeBlockedWhenSeeThatNotBlockedLooool(EntityID eid, double score) {
+                if(policesMaybeBlocked.contains(eid)){
+                        PoliceForce p = (PoliceForce) wi.getEntity(eid);
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(p.getID());
+                        if(! areaGraph.isBuilding() || areaGraph.isRefuge()){
+                                int clusterIndex = clustering.getClusterIndex(eid);
+                                for(AURAreaGraph ag : wsg.getAreaGraph(clustering.getClusterEntityIDs(clusterIndex))){
+                                        if(ag != null){
+                                                ag.baseScore += score;
+                                        }
+                                }
+                                policesMaybeBlocked.remove(eid);
+                        }
                 }
         }
 }
