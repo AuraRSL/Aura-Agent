@@ -16,7 +16,7 @@ public class AURConstants {
 	public static class PathPlanning {
 		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 30;
 		public final static int POLICE_BLOCKADE_FORGET_TIME = 30;
-		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 5;
+		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 30;
 		public final static int FIREBRIGADE_BLOCKADE_FORGET_TIME = 30;
 	}
 	

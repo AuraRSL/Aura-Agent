@@ -2,6 +2,7 @@ package AUR.util.ambulance.ProbabilityDeterminant;
 
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
+import adf.agent.action.ambulance.ActionRescue;
 import rescuecore2.standard.entities.*;
 
 /**
@@ -53,7 +54,7 @@ public class AgentRateDeterminer {
                 return true;
             }
         }
-        if(otherAgentsRescueEffects(wsg, human)){
+        if(otherAgentResuce(wsg, human)){
             return true;
         }
 
@@ -80,6 +81,43 @@ public class AgentRateDeterminer {
         return false;
     }
 
+    public static boolean otherAgentResuce(AURWorldGraph wsg, Human human){
+        int numberOfAmbulance = 0;
+        int numberOfBuridAgent = 0;
+        if(wsg.ai.getExecutedAction(wsg.ai.getTime()-1) instanceof ActionRescue){
+            return false;
+        }
+        for(StandardEntity entity : wsg.wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM)){
+            if(entity instanceof AmbulanceTeam) {
+                AmbulanceTeam at = (AmbulanceTeam) entity;
+                if (at.getID().equals(wsg.ai.getID())) {
+                    continue;
+                }
+                if(at.isBuriednessDefined() && at.getBuriedness() == 0) {
+                    if (at.isPositionDefined() && at.getPosition().equals(human.getPosition())) {
+                        numberOfAmbulance++;
+                    }
+                }
+            }
+        }
+
+        for(StandardEntity entity : wsg.wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM,StandardEntityURN.FIRE_BRIGADE,StandardEntityURN.POLICE_FORCE)){
+            if(entity instanceof AmbulanceTeam || entity instanceof FireBrigade || entity instanceof PoliceForce) {
+                Human hu = (Human)entity;
+                if(hu.isBuriednessDefined() && hu.getBuriedness() > 0) {
+                    if (hu.isPositionDefined() && hu.getPosition().equals(human.getPosition())) {
+                        numberOfBuridAgent++;
+                    }
+                }
+            }
+        }
+//        if(human.getPosition().getValue() == 937)
+//            System.out.println(numberOfAmbulance + "  >> " + numberOfBuridAgent);
+        if(numberOfAmbulance >= numberOfBuridAgent ){
+            return true;
+        }
+        return false;
+    }
     public static double clusterEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human , double coefficient){
 
         for(StandardEntity entity : rescueInfo.clusterEntity){

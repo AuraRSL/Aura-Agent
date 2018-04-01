@@ -51,7 +51,7 @@ public class BuildingInfoLayer extends K_ViewerLayer {
 
         RescueInfo rescueInfo = wsg.rescueInfo;
         double clusterEffect = BuildingRateDeterminer.clusterEffect(wsg, rescueInfo, building, 1);
-        double travelTime =  BuildingRateDeterminer.TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.4);
+        double travelTime =  BuildingRateDeterminer.TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.55);
         double distanceFromFire =  BuildingRateDeterminer.distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
         double brokness =   BuildingRateDeterminer.broknessEffect(wsg, rescueInfo, building, 0.35);
         double teperature =  BuildingRateDeterminer.buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);

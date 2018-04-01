@@ -5,6 +5,7 @@ import AUR.util.ambulance.AmbulanceUtil;
 import AUR.util.ambulance.Information.CivilianInfo;
 import AUR.util.ambulance.Information.RescueInfo;
 import AUR.util.knd.AURWorldGraph;
+import adf.agent.action.ambulance.ActionRescue;
 import rescuecore2.standard.entities.*;
 import rescuecore2.worldmodel.EntityID;
 
@@ -93,7 +94,7 @@ public class HumanRateDeterminer {
 
 
 
-        if(otherAgentsRescueEffects()){
+        if(otherAgentResuce()){
             return true;
         }
         StandardEntity posEntity = wsg.wi.getEntity(civilian.getPosition());
@@ -134,6 +135,41 @@ public class HumanRateDeterminer {
         return false;
     }
 
+    public boolean otherAgentResuce(){
+        int numberOfAmbulance = 0;
+        int numberOfCivilian = 0;
+        if(wsg.ai.getExecutedAction(wsg.ai.getTime()-1) instanceof ActionRescue){
+            return false;
+        }
+        for(StandardEntity entity : wsg.wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM)){
+            if(entity instanceof AmbulanceTeam) {
+                AmbulanceTeam at = (AmbulanceTeam) entity;
+                if (at.getID().equals(wsg.ai.getID())) {
+                    continue;
+                }
+                if(at.isBuriednessDefined() && at.getBuriedness() == 0) {
+                    if (at.isPositionDefined() && at.getPosition().equals(civilian.getPosition())) {
+                        numberOfAmbulance++;
+                    }
+                }
+            }
+        }
+
+        for(StandardEntity entity : wsg.wi.getEntitiesOfType(StandardEntityURN.CIVILIAN)){
+            if(entity instanceof Civilian) {
+                Civilian ci = (Civilian)entity;
+                if (ci.isPositionDefined() && ci.getPosition().equals(civilian.getPosition())) {
+                    numberOfCivilian++;
+                }
+            }
+        }
+
+
+        if(numberOfAmbulance >= numberOfCivilian ){
+            return true;
+        }
+        return false;
+    }
     public double effectAreaType(double coefficient){
         double tempRate = 0;
         if(AmbulanceUtil.inSideBulding(wsg,civilian.me)){
