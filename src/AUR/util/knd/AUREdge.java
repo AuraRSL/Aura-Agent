@@ -33,7 +33,7 @@ public class AUREdge {
 
 	public double getPriority() {
 		double result = 0;
-		double w = weight / 100;
+		double w = Math.max(weight / 100, 10);
 		result += w;
 		AURAreaGraph ag = areaGraph;
 		boolean isSmallOrExtraSmall = (ag.isExtraSmall() || ag.isSmall());
@@ -46,10 +46,13 @@ public class AUREdge {
 			result += w * 10;
 		}
 		
-		if(ag.isBuilding()) {
-			result += w * 100;
-			if(ag.getBuilding().fireSimBuilding.isOnFire()) {
-				result += w * 200;
+		AURBuilding b = ag.getBuilding();
+		if(b != null) {
+			result += w * 10;	
+		}
+		if(b != null && b.fireSimBuilding.inflammable()) {
+			if(b.getFieryness() != 8) {
+				result += Math.max(w, 25) * 200;
 			}
 		}
 		

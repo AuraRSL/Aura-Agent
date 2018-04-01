@@ -68,6 +68,13 @@ public class AURBuilding {
 		return (int) (Math.ceil((double) this.getPerceptCost() / AURConstants.Agent.VELOCITY));
 	}
 	
+	public int getFieryness() {
+		if (this.building.isFierynessDefined()) {
+			return this.building.getFieryness();
+		}
+		return 0;
+	}
+	
 	public void setCommonWalls() {
 		
 		Polygon bp = ag.polygon;

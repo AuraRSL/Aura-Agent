@@ -58,11 +58,12 @@ public class AURFireValueSetter {
 	private void add_TravelCost(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		double maxDist = 0;
 		for (AURAreaGraphValue p : points) {
-			if(p.ag.isRecentlyReportedFire() && p.ag.isInExtinguishRange()) {
-				p.temp_value = 0;
-			} else {
-				p.temp_value = p.ag.getBuilding().getPerceptTime();
-			}
+//			if(p.ag.isRecentlyReportedFire() && p.ag.isInExtinguishRange()) {
+//				p.temp_value = 0;
+//			} else {
+//				p.temp_value = p.ag.getBuilding().getPerceptTime();
+//			}
+			p.temp_value = p.ag.getBuilding().getPerceptTime();
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
