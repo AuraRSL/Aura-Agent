@@ -120,7 +120,7 @@ public class AURFireBrigadeActionExMove extends ExtAction {
 //		ActionMove actMove = new ActionMove(wsg.getPathToClosest(ai.getPosition(), targets));
 		
 		if (result == null || false) {
-			//actMove = wsg.getNoBlockadeMoveAction(ai.getPosition(), target);
+			actMove = wsg.getNoBlockadeMoveAction(ai.getPosition(), target);
 		}
 		this.result = walkWatcher.check(actMove);
 		return this;

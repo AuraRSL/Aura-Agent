@@ -33,7 +33,6 @@ public class AURAreaGraph {
 	public final static int AREA_TYPE_REFUGE = 2;
 	public final static int AREA_TYPE_ROAD_HYDRANT = 3;
 	public final static int AREA_TYPE_GAS_STATION = 4;
-	public int updateTime = -1;
 	public AURNode lastDijkstraEntranceNode = null;
 	public AURNode lastNoBlockadeDijkstraEntranceNode = null;
 	public final static int COLOR_RED = 0;
@@ -54,11 +53,24 @@ public class AURAreaGraph {
 	public double perimeter = 0;
 	private boolean isAlmostConvex = false;
 	private boolean isBuildingNeighbour = false;
-	
+	public boolean safeReach = false;
 	public double fb_value;
 	public double fb_value_temp;
 	
 	private boolean passed = false;
+	
+	public boolean isSafe() {
+		if(this.isBuilding() == false) {
+			return true;
+		}
+		if(this.building.getFieryness() == 8) {
+			return true;
+		}
+		if(this.building.fireSimBuilding.inflammable() == false) {
+			return true;
+		}
+		return false;
+	}
 	
 	public int getBlockadeForgetTime() {
 		switch (wsg.ai.me().getStandardURN()) {
@@ -428,7 +440,7 @@ public class AURAreaGraph {
 	int lastHashCode = 1;
 	
 	public int getCurrentAliveBlockadesHashCode() {
-		int hash = 1;
+		int hash = -1;
 		if(isBuilding() == true) {
 			return hash;
 		}
@@ -449,11 +461,10 @@ public class AURAreaGraph {
 		this.needUpdate = false;
 		int currentHashCode = getCurrentAliveBlockadesHashCode();
 		
-		if (lastHashCode != currentHashCode || updateTime < 0) {
+		if (lastHashCode != currentHashCode) {
 			for (AURBorder border : borders) {
 				border.reset();
 			}
-			updateTime = wsg.ai.getTime();
 			this.needUpdate = true;
 		}
 		lastHashCode = currentHashCode;
@@ -557,7 +568,7 @@ public class AURAreaGraph {
 	}
 
 	public boolean longTimeNoSee() {
-		return (wsg.ai.getTime() - updateTime) > getBlockadeForgetTime();
+		return (noSeeTime()) > getBlockadeForgetTime();
 	}
 	
 	public void paint(Graphics2D g2, K_ScreenTransform kst) {

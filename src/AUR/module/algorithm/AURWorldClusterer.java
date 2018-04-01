@@ -229,7 +229,7 @@ public class AURWorldClusterer extends StaticClustering {
 	@Override
 	public Clustering resume(PrecomputeData precomputeData) {
 		super.resume(precomputeData);
-		this.preparate();
+		calc();
 		return this;
 	}
 

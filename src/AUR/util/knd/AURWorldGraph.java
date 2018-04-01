@@ -519,7 +519,7 @@ public class AURWorldGraph extends AbstractModule {
 		setNeighbours();
 		addBorders();
 
-		setCommonWalls();
+//		setCommonWalls();
 		addPerceptibleBuildings();
 		addSightableBuildings();
 		
@@ -550,10 +550,11 @@ public class AURWorldGraph extends AbstractModule {
 		this.fireZonesCalculator = new AURFireZonesCalculator(this);
 		
 		
+		setClusters();
 		
 		updateInfo(null);
 
-		setClusters();
+		
 		
 //		System.out.println("walls: " + walls.size());
 		this.build = true;
@@ -772,7 +773,7 @@ public class AURWorldGraph extends AbstractModule {
 		if (agentAg.perceptibleAndExtinguishableBuildings != null) {
 			ArrayList<AURBuilding> dels = new ArrayList<>();
 			for (AURBuilding b : agentAg.perceptibleAndExtinguishableBuildings) {
-				if (b.ag.noSeeTime() >= 0) {
+				if (b.ag.noSeeTime() > 0) {
 					if (b.getPerceptibleAndExtinguishableAreaPolygon().contains(ai.getX(), ai.getY())) {
 						dels.add(b);
 					}
@@ -874,7 +875,7 @@ public class AURWorldGraph extends AbstractModule {
 		if(AURConstants.Viewer.LAUNCH == true) {
 			K_Viewer.getInstance().update(this);
 		}
-//		System.out.println("world graph update time: " + (System.currentTimeMillis() - t));
+		System.out.println("world graph update time: " + (System.currentTimeMillis() - t));
 		return this;
 	}
 
@@ -887,6 +888,7 @@ public class AURWorldGraph extends AbstractModule {
 			if(ag.isBuilding()) {
 				ag.getBuilding().edgeToPereceptAndExtinguish = null;
 				ag.getBuilding().edgeToSeeInside = null;
+				ag.safeReach = false;
 			}
 			ag.vis = false;
 			ag.lastDijkstraEntranceNode = null;
@@ -963,6 +965,7 @@ public class AURWorldGraph extends AbstractModule {
 		lastDijkstraFrom = fromID;
 		initForDijkstra();
 		AURAreaGraph fromAg = getAreaGraph(fromID);
+		fromAg.safeReach = fromAg.isSafe();
 		if (fromAg == null) {
 			return;
 		}
@@ -1044,10 +1047,12 @@ public class AURWorldGraph extends AbstractModule {
 			ag = qNode.ownerArea1;
 			if (ag.lastDijkstraEntranceNode == null) {
 				ag.lastDijkstraEntranceNode = qNode;
+				ag.safeReach = qNode.ownerArea2.safeReach && ag.isSafe();
 			}
 			ag = qNode.ownerArea2;
 			if (ag.lastDijkstraEntranceNode == null) {
 				ag.lastDijkstraEntranceNode = qNode;
+				ag.safeReach = qNode.ownerArea1.safeReach && ag.isSafe();
 			}
 			for (AUREdge edge : qNode.edges) {
 				toNode = edge.nextNode(qNode);

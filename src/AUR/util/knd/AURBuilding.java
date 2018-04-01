@@ -69,30 +69,17 @@ public class AURBuilding {
 	}
 	
 	public boolean isSafePerceptible() {
-		if (getPerceptTime() == 0) {
-			return true;
-		}
-		this.wsg.KStar(this.ag.area.getID());
+//		if (getPerceptTime() == 0) {
+//			return true;
+//		}
+		this.wsg.KStar(this.wsg.ai.getPosition());
 
 		AUREdgeToStand etp = this.edgeToPereceptAndExtinguish;
 		if(etp == null) {
 			return false;
 		}
 		
-		if(etp.ownerAg.isBuilding() && etp.ownerAg.getBuilding().getFieryness() != 8) {
-			return false;
-		}
-		
-		AURNode node = this.edgeToPereceptAndExtinguish.fromNode;
-		while (node.pre != wsg.startNullNode) {
-			AURAreaGraph preAg = node.getPreAreaGraph();
-			if(preAg.isBuilding() && preAg.getBuilding().getFieryness() != 8) {
-				return false;
-			}
-			node = node.pre;
-		}
-		
-		return true;
+		return etp.ownerAg.safeReach && etp.fromNode.ownerArea1.safeReach && etp.fromNode.ownerArea2.safeReach;
 	}
 	
 	public int getFieryness() {

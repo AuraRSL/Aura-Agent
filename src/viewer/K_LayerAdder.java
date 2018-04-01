@@ -103,6 +103,12 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_PATH_PLANNING, k_LayerReachableAreas.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
 		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTimeFrom.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_PathToSeeInside.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_SafeReach.class, false);
+		viewer.addLayer(TAB_PATH_PLANNING, K_SafePercept.class, false);
 		
 		viewer.addLayer(TAB_MAP, A_AreasEntityID.class, false);
 		viewer.addLayer(TAB_MAP, A_BlockadesEntityID.class, false);
@@ -113,12 +119,6 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_POLICE, A_AreasRoadDetectorScore.class, false);
 		viewer.addLayer(TAB_POLICE, A_AreasThatBlockadesNotDefined.class, false);
 		viewer.addLayer(TAB_POLICE, A_AroundEntrances.class, false);
-
-		viewer.addLayer(TAB_PATH_PLANNING, K_TravelTime.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_BuildingSightableAreas.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_SightableBuildings.class, false);
-		viewer.addLayer(TAB_PATH_PLANNING, K_PathToSeeInside.class, false);
-
 
 		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);
