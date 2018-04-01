@@ -949,7 +949,7 @@ public class AURActionExtClear extends ExtAction {
                                 
                         return this.cw.getAction(
                                 new ActionMove(
-                                        wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
+                                        wsg.getNoBlockadePathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
                                         lastPoint[0],
                                         lastPoint[1]
                                 )
