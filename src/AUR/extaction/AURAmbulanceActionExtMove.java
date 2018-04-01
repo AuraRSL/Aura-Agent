@@ -1,5 +1,6 @@
 package AUR.extaction;
 
+import AUR.util.ambulance.RunPoint;
 import AUR.util.knd.AURWalkWatcher;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
@@ -28,6 +29,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
 
     private int thresholdRest;
     private int kernelTime;
+    private RunPoint runPoint;
     private AURWalkWatcher walkWatcher = null;
     private AURWorldGraph wsg;
 
@@ -39,7 +41,7 @@ public class AURAmbulanceActionExtMove extends ExtAction
         super(agentInfo, worldInfo, scenarioInfo, moduleManager, developData);
         this.target = null;
         this.thresholdRest = developData.getInteger("ActionExtMove.rest", 100);
-
+        this.runPoint = new RunPoint(agentInfo , worldInfo );
         switch (scenarioInfo.getMode())
         {
             case PRECOMPUTATION_PHASE:
@@ -168,8 +170,19 @@ public class AURAmbulanceActionExtMove extends ExtAction
                 return this;
             }
         }
+        System.out.println("target : " + target);
         if (this.target == null)
         {
+
+            if(result == null){
+                List<EntityID> runPath = runPoint.find().getPath();
+                this.result = walkWatcher.check(new ActionMove(runPath));
+                if(result == null){
+                    this.result = new ActionMove(runPath);
+                }
+            }
+            this.wsg.rescueInfo.temptest = (ActionMove) this.result;
+
             return this;
         }
 
@@ -199,11 +212,29 @@ public class AURAmbulanceActionExtMove extends ExtAction
             }
         }
         if(this.result instanceof ActionMove){
-
-//            this.result = walkWatcher.check((ActionMove)result);//TODO BUG Paris first ambu //ActionMove [usePosition=true, posX=104400, posY=659700, path=[48211, 4388, 14665, 503]]
-//            ActionMove [usePosition=true, posX=119436, posY=669433, path=[48211]]
+            this.result = walkWatcher.check((ActionMove)result);
         }
 
+        if(result == null ){
+            if(se instanceof Building) {
+                ActionMove actionMove = wsg.getNoBlockadeMoveAction(agent.getPosition(), this.target);
+
+                if (actionMove != null && actionMove.getPath().size() > 0) {
+                    this.result = actionMove;
+                }
+            }else if(se instanceof Road){
+                this.result = wsg.getNoBlockadeMoveAction(agent.getPosition(), this.target);
+            }else if(se instanceof Human){
+                this.result = wsg.getNoBlockadeMoveAction(agent.getPosition(), this.target);
+            }
+        }
+        if(result == null){
+            List<EntityID> runPath = runPoint.find().getPath();
+            this.result = walkWatcher.check(new ActionMove(runPath));
+            if(result == null){
+                this.result = new ActionMove(runPath);
+            }
+        }
         this.wsg.rescueInfo.temptest = (ActionMove) this.result;
         return this;
     }

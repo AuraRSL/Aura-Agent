@@ -75,7 +75,8 @@ public class AURHumanDetector extends HumanDetector
 
 
     // Update ***********************************************************************************
-
+    int countPos = 0;
+    EntityID lastResult = null;
     @Override
     public HumanDetector updateInfo(MessageManager messageManager)
     {
@@ -84,6 +85,24 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+
+        //
+        if(lastResult != null && result != null) {
+            if (lastResult.equals(result)) {
+                countPos++;
+            } else {
+                countPos = 0;
+            }
+
+            if (countPos > 18) {
+                if (rescueInfo.civiliansInfo.get(result) != null) {
+                    rescueInfo.civiliansInfo.get(result).rate = 0;
+                    result = null;
+                }
+            }
+
+        }lastResult = result;
+
 
         this.wsg.updateInfo(messageManager);
         this.clustering.updateInfo(messageManager);
