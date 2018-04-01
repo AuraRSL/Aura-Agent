@@ -36,7 +36,8 @@ public class A_AreasRoadDetectorScore extends K_ViewerLayer {
                 g2.setStroke(new BasicStroke(1));
                 
                 g2.setColor(new Color(100,100,0,100));
-                g2.fill(kst.getTransformedPolygon(max.polygon));
+                if(max != null)
+                        g2.fill(kst.getTransformedPolygon(max.polygon));
         }
 
         @Override
