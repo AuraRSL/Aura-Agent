@@ -232,7 +232,10 @@ public class RescueInfo extends AbstractModule {
                 updateAgentInfo(human);
             }
         }
-        updateViwe();
+        if(ambo != null) {
+            updateViwe();
+        }
+
 
     }
 
