@@ -25,7 +25,7 @@ import java.util.*;
 
 import static rescuecore2.standard.entities.StandardEntityURN.*;
 
-public class AURAmbulanceSearchLegacy extends Search {
+public class AURPoliceSearch extends Search {
     private PathPlanning pathPlanning;
     private Clustering clustering;
     private ClusterIndex clusterIndex;
@@ -38,7 +38,7 @@ public class AURAmbulanceSearchLegacy extends Search {
     private Collection<EntityID> agentPositions;
 
 
-    public AURAmbulanceSearchLegacy(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
+    public AURPoliceSearch(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
         super(ai, wi, si, moduleManager, developData);
         this.unsearchedBuildingIDs = new ArrayList<>();
         this.agentPositions = new HashSet<>();

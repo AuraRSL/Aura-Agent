@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Area;
@@ -31,6 +32,7 @@ import rescuecore2.standard.entities.GasStation;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Refuge;
+import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -155,6 +157,60 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public EntityID getAreaWithMaximumScore(){
                 return this.areasForScoring.get(0).area.getID();
         }
+        
+        public HashSet<EntityID> visitedBuildings = new HashSet<>();
+        public void updateVisitedBuildings() {
+                boolean intersect = false;
+                Set<EntityID> changedEntities = agentInfo.getChanged().getChangedEntities();
+                
+                if(changedEntities == null)
+                        return;
+                
+                for (EntityID id : changedEntities) {
+                        StandardEntity se = worldInfo.getEntity(id);
+                        if (se instanceof Building
+                            && worldInfo.getDistance(agentInfo.getID(), id) < scenarioInfo.getPerceptionLosMaxDistance()) {
+                            Building building = (Building) se;
+                            intersect = false;
+                            
+                                for (StandardEntity entity : worldInfo.getObjectsInRange(agentInfo.getID(), scenarioInfo.getPerceptionLosMaxDistance())) {
+
+                                        if (entity instanceof Area) {
+                                                Area area = (Area) entity;
+                                                
+                                                if (entity instanceof Road) {
+                                                        continue;
+                                                }
+                                                
+                                                for (Edge edge : area.getEdges()) {
+                                                        double[] d = new double[2];
+                                                        if (edge.isPassable()) {
+                                                                continue;
+                                                        }
+                                                        
+                                                        if (AURGeoUtil.getIntersection(
+                                                            edge.getStartX(), edge.getStartY(),
+                                                            edge.getEndX(), edge.getEndY(),
+                                                            agentInfo.getX(), agentInfo.getY(),
+                                                            building.getX(), building.getY(),
+                                                            d)) {
+                                                                
+                                                                intersect = true;
+                                                                break;
+                                                        }
+                                                }
+                                                if (intersect == true) {
+                                                        break;
+                                                }
+                                        }
+
+                                }
+                                if (intersect == false) {
+                                        visitedBuildings.add(building.getID());
+                                }
+                        }
+                }
+        }
 
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
@@ -166,6 +222,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 wsg.updateInfo(messageManager);
                 wsg.KStarNoBlockade(ai.getPosition());
                 wsg.KStar(ai.getPosition());
+                updateVisitedBuildings();
                 
                 // Set dynamic scores
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
@@ -622,8 +679,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
                 }
                 
-                for(BuildingInfo bi : wsg.rescueInfo.visitedList){
-                        EntityID id = bi.me.getID();
+                for(EntityID id : visitedBuildings){
                         if(! settedBuildings.contains(id)){
                                 AURAreaGraph areaGraph = wsg.getAreaGraph(id);
                                 
