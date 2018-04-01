@@ -19,6 +19,7 @@ manifest.mf
 library
 data
 /dist/
+precomp_data/
 
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm

@@ -5,24 +5,29 @@ import AUR.util.knd.AURGeoUtil;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.action.police.ActionClear;
+import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
+import adf.agent.info.ScenarioInfo;
+import adf.agent.info.WorldInfo;
+import adf.agent.module.ModuleManager;
+import adf.component.module.AbstractModule;
+import com.google.common.collect.Lists;
+import java.awt.Shape;
 import java.util.ArrayList;
 import rescuecore2.standard.entities.Blockade;
-import rescuecore2.worldmodel.EntityID;
 
 /**
  *
  * @author Amir Aslan Aslani - Feb 2018
  */
-public class AURClearWatcher {
-        private AgentInfo ai;
-        
+public class AURClearWatcher extends AbstractModule {
         public final int MOVE = 1,
                          CLEAR = 2,
                          CLEAR_FROM_WATCHER = 3,
                          NULL = 4;
         
-        private ArrayList<Blockade> lastBlockadeList = null;
+        private ArrayList<Integer> lastBlockadePList = null;
+        private ArrayList<Integer> currentBlockadePList = null;
         private ArrayList<Blockade> currentBlockadeList = null;
         
         private double xCurrentPos = 0;
@@ -31,75 +36,91 @@ public class AURClearWatcher {
         private double yLastPos = 0;
         
         public double[] lastMoveVector = new double[2];
+        public double[] lastMoveDirection = new double[2];
         
         public int lastAction;
         public int lastTime;
         public int currentTime;
         
-        private EntityID blockadeTemp = null;
-        
-        public AURClearWatcher(AgentInfo ai) {
-                this.ai = ai;
+        public int dontMoveCounter = 0;
+
+        public AURClearWatcher(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
+                super(ai, wi, si, moduleManager, developData);
                 this.lastAction = this.NULL;
                 
-                this.lastBlockadeList = new ArrayList<>();
+                this.lastBlockadePList = new ArrayList<>();
+                this.currentBlockadePList = new ArrayList<>();
                 this.currentBlockadeList = new ArrayList<>();
+        }
+        
+        public ArrayList<Integer> getBlockadeListPropertyList(ArrayList<Blockade> list){
+                ArrayList<Integer> result = new ArrayList<>();
+                for(Blockade b : list){
+                        result.addAll(getBlockadePropertyList(b));
+                }
+                return result;
+        }
+        
+        private ArrayList<Integer> getBlockadePropertyList(Blockade b){
+                ArrayList<Integer> list = new ArrayList<>();
+                for(int a : b.getApexes()){
+                        list.add(a);
+                }
+                return list;
         }
         
         public void updateAgentInformations() {
                 this.xLastPos = this.xCurrentPos;
                 this.yLastPos = this.yCurrentPos;
-                this.xCurrentPos = this.ai.getX();
-                this.yCurrentPos = this.ai.getY();
+                this.xCurrentPos = this.agentInfo.getX();
+                this.yCurrentPos = this.agentInfo.getY();
                 this.lastTime = this.currentTime;
-                this.currentTime = this.ai.getTime();
+                this.currentTime = this.agentInfo.getTime();
+                
+                if(dontMoveCounter < 20 && isMoveLessThanAllowedValue()){
+                        dontMoveCounter ++;
+                }
+                else{
+                        dontMoveCounter = 0;
+                }
         }
         
         public void setBlockadeList(ArrayList<Blockade> blockades){
-                this.lastBlockadeList = this.currentBlockadeList;
+                this.lastBlockadePList = (ArrayList<Integer>) currentBlockadePList.clone();
+                this.currentBlockadePList = getBlockadeListPropertyList(blockades);
                 this.currentBlockadeList = blockades;
         }
         
-        private boolean isBlockadeListsEqual(ArrayList<Blockade> b1, ArrayList<Blockade> b2){
-                if(b1 == null || b2 == null)
-                        return false;
-                if(b1.size() == b2.size()){
-                        for(int i = 0;i < b1.size();i ++){
-                                if(isTwoBlockadeEquals(b1.get(i),b2.get(i)))
-                                        return false;
-                        }
-                        return true;
-                }
-                return false;
-        }
-        
-        private boolean isTwoBlockadeEquals(Blockade b1, Blockade b2){
-                if(! b1.getID().equals(b2.getID()))
-                        return false;
-                if(b1.getApexes().length != b2.getApexes().length)
-                        return false;
-                for(int i = 0;i < b1.getApexes().length;i ++){
-                        if(b1.getApexes()[i] != b1.getApexes()[i])
-                                return false;
-                }
-                return true;
-        }
-        
         public Action getAction(Action action){
-                Action newAction = getNewAction(action);
+                Action newAction;
+                if(dontMoveCounter > AURConstants.ClearWatcher.DONT_MOVE_COUNTER_LIMIT){
+                        newAction = getDontMoveAction();
+                }
+                else{
+                        newAction = getNewAction(action);
+                }
                 
                 if(this.lastAction == CLEAR_FROM_WATCHER)
                         System.out.println(" -> CLEAR_FROM_WATCHER");
-                else if(action instanceof ActionClear){
+                else if(newAction instanceof ActionClear){
                         System.out.println(" -> CLEAR");
                         this.lastAction = this.CLEAR;
                 }
-                else if(action instanceof ActionMove){
+                else if(newAction instanceof ActionMove){
+                        ActionMove actionMove = (ActionMove)newAction;
+                        
                         System.out.println(" -> MOVE");
                         this.lastAction = this.MOVE;
-                        if(((ActionMove)action).getUsePosition()){
-                                this.lastMoveVector[0] = ((ActionMove)action).getPosX() - ai.getX();
-                                this.lastMoveVector[1] = ((ActionMove)action).getPosY() - ai.getY();
+                        if(((ActionMove)newAction).getUsePosition()){
+                                this.lastMoveVector[0] = actionMove.getPosX() - agentInfo.getX();
+                                this.lastMoveVector[1] = actionMove.getPosY() - agentInfo.getY();
+                                if(! isMoveLessThanAllowedValue()){
+                                        this.lastMoveDirection[0] = actionMove.getPosX() - agentInfo.getX();
+                                        this.lastMoveDirection[1] = actionMove.getPosY() - agentInfo.getY();
+                                }
+                        }
+                        else{
+                                // Should Fill
                         }
                 }
                 
@@ -114,9 +135,9 @@ public class AURClearWatcher {
                    currentBlockadeList.size() > 0 &&
                    this.lastAction != this.NULL 
                 ){
-                        if(isBlockadeListsEqual(lastBlockadeList,currentBlockadeList)){
+                        if(lastBlockadePList.equals(currentBlockadePList)){
                                 this.lastAction = CLEAR_FROM_WATCHER;
-                                return new ActionClear(currentBlockadeList.get(0));
+                                return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
                         }
                 }
                 this.lastAction = this.NULL;
@@ -125,5 +146,23 @@ public class AURClearWatcher {
         
         private boolean isMoveLessThanAllowedValue(){
                 return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.Agent.RADIUS;
+        }
+
+        private Action getDontMoveAction() {
+                Shape shape = agentInfo.getPositionArea().getShape();
+                double[] p, agent = new double[]{agentInfo.getX(), agentInfo.getY()};
+                do{
+                        p = AURGeoMetrics.getVectorScaled(AURGeoMetrics.getPointsPlus(
+                                agent,
+                                AURGeoTools.getNormalVectorWithRadian(2 * Math.PI * Math.random())
+                        ),AURConstants.Agent.RADIUS * 2);
+                }while(! shape.contains(p[0], p[1]));
+                
+                return new ActionMove(Lists.newArrayList(agentInfo.getPosition()), (int) p[0], (int) p[1]);
+        }
+
+        @Override
+        public AbstractModule calc() {
+                return this;
         }
 }

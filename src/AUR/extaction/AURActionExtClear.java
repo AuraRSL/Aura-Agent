@@ -4,8 +4,10 @@ import AUR.util.aslan.AURAreaCostComparator;
 import AUR.util.aslan.AURBuildingsEntrancePerpendicularLine;
 import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURDijkstra;
+import AUR.util.aslan.AURPoliceUtil;
 import AUR.util.aslan.AURGeoMetrics;
 import AUR.util.aslan.AURGeoTools;
+import AUR.util.aslan.AURPoliceScoreGraph;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
@@ -18,7 +20,6 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
-import AUR.util.knd.AURWalkWatcher;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
@@ -35,7 +36,9 @@ import adf.component.extaction.ExtAction;
 import adf.component.module.algorithm.PathPlanning;
 import java.awt.Rectangle;
 import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Stack;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.Pair;
 import rescuecore2.misc.geometry.GeometryTools2D;
@@ -45,6 +48,7 @@ import rescuecore2.misc.geometry.Vector2D;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Building;
+import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
@@ -61,7 +65,6 @@ import rescuecore2.worldmodel.EntityID;
 
 public class AURActionExtClear extends ExtAction {
         private final int clearDistance;
-        private final int clearRad;
         private final int distanceLimit;
         private final int forcedMove;
         private final int thresholdRest;
@@ -73,10 +76,9 @@ public class AURActionExtClear extends ExtAction {
         private int count;
 
         private final double agentSize = AURConstants.Agent.RADIUS;
-        private final double repairRate = 2;
 
+        private final AURPoliceScoreGraph psg;
         private AURWorldGraph wsg = null;
-        private final AURWalkWatcher walkWatcher;
         private PathPlanning pathPlanning;
         
         private final AURClearWatcher cw;
@@ -92,7 +94,6 @@ public class AURActionExtClear extends ExtAction {
         public AURActionExtClear(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
                 this.clearDistance = si.getClearRepairDistance();
-                this.clearRad = si.getClearRepairRad();
                 
                 this.distanceLimit = 9 * this.clearDistance / 10;
                 this.forcedMove = developData.getInteger("ActionExtClear.forcedMove", 1);
@@ -104,15 +105,17 @@ public class AURActionExtClear extends ExtAction {
                 this.count = 0;
 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
-                this.walkWatcher = moduleManager.getModule("knd.AuraWalkWatcher");
+                this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
+                this.cw = moduleManager.getModule("aslan.PoliceClearWatcher","AUR.util.aslan.AURClearWatcher");
                 
-                this.cw = new AURClearWatcher(ai);
-                this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi, cw);
+                this.bp = new AURBuildingsEntrancePerpendicularLine(ai, wi, cw, wsg);
+                
         }
 
         @Override
         public ExtAction precompute(PrecomputeData precomputeData) {
                 super.precompute(precomputeData);
+                wsg.precompute(precomputeData);
                 if (this.getCountPrecompute() >= 2) {
                         return this;
                 }
@@ -127,6 +130,7 @@ public class AURActionExtClear extends ExtAction {
         @Override
         public ExtAction resume(PrecomputeData precomputeData) {
                 super.resume(precomputeData);
+                wsg.resume(precomputeData);
                 if (this.getCountResume() >= 2) {
                         return this;
                 }
@@ -141,6 +145,7 @@ public class AURActionExtClear extends ExtAction {
         @Override
         public ExtAction preparate() {
                 super.preparate();
+                wsg.preparate();
                 if (this.getCountPreparate() >= 2) {
                         return this;
                 }
@@ -155,6 +160,7 @@ public class AURActionExtClear extends ExtAction {
         @Override
         public ExtAction updateInfo(MessageManager messageManager) {
                 super.updateInfo(messageManager);
+                wsg.updateInfo(messageManager);
                 if (this.getCountUpdateInfo() >= 2) {
                         return this;
                 }
@@ -180,6 +186,7 @@ public class AURActionExtClear extends ExtAction {
 
         @Override
         public ExtAction calc() {
+                wsg.calc();
                 this.agentPosition = new int[]{(int) agentInfo.getX(),(int) agentInfo.getY()};
                 this.cw.updateAgentInformations();
                 
@@ -198,7 +205,7 @@ public class AURActionExtClear extends ExtAction {
                         if(tempTarget != null){
                                 if(tempTarget.second()){
                                         this.result = new ActionMove(
-                                                pathPlanning.setFrom(policeForce.getPosition()).setDestination(tempTarget.first()).calc().getResult()
+                                                wsg.getPathToClosest(policeForce.getPosition(), Lists.newArrayList(tempTarget.first()))
                                         );
                                         return this;
                                 }
@@ -231,7 +238,21 @@ public class AURActionExtClear extends ExtAction {
                 if(blockedAgentInClearArea != null){
                         System.out.println("Get Rescue Agent That Blocked...");
                         this.result = this.cw.getAction(
-                                getRescueBlockedAgentAction(blockedAgentInClearArea)
+                                getOpenPointAction(blockedAgentInClearArea)
+                        );
+                        if(this.result != null)
+                                return this;
+                        System.out.println("Failed!");
+                }
+
+                /**
+                 * if there is buildings that blocked, then open that.
+                 */
+                int[] blockedBuildingsEntranceInClearArea = getblockedBuildingsEntranceInClearArea();
+                if(blockedBuildingsEntranceInClearArea != null){
+                        System.out.println("Get Open Building That Blocked...");
+                        this.result = this.cw.getAction(
+                                getOpenPointAction(blockedBuildingsEntranceInClearArea)
                         );
                         if(this.result != null)
                                 return this;
@@ -241,12 +262,16 @@ public class AURActionExtClear extends ExtAction {
                 /**
                  * Buildings Entrance Perpendicular Line Settings.
                  */
-                Action settingAction = this.bp.setChangesOfBuildingsEntrancePerpendicularLine();
+                Action settingAction = this.bp.setChangesOfBuildingsEntrancePerpendicularLine(this.target);
                 if(settingAction != null){
                         this.result = settingAction;
                         return this;
                 }
                 
+                if(cw.dontMoveCounter == 8){
+                        this.result = new ActionMove(Lists.newArrayList(agentPosition), agentInfo.getPositionArea().getX(), agentInfo.getPositionArea().getY());
+                        return this;
+                }
                 
                 /**
                  * if agent is standing on the target
@@ -359,7 +384,7 @@ public class AURActionExtClear extends ExtAction {
         private boolean equalsPoint(double p1X, double p1Y, double p2X, double p2Y, double range) {
                 return (p2X - range < p1X && p1X < p2X + range) && (p2Y - range < p1Y && p1Y < p2Y + range);
         }
-
+        
         private boolean intersect(double agentX, double agentY, double pointX, double pointY, Area area) {
                 for (Edge edge : area.getEdges()) {
                         double startX = edge.getStartX();
@@ -372,85 +397,6 @@ public class AURActionExtClear extends ExtAction {
                                 if (!equalsPoint(pointX, pointY, midX, midY) && !equalsPoint(agentX, agentY, midX, midY)) {
                                         return true;
                                 }
-                        }
-                }
-                return false;
-        }
-
-        private boolean intersect(Blockade blockade, Blockade another) {
-                if (blockade.isApexesDefined() && another.isApexesDefined()) {
-                        int[] apexes0 = blockade.getApexes();
-                        int[] apexes1 = another.getApexes();
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                        if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                                apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                                return true;
-                                        }
-                                }
-                        }
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                        apexes1[apexes1.length - 2], apexes1[apexes1.length - 1], apexes1[0], apexes1[1])) {
-                                        return true;
-                                }
-                        }
-                        for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[apexes0.length - 2], apexes0[apexes0.length - 1],
-                                        apexes0[0], apexes0[1], apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                        return true;
-                                }
-                        }
-                }
-                return false;
-        }
-
-        private boolean intersect(Blockade blockade, Polygon polygon) {
-
-                if (blockade.isApexesDefined()) {
-                        int[] apexes0 = blockade.getApexes();
-                        int[] apexes1 = new int[2 * polygon.npoints];
-                        for (int i = 0; i < polygon.npoints; i++) {
-                                apexes1[i * 2] = polygon.xpoints[i];
-                                apexes1[i * 2 + 1] = polygon.ypoints[i];
-                        }
-
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                        if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                                apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                                return true;
-                                        }
-                                }
-                        }
-                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
-                                        apexes1[apexes1.length - 2], apexes1[apexes1.length - 1], apexes1[0], apexes1[1])) {
-                                        return true;
-                                }
-                        }
-                        for (int j = 0; j < (apexes1.length - 2); j += 2) {
-                                if (java.awt.geom.Line2D.linesIntersect(apexes0[apexes0.length - 2], apexes0[apexes0.length - 1],
-                                        apexes0[0], apexes0[1], apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
-                                        return true;
-                                }
-                        }
-                }
-                return false;
-        }
-
-        private boolean intersect(double agentX, double agentY, double pointX, double pointY, Blockade blockade) {
-                List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(blockade.getApexes()),
-                        true);
-                for (Line2D line : lines) {
-                        Point2D start = line.getOrigin();
-                        Point2D end = line.getEndPoint();
-                        double startX = start.getX();
-                        double startY = start.getY();
-                        double endX = end.getX();
-                        double endY = end.getY();
-                        if (java.awt.geom.Line2D.linesIntersect(agentX, agentY, pointX, pointY, startX, startY, endX, endY)) {
-                                return true;
                         }
                 }
                 return false;
@@ -702,10 +648,6 @@ public class AURActionExtClear extends ExtAction {
                 return vector.normalised().scale(this.clearDistance);
         }
 
-        private Vector2D scaleBackClear(Vector2D vector) {
-                return vector.normalised().scale(-510);
-        }
-
         private boolean needRest(Human agent) {
                 int hp = agent.getHP();
                 int damage = agent.getDamage();
@@ -755,25 +697,11 @@ public class AURActionExtClear extends ExtAction {
         private Action improvedRoadClearing(PoliceForce policeForce, EntityID target) {
                 System.out.println("From: " + agentInfo.getPosition());
                 System.out.println("Target: " + target);
-                ArrayList<EntityID> path = this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target));
-                
-                /**
-                 * Start of Kandeh's path planning bug ignoring
-                 * if kandeh fix this bug this section should remove.
-                 */
-                for(int i = 0;i < path.size() - 1;i ++){
-                        if(path.get(i).equals(path.get(i + 1))){
-                                path.remove(i);
-                                i --;
-                        }
-                }
-                /**
-                 * End of Kandeh's path planning bug ignoring.
-                 */
+                ArrayList<EntityID> path = AURPoliceUtil.filterAlirezaPathBug(this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target)));
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
                 if(pathNodes == null && path.size() > 1){
-                        System.out.println("Full Clear Action...");
+                        System.out.println("Full Clear Action... ( " + path.get(1) + " )");
                         return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
                 }
 
@@ -801,9 +729,17 @@ public class AURActionExtClear extends ExtAction {
                                 }
                         }
                         decidedLine = pathNodes.get(index);
+                        
+                        if(AURConstants.PoliceExtClear.USE_STRAIGHT_ROAD_DETECTION && isThereStraightRoadExistsOnPath(pathNodes,index)){ // If there is straight road exists then just move!
+                                System.out.println("Straight Road Found!!");
+                                return cw.getAction(
+                                        new ActionMove(
+                                                wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(decidedLine.second()))
+                                        )
+                                );
+                        }
                 }
                 
-//                return null;
                 return continueToDecidedCleaningLine(decidedLine);
         }
 
@@ -814,14 +750,7 @@ public class AURActionExtClear extends ExtAction {
                 
                 if(path.size() > 1 &&
                    (
-                        (
-                                ! agentInfo.getPosition().equals(path.get(1)) &&
-                                ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(1))
-                        ) ||
-                        (
-                                agentInfo.getPosition().equals(path.get(1)) &&
-                                ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(2))
-                        )
+                        ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(1))
                    )
                 ){
                         System.out.println("Area Guid Point For First Area Added...");
@@ -899,13 +828,13 @@ public class AURActionExtClear extends ExtAction {
                         areas.add((Area) worldInfo.getEntity(eid));
                 Point2D p1 = a1,
                         p2 = AURGeoTools.getEdgeMid(a.getEdgeTo(a3));
-                Polygon clearPolygon = getClearPolygon(p1, p2);
+                Polygon clearPolygon = AURPoliceUtil.getClearPolygon(p1, p2);
                 return ! AURGeoTools.intersect(clearPolygon, areas);
         }
         
         private boolean hasRoadIntersect(Point2D policeForce, ArrayList<Pair<Point2D, EntityID>> path, int to) {
 
-                Polygon clearLine = getClearPolygon(policeForce, path.get(to).first());
+                Polygon clearLine = AURPoliceUtil.getClearPolygon(policeForce, path.get(to).first());
 
                 double[] vectorScaled = AURGeoMetrics.getVectorScaled( 
                         AURGeoMetrics.getVectorNormal( 
@@ -917,7 +846,7 @@ public class AURActionExtClear extends ExtAction {
                         agentSize 
                 ); 
                  
-                Polygon clearLineAgentSpace = getClearPolygon( 
+                Polygon clearLineAgentSpace = AURPoliceUtil.getClearPolygon( 
                         path.get(to).first(), 
                         new Point2D( 
                                 path.get(to).first().getX() + vectorScaled[0], 
@@ -941,12 +870,9 @@ public class AURActionExtClear extends ExtAction {
 
                 return false;
         }
-        
-        private Polygon getClearPolygon(Point2D p1, Point2D p2) {
-                return AURGeoTools.getClearPolygon(p1, p2, AURConstants.PoliceExtClear.CLEAR_POLYGON_HEIGHT);
-        }
 
         private Action continueToDecidedCleaningLine(Pair<Point2D, EntityID> decidedCleaningLineTarget) {
+                
                 Point2D policePoint = new Point2D(agentInfo.getX(), agentInfo.getY());
                 Vector2D vectorToTarget = decidedCleaningLineTarget.first().minus(policePoint).normalised();
                 
@@ -961,14 +887,18 @@ public class AURActionExtClear extends ExtAction {
                 
                 Vector2D clearVector = vectorToTarget.scale(clearVectorLen * 98 / 100);
                 Point2D clearPoint = new Point2D(policePoint.getX() + clearVector.getX(), policePoint.getY() + clearVector.getY());
-                Polygon clearPolygon = getClearPolygon(policePoint, clearPoint);
+                Polygon clearPolygon = AURPoliceUtil.getClearPolygon(policePoint, clearPoint);
                 
-                Pair<Boolean, ArrayList<Blockade>> blockadesList = isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon,(Area) worldInfo.getEntity(agentInfo.getPosition()));
-
-                if(blockadesList.first()){ // Then Clear
+                Pair<Integer, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon, (Area) worldInfo.getEntity(agentInfo.getPosition()));
+                if(blockadesList.first() == 1){ // Then Clear
                         this.cw.setBlockadeList(blockadesList.second());
                         return this.cw.getAction(
                                 new ActionClear(agentInfo, vectorToTarget.scale(clearVectorLen))
+                        );
+                }
+                else if(blockadesList.first() == 2){ // Then clear with old function
+                        return this.cw.getAction(
+                                new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, blockadesList.second()))
                         );
                 }
                 else{ // Then Move
@@ -977,54 +907,69 @@ public class AURActionExtClear extends ExtAction {
                                 moveVector = vectorToTarget.scale(distanceToTarget);
                         else{
                                 moveVector = vectorToTarget.scale(this.clearDistance - agentSize);
-                                for(double to = moveVector.getLength() + AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR;to < distanceToTarget;to += AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR){ // deghate mohasebe toole masire ghabele tey kardan
-                                        if(thereIsNoBlockade(to,vectorToTarget)){
-                                                moveVector = vectorToTarget.scale(to - agentSize - 10);
-                                        }
-                                        else
-                                                break;
-                                }
+//                                for(double to = moveVector.getLength() + AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR;to < distanceToTarget;to += AURConstants.PoliceExtClear.MOVE_LENGTH_CALCULATE_ERROR){ // deghate mohasebe toole masire ghabele tey kardan
+//                                        if(thereIsNoBlockade(to,vectorToTarget)){
+//                                                moveVector = vectorToTarget.scale(to - agentSize - 10);
+//                                        }
+//                                        else
+//                                                break;
+//                                }
                         }
                         
+                        int[] lastPoint = new int[]{
+                                (int) (policePoint.getX() + moveVector.getX()),
+                                (int) (policePoint.getY() + moveVector.getY())
+                        };
+                        
+                        EntityID areaOfLastPoint = agentInfo.getPosition(); // This should be edited and replace with destination entity id. # TODO
                         
                         return this.cw.getAction(
                                 new ActionMove(
-                                        Lists.newArrayList(agentInfo.getPosition()),
-                                        (int) (policePoint.getX() + moveVector.getX()),
-                                        (int) (policePoint.getY() + moveVector.getY())
+                                        wsg.getNoBlockadePathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
+                                        lastPoint[0],
+                                        lastPoint[1]
                                 )
                         );
                 }
         }
         
-        private Pair<Boolean, ArrayList<Blockade> > isThereBlockadesInBlockadesListInIntersectWithClearPolygon(Polygon clearPolygon, Area startBFS){
-                Pair<ArrayList<Area>, ArrayList<Blockade> > areasAndBlockadesOfClearPolygon = getAreasAndBlockadesInBound(clearPolygon.getBounds(),(Area) startBFS);
-                
+        private Pair<Integer, ArrayList<Blockade> > isThereBlockadesInBlockadesListInIntersectWithClearPolygon(Polygon clearPolygon, ArrayList<Blockade> blockades){
                 ArrayList<Blockade> blockadesThatInClearPolygon = new ArrayList<>();
+                int resultStatus = 0;
                 
-                Boolean blockadeFlag = false;
-                for(Blockade blockade : areasAndBlockadesOfClearPolygon.second()){
-                        if(intersect(blockade, clearPolygon)){
-                                blockadeFlag = true;
+                for(Blockade blockade : blockades){
+                        if(AURGeoTools.intersect(blockade, clearPolygon)){
+                                if(resultStatus == 0)
+                                        resultStatus = 1;
+                                
+                                blockadesThatInClearPolygon.add(blockade);
+                        }
+                        else if(blockade.getShape().contains(clearPolygon.xpoints[0], clearPolygon.ypoints[0])){
+                                resultStatus = 2;
                                 blockadesThatInClearPolygon.add(blockade);
                         }
                 }
                 
                 return new Pair(
-                        blockadeFlag,
+                        resultStatus,
                         blockadesThatInClearPolygon
                 );
+        }
+        
+        private Pair<Integer, ArrayList<Blockade> > isThereBlockadesIntersectWithClearPolygon(Polygon clearPolygon, Area start){
+                Pair<ArrayList<Area>, ArrayList<Blockade> > areasAndBlockadesOfClearPolygon = getAreasAndBlockadesInBound(clearPolygon.getBounds(), start);
+                return isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesOfClearPolygon.second());
         }
         
         private Pair<ArrayList<Area>, ArrayList<Blockade>> getAreasAndBlockadesInBound(Rectangle bound, Area start){
                 ArrayList<Area> areasList = new ArrayList<>();
                 ArrayList<Blockade> blocksList = new ArrayList<>();
-
-                Queue<Area> areas = new ArrayDeque<>();
+                
+                Stack<Area> areas = new Stack<>();
                 areas.add(start);
                 areasList.add(start);
-                while (! areas.isEmpty()) {
-                        Area area = areas.poll();
+                while (!areas.empty()) {
+                        Area area = areas.pop();
                                         
                         for (EntityID id : area.getNeighbours()) {
                                 Area tmp = (Area) worldInfo.getEntity(id);
@@ -1040,10 +985,12 @@ public class AURActionExtClear extends ExtAction {
                 }
                 
                 for(Area area : areasList){
-                        if(area instanceof Road && ((Road)area).isBlockadesDefined()){
-                                for (EntityID bid : area.getBlockades()) {
-                                        Blockade btmp = (Blockade) worldInfo.getEntity(bid);
-                                        blocksList.add(btmp);
+                        if(area instanceof Road){
+                                if(area.isBlockadesDefined()){
+                                        for (EntityID bid : area.getBlockades()) {
+                                                Blockade btmp = (Blockade) worldInfo.getEntity(bid);
+                                                blocksList.add(btmp);
+                                        }
                                 }
                         }
                 }
@@ -1098,8 +1045,7 @@ public class AURActionExtClear extends ExtAction {
                         for(int j = 0;j < points.size();j ++){
                                 if(
                                         i != j &&
-                                        ! AURGeoTools.intersect(
-                                                getClearPolygon(points.get(i), points.get(j)),
+                                        ! AURGeoTools.intersect(AURGeoTools.getClearPolygon(points.get(i), points.get(j), AURConstants.PoliceExtClear.GUID_POINT_CLEAR_POLYGON_HEIGHT ),
                                                 areas
                                         )
                                 ){
@@ -1153,12 +1099,18 @@ public class AURActionExtClear extends ExtAction {
                 );
         }
 
-        private Action getRescueBlockedAgentAction(int[] blockedAgentsPosition) {
+        private Action getOpenPointAction(int[] targetPosition) {
                 Vector2D v = new Vector2D(
-                        (int) (blockedAgentsPosition[0] - agentPosition[0]), 
-                        (int) (blockedAgentsPosition[1] - agentPosition[1])
+                        (int) (targetPosition[0] - agentPosition[0]), 
+                        (int) (targetPosition[1] - agentPosition[1])
                 );
                 v = v.normalised().scale(v.getLength() + agentSize);
+                
+                
+                Polygon clearPolygon = AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), new Point2D(agentInfo.getX() + v.getX(), agentInfo.getY() + v.getY()), AURConstants.Agent.RADIUS * 3);
+                Pair<Integer, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon, (Area) worldInfo.getEntity(agentInfo.getPosition()));
+                cw.setBlockadeList(blockadesList.second());
+                
                 return new ActionClear(
                         (int)(agentPosition[0] + v.getX()),
                         (int)(agentPosition[1] + v.getY())
@@ -1167,21 +1119,30 @@ public class AURActionExtClear extends ExtAction {
 
         private int[] getBlockedAgentInClearArea() {
                 int distToRescueBlockedAgents = this.clearDistance - (int) this.agentSize;
+                boolean isThereGasStation = false;
+                for(StandardEntity se : worldInfo.getObjectsInRange(agentPosition[0], agentPosition[1], 50000 + AURConstants.Agent.RADIUS * 3)){
+                        if(se.getStandardURN().equals(StandardEntityURN.GAS_STATION)){
+                                isThereGasStation = true;
+                                break;
+                        }
+                }
                 
                 Collection<EntityID> objectIDsInRange = worldInfo.getObjectIDsInRange(agentPosition[0], agentPosition[1], distToRescueBlockedAgents);
                 for(EntityID o : objectIDsInRange){
                         StandardEntity se = worldInfo.getEntity(o);
-                        if(se instanceof Human && ! (se instanceof PoliceForce) && ! se.getID().equals(wsg.ai.getID())){
+                        if(se instanceof Human &&
+                           (AURConstants.PoliceExtClear.IGNORE_POLICES_RESCUE || ! (se instanceof PoliceForce)) &&
+                           (!(se instanceof Civilian) ||
+                           (se instanceof Civilian && isThereGasStation)) &&
+                           ! se.getID().equals(wsg.ai.getID())){
+                                
                                 int humanPosition[] = new int[]{((Human)se).getX(), ((Human)se).getY()};
                                 if(AURGeoUtil.dist(humanPosition[0], humanPosition[1], agentPosition[0], agentPosition[1]) < distToRescueBlockedAgents){
-                                        
-                                        Rectangle humanPositionBounds = ((Area) worldInfo.getEntity(((Human) se).getPosition())).getShape().getBounds();
                                         if(worldInfo.getEntity(((Human)se).getPosition()) instanceof Road &&
                                            ((Road) worldInfo.getEntity(((Human)se).getPosition())).isBlockadesDefined()){
                                                 for(EntityID b : (((Road) worldInfo.getEntity(((Human)se).getPosition())).getBlockades())){
                                                         Blockade blockade = (Blockade) worldInfo.getEntity(b);
                                                         if(blockade.getShape().contains(humanPosition[0], humanPosition[1])){
-                                                                this.cw.setBlockadeList(Lists.newArrayList(blockade));
                                                                 return humanPosition;
                                                         }
                                                 }
@@ -1191,38 +1152,196 @@ public class AURActionExtClear extends ExtAction {
                 }
                 return null;
         }
-
-        private boolean thereIsNoBlockade(double to, Vector2D vectorToTarget) {
-                double[] v = AURGeoMetrics.getVectorFromVector2D(vectorToTarget);
-                double[] fP = new double[]{agentPosition[0],agentPosition[1]},
-                         tP = AURGeoMetrics.getVectorScaled(v, to);
-                tP[0] += agentPosition[0];
-                tP[1] += agentPosition[1];
-                fP[0] += agentPosition[0];
-                fP[1] += agentPosition[1];
-                Polygon cp = getClearPolygon(AURGeoMetrics.getPoint2DFromPoint(tP),AURGeoMetrics.getPoint2DFromPoint(tP));
-                return ! isThereBlockadesInBlockadesListInIntersectWithClearPolygon(cp, agentInfo.getPositionArea()).first();
-        }
         
         private Action getAreaFullClearActionOrIgnoreBlockades(EntityID nextArea){
                 ArrayList<EntityID> pathToNext = wsg.getPathToClosest(
                         agentInfo.getPosition(),
                         Lists.newArrayList(nextArea)
                 );
-                if(pathToNext.size() == 2)
+                if(pathToNext.size() <= 2)
                         return new ActionMove(pathToNext);
                 
                 Area pArea = agentInfo.getPositionArea();
+                
                 if(pArea.isBlockadesDefined()){
+                        Blockade selected = null;
+                        double dist = Double.MAX_VALUE;
+                        boolean isInRange = false;
+                        
                         for(EntityID beid : pArea.getBlockades()){
-                                return new ActionClear(beid);
+                                Blockade entity = (Blockade) worldInfo.getEntity(beid);
+                                double disTemp = Math.hypot(entity.getX() - agentPosition[0], entity.getY() - agentPosition[1]);
+                                if(dist > disTemp){
+                                        selected = entity;
+                                        dist = disTemp;
+                                        if(disTemp < this.clearDistance){
+                                                isInRange = true;
+                                        }
+                                        else{
+                                                isInRange = false;
+                                        }
+                                }
+                                
+                        }
+                        if(isInRange){
+                                return new ActionClear(selected);
+                        }
+                        else if(selected != null){
+                                return new ActionMove(Lists.newArrayList(agentInfo.getPosition()), selected.getX(), selected.getY());
                         }
                 }
+                
                 return new ActionMove(
                         wsg.getNoBlockadePathToClosest(
                                 agentInfo.getPosition(),
                                 Lists.newArrayList(nextArea)
                         )
                 );
+        }
+        
+        private boolean isThereStraightRoadFromPointToEdgeInArea(Area area,Point2D fromP, Edge toE){
+
+                HashSet<Point2D> toSet = new HashSet<>();
+                Point2D startP = toE.getStart();
+                Vector2D minus = toE.getEnd().minus(startP);
+                Vector2D v = minus.normalised().scale(AURConstants.Agent.RADIUS);
+                for(int i = 1;i < minus.getLength() / AURConstants.Agent.RADIUS;i ++){
+                        startP = startP.plus(v);
+                        toSet.add(startP);
+                }
+                
+                
+                for(Point2D p2 : toSet){
+                        Polygon clearPolygon = AURPoliceUtil.getClearPolygon(fromP, p2);
+                        Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
+                        if(0 == isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
+                                return true;
+                        }
+                }
+                return false;
+        }
+        
+        private boolean isThereStraightRoadFromEdgeToEdgeInArea(Area area,Edge fromE, Edge toE){
+                HashSet<Point2D> fromSet = new HashSet<>();
+                {
+                        Point2D startP = fromE.getStart();
+                        Vector2D minus = fromE.getEnd().minus(startP);
+                        Vector2D v = minus.normalised().scale(AURConstants.Agent.RADIUS);
+                        for(int i = 1;i < minus.getLength() / AURConstants.Agent.RADIUS;i ++){
+                                startP = startP.plus(v);
+                                fromSet.add(startP);
+                        }
+                }
+                HashSet<Point2D> toSet = new HashSet<>();
+                {
+                        Point2D startP = toE.getStart();
+                        Vector2D minus = toE.getEnd().minus(startP);
+                        Vector2D v = minus.normalised().scale(AURConstants.Agent.RADIUS);
+                        for(int i = 1;i < minus.getLength() / AURConstants.Agent.RADIUS;i ++){
+                                startP = startP.plus(v);
+                                toSet.add(startP);
+                        }
+                }
+                for(Point2D p1 : fromSet){
+                        for(Point2D p2 : toSet){
+                                Polygon clearPolygon = AURPoliceUtil.getClearPolygon(p1, p2);
+                                Pair<ArrayList<Area>, ArrayList<Blockade>> areasAndBlockadesInBound = getAreasAndBlockadesInBound(clearPolygon.getBounds(), area);
+                                if(0 == isThereBlockadesInBlockadesListInIntersectWithClearPolygon(clearPolygon, areasAndBlockadesInBound.second()).first() && AURGeoTools.intersect(clearPolygon, areasAndBlockadesInBound.first())){
+                                        return true;
+                                }
+                        }
+                }
+                return false;
+        }
+
+        private boolean isThereStraightRoadExistsOnPath(ArrayList<Pair<Point2D, EntityID>> pathNodes, int index) {
+                if(index == 0)
+                        return false;
+                
+                Pair<Point2D, EntityID> get = pathNodes.get(index);
+                wsg.KStar(agentInfo.getPosition());
+                
+                ArrayList<EntityID> list1 = new ArrayList<>();
+                for(int i = 0;i <= index;i ++){
+                        if(! list1.contains(pathNodes.get(i).second())){
+                                list1.add(pathNodes.get(i).second());
+                        }
+                }
+                
+                ArrayList<EntityID> list2 = new ArrayList<>();
+                ArrayList<EntityID> pathToClosest = wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(get.second()));
+                
+                if(pathToClosest.isEmpty())
+                        return false;
+                
+                for(int i = 0;i < pathToClosest.size();i ++){
+                        if(list2.isEmpty() || ! list2.contains(pathToClosest.get(i))){
+                                list2.add(pathToClosest.get(i));
+                        }
+                }
+                
+                Area firstArea = (Area) worldInfo.getEntity(list1.get(0));
+                if(list1.size() < 2 || ! isThereStraightRoadFromPointToEdgeInArea(firstArea, pathNodes.get(0).first(), firstArea.getEdgeTo(list1.get(1)) )){
+                        return false;
+                }
+                
+                if(list1.size() == list2.size() && list2.equals(list1)){
+                        boolean isThereStraightRoad = true;
+                        for(int i = 1;i < list1.size() - 1;i ++){
+                                Area area = (Area) worldInfo.getEntity(list1.get(i));
+                                if(! isThereStraightRoadFromEdgeToEdgeInArea(area, area.getEdgeTo(list1.get(i - 1)), area.getEdgeTo(list1.get(i + 1)))){
+                                        isThereStraightRoad = false;
+                                        break;
+                                }
+                        }
+                        return isThereStraightRoad;
+                }
+                return false;
+        }
+
+        private int[] getblockedBuildingsEntranceInClearArea() {
+                if(! AURConstants.PoliceExtClear.OPEN_NEAR_BUILDINGS_ENTRANCES)
+                        return null;
+                
+                Collection<StandardEntity> objectsInRange = worldInfo.getObjectsInRange(agentPosition[0], agentPosition[1], this.clearDistance);
+                int[] result = null;
+                double dis = 0;
+                
+                for(StandardEntity se : objectsInRange){
+                        if(se instanceof Building){
+                                Building b = (Building) se;
+                                for(Edge e : b.getEdges()){
+                                        Point2D edgeMid = AURGeoTools.getEdgeMid(e);
+                                        double disTemp = Math.hypot(edgeMid.getX() - agentInfo.getX(), edgeMid.getY() - agentInfo.getY());
+                                        if(e.isPassable() &&
+                                           disTemp > dis &&
+                                           edgeMid.minus(new Point2D(agentInfo.getX(), agentInfo.getY())).getLength() < this.clearDistance - 50 &&
+                                           isPolygonOnBlockades(AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), edgeMid, AURConstants.Agent.RADIUS * 2 + 100))){
+                                                dis = disTemp;
+                                                result = new int[]{(int) edgeMid.getX(),(int) edgeMid.getY()};
+                                        }
+                                }
+                        }
+                }
+                return result;
+        }
+
+        private boolean isPolygonOnBlockades(Polygon clearPolygon) {
+                Rectangle bounds = clearPolygon.getBounds();
+                Collection<StandardEntity> objectsInRectangle = worldInfo.getObjectsInRectangle(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height);
+                for(StandardEntity se : objectsInRectangle){
+                        if(se instanceof Road){
+                                Road r = (Road) se;
+                                if(r.isBlockadesDefined()){
+                                        for(EntityID eid : r.getBlockades()){
+                                                Blockade entity = (Blockade) worldInfo.getEntity(eid);
+                                                if(AURGeoTools.intersect(entity, clearPolygon)){
+                                                        return true;
+                                                }
+                                        }
+                                }
+                        }
+                }
+                return false;
         }
 }

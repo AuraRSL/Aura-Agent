@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
+import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.info.AgentInfo;
@@ -23,6 +24,7 @@ public class AURBuildingsEntrancePerpendicularLine {
         private AgentInfo ai;
         private WorldInfo wi;
         private AURClearWatcher cw;
+        private AURWorldGraph wsg;
         
         public final int NO_POINT_SELECTED = 0,
                          GOING_TO_POINT = 1,
@@ -30,16 +32,18 @@ public class AURBuildingsEntrancePerpendicularLine {
                          GOING_FROM_BUILDING_TO_POINT = 3;
         
         private Point2D lastHomeComing = null;
+        private EntityID lastHomeComingEntityID = null;
         private int lastHomeComingStatus = this.NO_POINT_SELECTED;
 
-        public AURBuildingsEntrancePerpendicularLine(AgentInfo ai, WorldInfo wi, AURClearWatcher cw) {
+        public AURBuildingsEntrancePerpendicularLine(AgentInfo ai, WorldInfo wi, AURClearWatcher cw, AURWorldGraph wsg) {
                 this.ai = ai;
                 this.wi = wi;
                 this.cw = cw;
+                this.wsg = wsg;
         }
         
-        public Action setChangesOfBuildingsEntrancePerpendicularLine() {
-                if(AURConstants.PoliceExtClear.USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE){
+        public Action setChangesOfBuildingsEntrancePerpendicularLine(EntityID target) {
+                if(! AURConstants.PoliceExtClear.USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE){
                         return null;
                 }
                 
@@ -53,20 +57,22 @@ public class AURBuildingsEntrancePerpendicularLine {
                    AURConstants.Agent.RADIUS > Math.hypot(ai.getX() - lastHomeComing.getX(), ai.getY() - lastHomeComing.getY())
                 ){
                         lastHomeComing = null;
+                        lastHomeComingEntityID = null;
                         lastHomeComingStatus = this.NO_POINT_SELECTED;
                 }
                 else if(lastHomeComingStatus == GOING_FROM_BUILDING_TO_POINT){
                         System.out.println("Back to point...");
                         return this.cw.getAction(
                                 new ActionMove(
-                                        Lists.newArrayList(ai.getPosition()),
+                                        wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(lastHomeComingEntityID)),
                                         (int) lastHomeComing.getX(),
                                         (int) lastHomeComing.getY()
                                 )
                         );
                 }
                 if(lastHomeComingStatus == GOING_FROM_POINT_TO_BUILDING &&
-                   wi.getEntity(ai.getPosition()) instanceof Building
+                   (wi.getEntity(ai.getPosition()) instanceof Building ||
+                    this.wsg.getNoBlockadePathToClosest(ai.getPosition(), Lists.newArrayList(target)).size() == this.wsg.getPathToClosest(ai.getPosition(), Lists.newArrayList(target)).size())
                 ){
                         lastHomeComingStatus = this.GOING_FROM_BUILDING_TO_POINT;
                 }
@@ -81,7 +87,7 @@ public class AURBuildingsEntrancePerpendicularLine {
                 ){
                         Area targetBuilding = (Area) wi.getEntity(path.get( path.size() - 1 ) );
                         Edge targetBuildingEntrance = targetBuilding.getEdgeTo(path.get( path.size() - 2 ));
-                        System.out.println("Building detected as target"); 
+                        System.out.println("Building detected as target " + targetBuilding.getID()); 
                         return getBuildingEntranceLine(targetBuilding, targetBuildingEntrance);
                 }
                 return null;
@@ -97,13 +103,17 @@ public class AURBuildingsEntrancePerpendicularLine {
                    buildingEntranceLine != null &&
                    isCurrentLineIntersect(buildingEntranceLine,intersect) &&
                    intersect[0] != -1 &&
-                   intersect[1] != -1
+                   intersect[1] != -1 &&
+                   (lastHomeComing == null ||
+                   (lastHomeComing != null &&
+                   AURConstants.Agent.RADIUS > Math.hypot(ai.getX() - lastHomeComing.getX(), ai.getY() - lastHomeComing.getY())))
                 ){
                         decidedLine = new Pair(
                                 new Point2D(intersect[0], intersect[1]),
                                 ai.getPosition()
                         );
                         lastHomeComing = decidedLine.first();
+                        lastHomeComingEntityID = decidedLine.second();
                         lastHomeComingStatus = GOING_TO_POINT;
                 }
                 return decidedLine;

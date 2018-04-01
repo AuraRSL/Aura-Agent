@@ -74,9 +74,9 @@ public class AUREdge {
 				return getPriority();
 			}
 			case POLICE_FORCE: {
-				double p = getPriority();;
+				double p = getPriority();
 				if(this.areaGraph.isPassed()) {
-					return p * 1.5;
+					return p * 3;
 				}
 			}
 		}

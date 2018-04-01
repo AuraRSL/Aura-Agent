@@ -79,10 +79,18 @@ public class AURConstants {
          * @author Amir Aslan Aslani - Mar 2018
          */
         public static class PoliceExtClear {
-                public final static int CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 3;
+                public final static int CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 10 / 6;
+                public final static int GUID_POINT_CLEAR_POLYGON_HEIGHT = AURConstants.Agent.RADIUS * 10 / 6;
                 public final static int MOVE_LENGTH_CALCULATE_ERROR = 500;
                 
                 public final static boolean USE_BUILDINGS_ENTRANCE_PERPENDICULAR_LINE = true;
+                public final static boolean USE_STRAIGHT_ROAD_DETECTION = true;
+                public final static boolean IGNORE_POLICES_RESCUE = true;
+                public final static boolean OPEN_NEAR_BUILDINGS_ENTRANCES = false;
+        }
+        
+        public static class ClearWatcher {
+                public final static int DONT_MOVE_COUNTER_LIMIT = 20;
         }
         
         /**
@@ -130,6 +138,47 @@ public class AURConstants {
                 public final static double CONCRETE_MODERATE = 0.2;
                 public final static double CONCRETE_SLIGHT = 0.15;
                 public final static double CONCRETE_NONE = 0.1;
+                
+        }
+        
+        /**
+         * 
+         * @author Amir Aslan Aslani - Mar 2018
+         */
+        public static class RoadDetector {
+                
+                public final static double DIST_SCORE_COEFFICIENT = 25000;
+                public final static double DECREASE_POLICE_AREA_SCORE = 0.01;
+                
+                public static class BaseScore {
+                        public final static double DISTANCE = 0.1;
+                        
+                        public final static double REFUGE = 0.4;
+                        public final static double GAS_STATION = 0.2;
+                        public final static double HYDRANT = 0.1;
+                        
+                        public final static double WSG_ROAD = 0.125;
+                        public final static double CLUSTER = 0.7;
+                        
+                        public final static double POLICE_FORCE = 0.1;
+                        public final static double AMBULANCE_TEAM = 0.125;
+                        public final static double FIRE_BRIGADE = 0.075;
+                        
+                        public final static double ENTRANCES_NUMBER = 0.25;
+                }
+                
+                public static class SecondaryScore {
+                        public final static double DEAD_POLICE_CLUSTER = 0.3;
+                        public final static double BLOCKED_HUMAN = 0.5;
+                        public final static double DISTANCE = 0.075;
+                        public final static double SELECTED_TARGET = 0.05;
+                        public final static double ROADS_WITHOUT_BLOCKADES = 0.0;
+                        public final static double RELEASED_AGENTS_START_POSITION_SCORE = 0.0;
+                        public final static double FIRED_BUILDING = 0.3;
+                        public final static double BUILDINGS_THAT_CONTAINS_CIVILANS = 0.3;
+                        public final static double BUILDINGS_DONT_CONTAINS_CIVILIAN = 0.05;
+                        public final static double BLOCKED_BUILDINGS = 0.2;
+                }
                 
         }
 	

@@ -1,7 +1,10 @@
 package AUR.module.complex.self;
 
+import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURPoliceScoreGraph;
+import AUR.util.aslan.AURPoliceScenarioAnalyzer;
 import AUR.util.knd.AURAreaGraph;
+import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURWorldGraph;
 import static rescuecore2.standard.entities.StandardEntityURN.AMBULANCE_TEAM;
 import static rescuecore2.standard.entities.StandardEntityURN.REFUGE;
@@ -18,20 +21,18 @@ import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
+import adf.agent.precompute.PrecomputeData;
 import adf.component.module.algorithm.Clustering;
 import adf.component.module.algorithm.PathPlanning;
 import adf.component.module.complex.RoadDetector;
 import com.google.common.collect.Lists;
 import rescuecore2.standard.entities.Area;
-import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.StandardEntity;
-import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
 
 public class AURRoadDetector extends RoadDetector {
 
         private Set<Area> openedAreas = new HashSet<>();
-        private Set<Area> areasShouldOpen = new HashSet<>();
                 
         private Clustering clustering;
         private PathPlanning pathPlanning;
@@ -39,16 +40,24 @@ public class AURRoadDetector extends RoadDetector {
         private EntityID result;
         private final AURWorldGraph wsg;
         private final AURPoliceScoreGraph psg;
+        private final AURPoliceScenarioAnalyzer psa;
+        private final AURClearWatcher cw;
 
         public AURRoadDetector(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
                 this.pathPlanning = moduleManager.getModule("ActionTransport.PathPlanning", "AUR.module.algorithm.AuraPathPlanning");
-                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURBuildingClusterer");
+                this.clustering = moduleManager.getModule("SampleRoadDetector.Clustering", "AUR.module.algorithm.AURWorldClusterer");
                 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
+                this.wsg.calc();
+                
                 this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
+                this.psa = moduleManager.getModule("aslan.PoliceScenarioAnalyzer","AUR.util.aslan.AURPoliceScenarioAnalyzer");
+                this.cw = moduleManager.getModule("aslan.PoliceClearWatcher","AUR.util.aslan.AURClearWatcher");
                 registerModule(this.psg);
+                registerModule(this.psa);
                 registerModule(this.clustering);
+                registerModule(this.cw);
                 
                 this.result = null;
         }
@@ -56,84 +65,55 @@ public class AURRoadDetector extends RoadDetector {
         @Override
         public RoadDetector updateInfo(MessageManager messageManager) {
                 super.updateInfo(messageManager);
+                wsg.updateInfo(messageManager);
+                return this;
+        }
+
+        @Override
+        public RoadDetector precompute(PrecomputeData precomputeData) {
+                super.precompute(precomputeData);
+                wsg.precompute(precomputeData);
+                return this;
+        }
+
+        @Override
+        public RoadDetector resume(PrecomputeData precomputeData) {
+                super.resume(precomputeData);
+                wsg.resume(precomputeData);
                 return this;
         }
 
         @Override
         public RoadDetector calc() {
+                wsg.calc();
+                if(psa.isThereBlockadesInMap() == psa.NO){
+                        this.result = null;
+                        return this;
+                }
+                        
                 EntityID positionID = this.agentInfo.getPosition();
                 StandardEntity currentPosition = worldInfo.getEntity(positionID);
                 openedAreas.add((Area) currentPosition);
+                
                 if (positionID.equals(result)) {
-                        this.result = null;
+                        psg.setTargetScore(result, - AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
                 }
+                
+                EntityID targetID = psg.getAreaWithMaximumScore();
+                psg.setTargetScore(targetID, AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
 
-                if (this.result == null) {
-                        EntityID targetID =  psg.pQueue.poll().area.getID();
-                        if (targetID == null) {
-                                return this;
-                        }
-                        List<EntityID> path = this.wsg.getNoBlockadePathToClosest(positionID, Lists.newArrayList(targetID));
-                        if (path != null && path.size() > 0) {
-                                this.result = path.get(path.size() - 1);
-                        }
+                if (targetID == null) {
+                        return this;
+                }
+                List<EntityID> path = this.wsg.getNoBlockadePathToClosest(positionID, Lists.newArrayList(targetID));
+                if (path != null && path.size() > 0) {
+                        this.result = path.get(path.size() - 1);
                 }
                 return this;
-        }
-        
-        private double getScoreOfPath(Collection<EntityID> path){
-                double score = 0;
-                ArrayList<AURAreaGraph> areaGraph = wsg.getAreaGraph(path);
-                for(AURAreaGraph area : areaGraph)
-                        score += area.getFinalScore();
-                return score;
-        }
-        
-        private Collection<EntityID> toEntityIds(Collection<? extends StandardEntity> entities) {
-                ArrayList<EntityID> eids = new ArrayList<>();
-                for (StandardEntity standardEntity : entities) {
-                        eids.add(standardEntity.getID());
-                }
-                return eids;
         }
         
         @Override
         public EntityID getTarget() {
                 return this.result;
-        }
-
-        private boolean isValidHuman(StandardEntity entity) {
-                if (entity == null) {
-                        return false;
-                }
-                if (!(entity instanceof Human)) {
-                        return false;
-                }
-
-                Human target = (Human) entity;
-                if (!target.isHPDefined() || target.getHP() == 0) {
-                        return false;
-                }
-                if (!target.isPositionDefined()) {
-                        return false;
-                }
-                if (!target.isDamageDefined() || target.getDamage() == 0) {
-                        return false;
-                }
-                if (!target.isBuriednessDefined()) {
-                        return false;
-                }
-
-                StandardEntity position = worldInfo.getPosition(target);
-                if (position == null) {
-                        return false;
-                }
-
-                StandardEntityURN positionURN = position.getStandardURN();
-                if (positionURN == REFUGE || positionURN == AMBULANCE_TEAM) {
-                        return false;
-                }
-
-                return true;
         }
 }

@@ -1,13 +1,18 @@
 package AUR.util.aslan;
 
+import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import rescuecore2.misc.geometry.GeometryTools2D;
 import rescuecore2.misc.geometry.Line2D;
 import rescuecore2.misc.geometry.Point2D;
 import rescuecore2.misc.geometry.Vector2D;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Blockade;
 import rescuecore2.standard.entities.Edge;
 
 /**
@@ -185,17 +190,27 @@ public class AURGeoTools {
                 return false;
         }
         
+        public static boolean intersectOrContains(Polygon polygon, Collection<Edge> edges) {
+                for(Edge edge : edges)
+                        if( AURGeoUtil.intersectsOrContains(polygon, new double[]{edge.getStartX(), edge.getStartY(), edge.getEndX(), edge.getEndY()} )) {
+                                return true;
+                        }
+                                
+                return false;
+        }
+        
         public static Polygon getClearPolygon(Point2D p1, Point2D p2, double width) {
-                Vector2D v = p2.minus(p1);
+                Vector2D v = p2.minus(p1).normalised().scale(AURConstants.Agent.RADIUS * 2 / 3);
                 Vector2D vp = AURGeoTools.getUnitPerpendicularVector(v);
                 Polygon p = new Polygon();
+                Point2D head = p1.plus(v);
                 p.addPoint(
-                        (int) (p1.getX() + vp.getX() * width / 2),
-                        (int) (p1.getY() + vp.getY() * width / 2)
+                        (int) (head.getX() + vp.getX() * width / 2),
+                        (int) (head.getY() + vp.getY() * width / 2)
                 );
                 p.addPoint(
-                        (int) (p1.getX() - vp.getX() * width / 2),
-                        (int) (p1.getY() - vp.getY() * width / 2)
+                        (int) (head.getX() - vp.getX() * width / 2),
+                        (int) (head.getY() - vp.getY() * width / 2)
                 );
                 p.addPoint(
                         (int) (p2.getX() - vp.getX() * width / 2),
@@ -255,5 +270,127 @@ public class AURGeoTools {
                         );
                 }
                 return result;
+        }
+        
+        public static double getEdgeDistanceToOppositeSideEdge(Polygon p, double[] e){
+                double[] result = new double[2];
+                double rP[] = new double[]{
+                        (e[0] + e[2]) / 2,
+                        (e[1] + e[3]) / 2,
+                };
+                
+                double v[] = AURGeoMetrics.getVectorNormal(new double[]{
+                        e[0] - e[2],
+                        e[1] - e[3]
+                });
+                Rectangle bounds = p.getBounds();
+                double sqrt = Math.sqrt(bounds.height * bounds.height + bounds.width * bounds.width);
+                double[] p1 = AURGeoMetrics.getPointsPlus(
+                        rP,
+                        AURGeoMetrics.getVectorScaled(v, sqrt)
+                );
+                double[] p2 = AURGeoMetrics.getPointsPlus(
+                        rP,
+                        AURGeoMetrics.getVectorScaled(v, - sqrt)
+                );
+                for(int i = 1;i < p.npoints;i ++){
+                        if( ! (AURGeoUtil.equals(p.xpoints[i],p.ypoints[i],e[0],e[1]) && AURGeoUtil.equals(p.xpoints[i - 1],p.ypoints[i - 1],e[2],e[3])) &&
+                            ! (AURGeoUtil.equals(p.xpoints[i - 1],p.ypoints[i - 1],e[0],e[1]) && AURGeoUtil.equals(p.xpoints[i],p.ypoints[i],e[2],e[3]))){
+                                if(AURGeoUtil.getIntersection(
+                                        p.xpoints[i],
+                                        p.ypoints[i], 
+                                        p.xpoints[i - 1],
+                                        p.ypoints[i - 1], 
+                                        p1[0],
+                                        p1[1],
+                                        p2[0],
+                                        p2[1],
+                                        result)
+                                ){
+                                        return Math.hypot(result[0] - rP[0], result[1] - rP[1]);
+                                }
+                        }
+                }
+                
+                return -1;
+        }
+
+        public static boolean intersect(Blockade blockade, Blockade another) {
+                if (blockade.isApexesDefined() && another.isApexesDefined()) {
+                        int[] apexes0 = blockade.getApexes();
+                        int[] apexes1 = another.getApexes();
+                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
+                                for (int j = 0; j < (apexes1.length - 2); j += 2) {
+                                        if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
+                                                apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
+                                                return true;
+                                        }
+                                }
+                        }
+                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
+                                if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
+                                        apexes1[apexes1.length - 2], apexes1[apexes1.length - 1], apexes1[0], apexes1[1])) {
+                                        return true;
+                                }
+                        }
+                        for (int j = 0; j < (apexes1.length - 2); j += 2) {
+                                if (java.awt.geom.Line2D.linesIntersect(apexes0[apexes0.length - 2], apexes0[apexes0.length - 1],
+                                        apexes0[0], apexes0[1], apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
+                                        return true;
+                                }
+                        }
+                }
+                return false;
+        }
+
+        public static boolean intersect(Blockade blockade, Polygon polygon) {
+
+                if (blockade.isApexesDefined()) {
+                        int[] apexes0 = blockade.getApexes();
+                        int[] apexes1 = new int[2 * polygon.npoints];
+                        for (int i = 0; i < polygon.npoints; i++) {
+                                apexes1[i * 2] = polygon.xpoints[i];
+                                apexes1[i * 2 + 1] = polygon.ypoints[i];
+                        }
+
+                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
+                                for (int j = 0; j < (apexes1.length - 2); j += 2) {
+                                        if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
+                                                apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
+                                                return true;
+                                        }
+                                }
+                        }
+                        for (int i = 0; i < (apexes0.length - 2); i += 2) {
+                                if (java.awt.geom.Line2D.linesIntersect(apexes0[i], apexes0[i + 1], apexes0[i + 2], apexes0[i + 3],
+                                        apexes1[apexes1.length - 2], apexes1[apexes1.length - 1], apexes1[0], apexes1[1])) {
+                                        return true;
+                                }
+                        }
+                        for (int j = 0; j < (apexes1.length - 2); j += 2) {
+                                if (java.awt.geom.Line2D.linesIntersect(apexes0[apexes0.length - 2], apexes0[apexes0.length - 1],
+                                        apexes0[0], apexes0[1], apexes1[j], apexes1[j + 1], apexes1[j + 2], apexes1[j + 3])) {
+                                        return true;
+                                }
+                        }
+                }
+                return false;
+        }
+
+        public static boolean intersect(double agentX, double agentY, double pointX, double pointY, Blockade blockade) {
+                List<Line2D> lines = GeometryTools2D.pointsToLines(GeometryTools2D.vertexArrayToPoints(blockade.getApexes()),
+                        true);
+                for (Line2D line : lines) {
+                        Point2D start = line.getOrigin();
+                        Point2D end = line.getEndPoint();
+                        double startX = start.getX();
+                        double startY = start.getY();
+                        double endX = end.getX();
+                        double endY = end.getY();
+                        if (java.awt.geom.Line2D.linesIntersect(agentX, agentY, pointX, pointY, startX, startY, endX, endY)) {
+                                return true;
+                        }
+                }
+                return false;
         }
 }
