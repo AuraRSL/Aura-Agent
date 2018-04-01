@@ -16,7 +16,6 @@ logs/
 nbproject/
 build.xml
 manifest.mf
-library
 data
 /dist/
 precomp_data/

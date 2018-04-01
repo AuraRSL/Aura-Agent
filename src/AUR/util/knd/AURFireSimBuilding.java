@@ -71,7 +71,6 @@ public class AURFireSimBuilding {
 		return false;
 	}
 	
-	
 	public AURFireSimBuilding(AURBuilding building) {
 		this.building = building;
 		this.wsg = building.wsg;
@@ -711,6 +710,9 @@ public class AURFireSimBuilding {
 	public double getEffectiveRadiation() {
 		double sumW = 0;
 		double raEn = getRadiationEnergy();
+		if(this.connections == null) {
+			return raEn;
+		}
 		for(AURBuildingConnection bc : this.connections) {
 			
 			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
@@ -729,32 +731,6 @@ public class AURFireSimBuilding {
 		}
 		return sumW * raEn;
 	}
-	
-//	public double getEffectiveRadiationDT() {
-//		double raEn = getRadiationEnergy();
-//		double result = 0;
-//		for(AURBuildingConnection bc : this.connections) {
-//			
-//			AURAreaGraph toAg = this.wsg.getAreaGraph(new EntityID(bc.toID));
-//			
-//			if(toAg == null || toAg.isBuilding() == false) {
-//				continue;
-//			}
-//			
-//			AURBuilding b = toAg.getBuilding();
-//			
-//			if(b.fireSimBuilding.getEstimatedFieryness() == 8 || b.fireSimBuilding.isOnFire()) {
-//				continue;
-//			}
-//			result += ((bc.weight * raEn) / toAg.getBuilding().fireSimBuilding.getCapacity());
-//		}
-//		return result;
-//	}
-	
-//	public boolean simulate() {
-//		if()
-//	}
-	
 	
 	public int getWaterNeeded() {
 		if(isOnFire() == true) {

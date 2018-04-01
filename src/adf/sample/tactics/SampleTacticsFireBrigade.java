@@ -11,7 +11,7 @@ import adf.agent.info.ScenarioInfo;
 import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.agent.precompute.PrecomputeData;
-import adf.agent.utils.WorldViewLauncher;
+import adf.debug.WorldViewLauncher;
 import adf.component.centralized.CommandExecutor;
 import adf.component.communication.CommunicationMessage;
 import adf.component.extaction.ExtAction;
@@ -51,6 +51,9 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
     @Override
     public void initialize(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, MessageManager messageManager, DevelopData developData)
     {
+        messageManager.setChannelSubscriber(moduleManager.getChannelSubscriber("MessageManager.PlatoonChannelSubscriber", "adf.sample.module.comm.SampleChannelSubscriber"));
+        messageManager.setMessageCoordinator(moduleManager.getMessageCoordinator("MessageManager.PlatoonMessageCoordinator", "adf.sample.module.comm.SampleMessageCoordinator"));
+
         worldInfo.indexClass(
                 StandardEntityURN.ROAD,
                 StandardEntityURN.HYDRANT,
@@ -130,8 +133,7 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
     @Override
     public Action think(AgentInfo agentInfo, WorldInfo worldInfo, ScenarioInfo scenarioInfo, ModuleManager moduleManager, MessageManager messageManager, DevelopData developData)
     {
-		
-		long t = System.currentTimeMillis();
+	long t = System.currentTimeMillis();
         this.messageTool.reflectMessage(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendRequestMessages(agentInfo, worldInfo, scenarioInfo, messageManager);
         this.messageTool.sendInformationMessages(agentInfo, worldInfo, scenarioInfo, messageManager);
@@ -189,40 +191,27 @@ public class SampleTacticsFireBrigade extends TacticsFireBrigade
         Action action = this.actionFireFighting.setTarget(target).calc().getAction();
         if (action != null)
         {
+		
             this.sendActionMessage(messageManager, agent, action);
-			System.out.println("think time: " + (System.currentTimeMillis() - t));
+	    System.out.println("think time (actionFireFighting " + agentInfo.me().getID() + "): \t\t" + target +  "\t\t" +(System.currentTimeMillis() - t));
             return action;
         }
+	
         target = this.search.calc().getTarget();
-	if(agentInfo.getPosition().equals(new EntityID(53268))) {
-		b = true;
-	}
-	if(agentInfo.getPosition().equals(new EntityID(3139))) {
-		b = false;
-	}
-//	if(b) {
-//		target = new EntityID(3139);
-//	} else {
-//		target = new EntityID(53268);
-//	}
-//	
-//	    System.out.println(agent.getID() + ": " + target);
         action = this.actionExtMove.setTarget(target).calc().getAction();
         if (action != null)
         {
             this.sendActionMessage(messageManager, agent, action);
-			System.out.println("think time: " + (System.currentTimeMillis() - t));
+	    System.out.println("think time (actionExtMove " + agentInfo.me().getID() + "): \t\t" + target +  "\t\t" +(System.currentTimeMillis() - t));
             return action;
         }
 
         messageManager.addMessage(
                 new MessageFireBrigade(true, agent, MessageFireBrigade.ACTION_REST,  agent.getPosition())
         );
-		System.out.println("rest - think time: " + (System.currentTimeMillis() - t));
+	System.out.println("think time (rest): " + (System.currentTimeMillis() - t));
         return new ActionRest();
     }
-    
-    boolean b = false;
 
     private void sendActionMessage(MessageManager messageManager, FireBrigade agent, Action action)
     {

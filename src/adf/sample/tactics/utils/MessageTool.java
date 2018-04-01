@@ -281,7 +281,7 @@ public class MessageTool
     private boolean isOnFireOrWaterDameged(Building building)
     {
         final List<StandardEntityConstants.Fieryness> ignoreFieryness
-                = Arrays.asList(StandardEntityConstants.Fieryness.UNBURNT);
+                = Arrays.asList(StandardEntityConstants.Fieryness.UNBURNT, StandardEntityConstants.Fieryness.BURNT_OUT);
 
         if (building.isFierynessDefined() && ignoreFieryness.contains(building.getFierynessEnum()) )
         {

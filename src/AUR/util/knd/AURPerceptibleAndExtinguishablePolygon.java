@@ -17,7 +17,7 @@ public class AURPerceptibleAndExtinguishablePolygon {
 
 	public static Polygon get(AURBuilding building) {
 		double maxExtinguishDistance = building.wsg.si.getFireExtinguishMaxDistance() - AURConstants.Agent.RADIUS;
-		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS * 6;
+		double maxViewDistance = building.wsg.si.getPerceptionLosMaxDistance() - AURConstants.Agent.RADIUS * 2;
 		
 		Polygon result = new Polygon();
 		Polygon bp = building.ag.polygon;
@@ -80,7 +80,7 @@ public class AURPerceptibleAndExtinguishablePolygon {
 		double ry = 0;
 
 		double r = 0;
-		double dr = (2 * Math.PI) / 72;
+		double dr = (2 * Math.PI) / 80;
 		
 		double smallINF = 1e6;
 		
@@ -161,8 +161,8 @@ public class AURPerceptibleAndExtinguishablePolygon {
 			result.addPoint((int) rx, (int) ry);
 			r += dr;
 		}
-		return result;
-//		return AURGeoUtil.getSimplifiedPolygon(result, 0.2);
+//		return result;
+		return AURGeoUtil.getSimplifiedPolygon(result, 0.2);
 	}
 
 }
