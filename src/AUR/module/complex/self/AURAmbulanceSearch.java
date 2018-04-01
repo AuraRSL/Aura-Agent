@@ -228,7 +228,9 @@ public class AURAmbulanceSearch extends Search
     {
 
         this.result = this.calcTarget();
-        this.rescueInfo.ambo.searchTarget = rescueInfo.buildingsInfo.get(result);
+        if(this.rescueInfo.ambo != null) {
+            this.rescueInfo.ambo.searchTarget = rescueInfo.buildingsInfo.get(result);
+        }
 
 
         return this;
@@ -257,17 +259,19 @@ public class AURAmbulanceSearch extends Search
 
     private List<BuildingInfo> removeLowRate(List<BuildingInfo> buildings){
 
+        this.rescueInfo.searchList.clear();
         Collection<BuildingInfo> temp = new LinkedList<>();
         for(BuildingInfo building : buildings){
             if(building.rate <= 0){
                 temp.add(building);
+            }else if(building.rate >= 1){
+                this.rescueInfo.searchList.add(building);
             }
         }
         buildings.removeAll(temp);
-        this.rescueInfo.searchList.clear();
-        this.rescueInfo.searchList.addAll(temp);
         return buildings;
     }
+
 
 
     private List<BuildingInfo> removeCantPass(List<BuildingInfo> buildings){
