@@ -272,6 +272,23 @@ public class AURGeoTools {
                 return result;
         }
         
+        public static Polygon getAddedPolygon(Polygon polygon, double p,int[] center){
+                Polygon result = new Polygon();
+                for(int i = 0;i < polygon.npoints;i ++){
+                        double[] v = new double[] {polygon.xpoints[i] - center[0], polygon.ypoints[i] - center[1]};
+                        double vLen = AURGeoMetrics.getVectorLen(v);
+                        double[] r = AURGeoMetrics.getVectorScaled(
+                                AURGeoMetrics.getVectorNormal(v),
+                                vLen + p
+                        );
+                        result.addPoint(
+                                (int) r[0] + center[0],
+                                (int) r[1] + center[1]
+                        );
+                }
+                return result;
+        }
+        
         public static double getEdgeDistanceToOppositeSideEdge(Polygon p, double[] e){
                 double[] result = new double[2];
                 double rP[] = new double[]{

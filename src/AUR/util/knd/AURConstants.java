@@ -15,7 +15,7 @@ public class AURConstants {
 	
 	public static class PathPlanning {
 		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 30;
-		public final static int POLICE_BLOCKADE_FORGET_TIME = 30;
+		public final static int POLICE_BLOCKADE_FORGET_TIME = 40;
 		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 5;
 		public final static int FIREBRIGADE_BLOCKADE_FORGET_TIME = 30;
 	}
@@ -154,8 +154,8 @@ public class AURConstants {
                 public static class BaseScore {
                         public final static double DISTANCE = 0.1;
                         
-                        public final static double REFUGE = 0.6;
-                        public final static double GAS_STATION = 0.2;
+                        public final static double REFUGE = 0.5;
+                        public final static double GAS_STATION = 0.0;
                         public final static double HYDRANT = 0.05;
                         
                         public final static double WSG_ROAD = 0.125;
