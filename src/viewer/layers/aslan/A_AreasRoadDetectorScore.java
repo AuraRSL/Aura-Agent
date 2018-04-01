@@ -22,12 +22,22 @@ public class A_AreasRoadDetectorScore extends K_ViewerLayer {
                 g2.setStroke(new BasicStroke(2));
                 g2.setFont(new Font("Arial", 0, 9));
                 g2.setColor(Color.BLACK);
-
+                
+                AURAreaGraph max = null;
+                double maxN = 0;
                 for (AURAreaGraph ag : wsg.areas.values()) {
-                        String score = String.valueOf(ag.getFinalScore());
+                        if(ag.getFinalScore() > maxN){
+                                maxN = ag.getFinalScore();
+                                max = ag;
+                        }
+                        String score = String.valueOf(((int)(ag.getFinalScore() * 10000))/ 10000.0);
                         g2.drawString(score, kst.xToScreen(ag.getX()), kst.yToScreen(ag.getY()));
                 }
                 g2.setStroke(new BasicStroke(1));
+                
+                g2.setColor(new Color(100,100,0,100));
+                if(max != null)
+                        g2.fill(kst.getTransformedPolygon(max.polygon));
         }
 
         @Override

@@ -83,10 +83,12 @@ public class AURRoadDetector extends RoadDetector {
                 return this;
         }
 
+        EntityID lastTarget = null;
         @Override
         public RoadDetector calc() {
                 wsg.calc();
                 if(psa.isThereBlockadesInMap() == psa.NO){
+                        lastTarget = null;
                         this.result = null;
                         return this;
                 }
@@ -95,19 +97,24 @@ public class AURRoadDetector extends RoadDetector {
                 StandardEntity currentPosition = worldInfo.getEntity(positionID);
                 openedAreas.add((Area) currentPosition);
                 
-                if (positionID.equals(result)) {
-                        psg.setTargetScore(result, - AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
-                }
-                
                 EntityID targetID = psg.getAreaWithMaximumScore();
-                psg.setTargetScore(targetID, AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
 
-                if (targetID == null) {
+                if (wsg.getAreaGraph(targetID).getFinalScore() == 0 || targetID == null) {
                         return this;
                 }
                 List<EntityID> path = this.wsg.getNoBlockadePathToClosest(positionID, Lists.newArrayList(targetID));
                 if (path != null && path.size() > 0) {
                         this.result = path.get(path.size() - 1);
+                        
+                        if(lastTarget == null){
+                                psg.setTargetScore(result, AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
+                        }
+                        else if(! lastTarget.equals(result)){
+                                psg.setTargetScore(lastTarget, - AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
+                                psg.setTargetScore(result, AURConstants.RoadDetector.SecondaryScore.SELECTED_TARGET);
+                        }
+                        
+                        lastTarget = this.result;
                 }
                 return this;
         }

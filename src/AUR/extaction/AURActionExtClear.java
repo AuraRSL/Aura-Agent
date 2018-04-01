@@ -916,13 +916,26 @@ public class AURActionExtClear extends ExtAction {
 //                                }
                         }
                         
+                        ArrayList<EntityID> noBlockadePathToClosest = AURPoliceUtil.filterAlirezaPathBug(wsg.getNoBlockadePathToClosest(agentInfo.getPosition(), Lists.newArrayList(decidedCleaningLineTarget.second())));
+                        ArrayList<EntityID> pathToClosest = AURPoliceUtil.filterAlirezaPathBug(wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(decidedCleaningLineTarget.second())));
+                        
+                        if(pathToClosest.size() > 1 && pathToClosest.size() == noBlockadePathToClosest.size()){
+                                return this.cw.getAction(
+                                        new ActionMove(
+                                                pathToClosest/*,
+                                                (int) decidedCleaningLineTarget.first().getX(),
+                                                (int) decidedCleaningLineTarget.first().getY()*/
+                                        )
+                                );
+                        }
+                        
                         int[] lastPoint = new int[]{
                                 (int) (policePoint.getX() + moveVector.getX()),
                                 (int) (policePoint.getY() + moveVector.getY())
                         };
                         
                         EntityID areaOfLastPoint = agentInfo.getPosition(); // This should be edited and replace with destination entity id. # TODO
-                        
+                                
                         return this.cw.getAction(
                                 new ActionMove(
                                         wsg.getNoBlockadePathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),

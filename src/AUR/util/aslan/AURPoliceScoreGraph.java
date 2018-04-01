@@ -1,5 +1,6 @@
 package AUR.util.aslan;
 
+import AUR.util.ambulance.Information.BuildingInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
@@ -25,6 +26,7 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.FireBrigade;
+import rescuecore2.standard.entities.GasStation;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Refuge;
@@ -168,18 +170,18 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
                 setReleasedAgentStartEntityScore(AURConstants.RoadDetector.SecondaryScore.RELEASED_AGENTS_START_POSITION_SCORE);
+                setBuildingsThatIKnowWhatInThat(AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_I_KNOW_WHAT_IN_THAT); // Building Info
                 
                 if(ai.getChanged().getChangedEntities() != null){
                         for(EntityID eid : ai.getChanged().getChangedEntities()){
-                                
                                 setPolicesClusterThatMaybeBlockedWhenSeeThatNotBlockedLooool(eid, - AURConstants.RoadDetector.BaseScore.CLUSTER);
-                                setFiredBuildingsScore(eid, AURConstants.RoadDetector.SecondaryScore.FIRED_BUILDING);
+                                setFiredBuildingsScore(eid);
                                 setBlockedHumansScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
                                 setRoadsWithoutBlockadesScore(eid, AURConstants.RoadDetector.SecondaryScore.ROADS_WITHOUT_BLOCKADES);
-                                setOpenBuildingsScore(eid); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
-                                setBlockedBuildingsThatContainsCiviliansScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_CONTAINS_CIVILANS);
-                                setBuildingsDontContainsCivilianScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_DONT_CONTAINS_CIVILIAN);
+//                                setBlockedBuildingsThatContainsCiviliansScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_CONTAINS_CIVILANS);
+//                                setBuildingsDontContainsCivilianScore(eid, AURConstants.RoadDetector.SecondaryScore.BUILDINGS_DONT_CONTAINS_CIVILIAN);
                                 setBlockedBuildingScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_BUILDINGS);
+                                setOpenBuildingsScore(eid); // Score (Range) is (0 - ) 1 (Because of default value of targetScore)
                         }
                 }
                 
@@ -222,17 +224,14 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         
                         /* Entrance Number Score */
                         addEntrancesNumberScore(area, AURConstants.RoadDetector.BaseScore.ENTRANCES_NUMBER);
+                        
+                        /* Small Areas Score */
+                        addSmallRoadsScore(area);
                 }
                 areasForScoring.addAll(wsg.areas.values());
                 areasForScoring.sort(new AURPoliceAreaScoreComparator());
                 
                 System.out.println("PSG Setting Base Scores Time: " + (System.currentTimeMillis() - sTime));
-        }
-
-        private void addScoreToCollection(ArrayList<EntityID> collection, double score) {
-                for(EntityID eid : collection){
-                        areas.get(eid).baseScore += score;
-                }
         }
 
         public static double addWSGRoadScores(AURAreaGraph area, double score) {
@@ -292,12 +291,33 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.areas.get(entity).secondaryScore += score;
         }
         
+        HashSet<EntityID> visitedBlockedHumans = new HashSet<>();
         private void setBlockedHumansScore(EntityID eid, double score) {
                 StandardEntity entity = wi.getEntity(eid);
                 if(entity instanceof Civilian || entity instanceof AmbulanceTeam || entity instanceof FireBrigade){
+                        if(visitedBlockedHumans.contains(eid))
+                                return;
+                        
+                        if(entity instanceof Civilian){
+                                Civilian civilian = ((Civilian)entity);
+                                
+                                boolean isThereGasStation = false;
+                                for(StandardEntity se : wi.getEntitiesOfType(StandardEntityURN.GAS_STATION)){
+                                        GasStation gs = (GasStation) se;
+                                        if(Math.hypot(gs.getX() - civilian.getX(), gs.getY() - civilian.getY()) < AURConstants.RoadDetector.GAS_STATION_EXPLODE_DISTANCE){
+                                                isThereGasStation = true;
+                                                break;
+                                        }
+                                }
+                                
+                                if(! isThereGasStation)
+                                        score = 0;
+                        }
+                        
                         AURAreaGraph pos = wsg.getAreaGraph(((Human) entity).getPosition());
                         if(pos.getTravelCost() == AURConstants.Math.INT_INF || pos.getNoBlockadeTravelCost() * 4 < pos.getTravelCost()){
                                 pos.secondaryScore += score;
+                                visitedBlockedHumans.add(eid);
                         }
                 }
         }
@@ -315,10 +335,10 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         public static double addHydrandScore(AURAreaGraph area, double score) {
                 if(! area.isHydrant()){
-                        score = 0;
+                        area.baseScore += score;
+                        return score;
                 }
-                area.baseScore += score;
-                return score;
+                return 0;
         }
 
         private void setDistanceScore(AURAreaGraph area, double score) {
@@ -428,21 +448,13 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
-        private void setFiredBuildingsScore(EntityID eid, double score) {
+        private void setFiredBuildingsScore(EntityID eid) {
                 AURAreaGraph areaGraph = wsg.getAreaGraph(eid);
                 if(areaGraph != null && areaGraph.isBuilding()){
                         Building b = (Building) areaGraph.area;
-                        if(b.isFierynessDefined()){
-                                if(b.getFieryness() >= 7){
+                        if(b.isFierynessDefined() && ! isThereCivilanInBuilding(b)){
+                                if(b.getFieryness() >= 2){
                                         areaGraph.targetScore = 0;
-                                }
-                                else if (b.getFieryness() > 0){
-                                        if(isThereCivilanInBuilding(b)){
-                                                areaGraph.secondaryScore += score;
-                                        }
-                                        else{
-                                                areaGraph.targetScore = 0.5;
-                                        }
                                 }
                         }
                 }
@@ -476,16 +488,23 @@ public class AURPoliceScoreGraph extends AbstractModule {
         HashSet<EntityID> visitedCivilians = new HashSet<>();
         private void setBlockedBuildingsThatContainsCiviliansScore(EntityID eid, double score) {
                 StandardEntity entity = wi.getEntity(eid);
-                if(entity instanceof Civilian && ! visitedCivilians.contains(eid)){
+                if(entity instanceof Civilian){
                         AURAreaGraph areaGraph = wsg.getAreaGraph(((Civilian) entity).getPosition());
                         if(areaGraph.isBuilding()){
-                                if(((Civilian)entity).getHP() > 20 &&
-                                   areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                if((! ((Civilian)entity).isHPDefined() ||
+                                   (((Civilian)entity).isHPDefined() &&
+                                   ((Civilian)entity).getHP() > 20)) &&
+                                   areaGraph.getTravelCost() == AURConstants.Math.INT_INF &&
+                                   ! visitedCivilians.contains(eid)){
+                                        
                                         areaGraph.secondaryScore += score;
                                         areaGraph.targetScore = 1;
+                                        visitedCivilians.add(eid);
                                 }
-                                else{
+                                else if(areaGraph.getTravelCost() != AURConstants.Math.INT_INF){
+                                        
                                         areaGraph.targetScore = 0;
+                                        visitedCivilians.remove(eid);
                                 }
                         }
                 }
@@ -494,7 +513,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         private void setBuildingsDontContainsCivilianScore(EntityID eid, double score) {
                 StandardEntity entity = wi.getEntity(eid);
                 
-                if(entity instanceof Building && entity instanceof Refuge){
+                if(entity instanceof Building && ! (entity instanceof Refuge)){
                         Building b = (Building) entity;
                         int[] line = new int[]{
                                 (int) ai.getX(),
@@ -570,6 +589,60 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                         }
                                 }
                                 policesMaybeBlocked.remove(eid);
+                        }
+                }
+        }
+
+        private void addSmallRoadsScore(AURAreaGraph area) {
+                if(area.isExtraSmall())
+                        area.targetScore = 0;
+                else if(area.isSmall())
+                        area.targetScore = 0.5;
+        }
+
+        HashSet<EntityID> settedBuildings = new HashSet<>();
+        private void setBuildingsThatIKnowWhatInThat(double score) {
+                if(ai.getTime() <= 1)
+                        return;
+                
+                HashSet<EntityID> civiliansPosition = new HashSet<>();
+                Collection<StandardEntity> civilians = wi.getEntitiesOfType(StandardEntityURN.CIVILIAN);
+                for(StandardEntity se : civilians){
+                        Civilian civilian = (Civilian) se;
+                        if(civilian.isHPDefined() && civilian.getHP() > 0){
+                                civiliansPosition.add(civilian.getPosition());
+                        }
+                }
+                
+                for(BuildingInfo bi : wsg.rescueInfo.visitedList){
+                        EntityID id = bi.me.getID();
+                        if(! settedBuildings.contains(id)){
+                                AURAreaGraph areaGraph = wsg.getAreaGraph(id);
+                                
+                                if(areaGraph.isRefuge()){
+                                        continue;
+                                }
+                                        
+                                settedBuildings.add(id);
+                                if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                        areaGraph.targetScore = 1.5;
+                                        areaGraph.secondaryScore += score;
+                                }
+                                else{
+                                        areaGraph.targetScore = 0;
+                                }
+                        }
+                }
+                
+                for(StandardEntity se : civilians){
+                        Civilian civilian = (Civilian) se;
+                        if(civilian.isHPDefined() && civilian.getHP() > 0){
+                                AURAreaGraph areaGraph = wsg.getAreaGraph(civilian.getPosition());
+                                if(areaGraph != null && areaGraph.isBuilding() && ! areaGraph.isRefuge() && ! settedBuildings.contains(civilian.getPosition()) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                        areaGraph.targetScore = 1.5;
+                                        areaGraph.secondaryScore += score;
+                                        settedBuildings.add(civilian.getPosition());
+                                }
                         }
                 }
         }

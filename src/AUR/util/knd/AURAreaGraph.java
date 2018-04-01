@@ -585,7 +585,7 @@ public class AURAreaGraph {
         
         // Added by Amir Aslan Aslani - Mar 2018
         public double baseScore = 0;
-        public double secondaryScore = 0.5;
+        public double secondaryScore = 0.4;
         public double distanceScore = 0;
         public double targetScore = 1;
         
