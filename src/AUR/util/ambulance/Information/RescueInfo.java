@@ -57,6 +57,7 @@ public class RescueInfo extends AbstractModule {
 
     //Detector
     public Set<StandardEntity> clusterEntity;
+    public Set<StandardEntity> neaberClusterEntity;
     public HashMap<EntityID, CivilianInfo> civiliansInfo;
     public HashMap<EntityID, RefugeInfo> refugesInfo;
     public Set<CivilianInfo> canNotRescueCivilian;
@@ -78,6 +79,7 @@ public class RescueInfo extends AbstractModule {
         this.refugesInfo = new HashMap<>();
         this.civiliansInfo = new HashMap<>();
         this.clusterEntity = new HashSet<>();
+        this.neaberClusterEntity = new HashSet<>();
         this.canNotRescueCivilian = new HashSet<>();
         this.agentsRate = new HashMap<>();
         this.buildingsInfo = new HashMap<>();
@@ -154,7 +156,23 @@ public class RescueInfo extends AbstractModule {
     }
 
     // Update ***********************************************************************************
+
+    @Override
+    public AbstractModule updateInfo(MessageManager messageManager) {
+        super.updateInfo(messageManager);
+        if (this.getCountUpdateInfo() > 1)
+        {
+            return this;
+        }
+        this.updateInformation(messageManager);
+        return this;
+    }
+
+    int lastRun = -1;
     public void updateInformation(MessageManager messageManager){
+        if(lastRun == agentInfo.getTime())
+            return;
+        lastRun = agentInfo.getTime();
 
         if(agentInfo.getTime() > 1 && !this.initB){
             init();

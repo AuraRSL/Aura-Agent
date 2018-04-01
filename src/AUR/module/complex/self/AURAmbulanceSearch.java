@@ -123,6 +123,7 @@ public class AURAmbulanceSearch extends Search
 
         this.removevisitedBulding();
         this.removeBuringBulding();
+        this.rescueInfo.updateInformation(messageManager);
         return this;
     }
 
