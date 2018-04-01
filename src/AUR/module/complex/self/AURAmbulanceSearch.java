@@ -228,7 +228,9 @@ public class AURAmbulanceSearch extends Search
     {
 
         this.result = this.calcTarget();
-        this.rescueInfo.ambo.searchTarget = rescueInfo.buildingsInfo.get(result);
+        if(this.rescueInfo.ambo != null) {
+            this.rescueInfo.ambo.searchTarget = rescueInfo.buildingsInfo.get(result);
+        }
 
 
         return this;
