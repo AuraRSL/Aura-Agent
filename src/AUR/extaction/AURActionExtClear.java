@@ -934,11 +934,22 @@ public class AURActionExtClear extends ExtAction {
                                 (int) (policePoint.getY() + moveVector.getY())
                         };
                         
-                        EntityID areaOfLastPoint = agentInfo.getPosition(); // This should be edited and replace with destination entity id. # TODO
+                        Collection<StandardEntity> objectsInRange = worldInfo.getObjectsInRange(lastPoint[0], lastPoint[1], 1);
+                        EntityID targetEntityID = null;
+                        if(! objectsInRange.isEmpty()){
+                                for(StandardEntity se : objectsInRange){
+                                        if(se instanceof Area){
+                                                targetEntityID = se.getID();
+                                                break;
+                                        }
+                                }
+                        }
+                        
+                        EntityID areaOfLastPoint = targetEntityID == null ? agentInfo.getPosition() : targetEntityID;
                                 
                         return this.cw.getAction(
                                 new ActionMove(
-                                        wsg.getNoBlockadePathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
+                                        wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
                                         lastPoint[0],
                                         lastPoint[1]
                                 )

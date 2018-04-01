@@ -17,7 +17,6 @@ import java.awt.Shape;
 import java.util.ArrayList;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
-import rescuecore2.worldmodel.Entity;
 import rescuecore2.worldmodel.EntityID;
 
 /**
@@ -137,19 +136,20 @@ public class AURClearWatcher extends AbstractModule {
                    this.lastAction != CLEAR_FROM_WATCHER &&
                    currentBlockadeList != null &&
                    currentBlockadeList.size() > 0 &&
-                   this.lastAction != this.NULL
-                ){
-                        if(lastBlockadePList.equals(currentBlockadePList)){
-                                this.lastAction = CLEAR_FROM_WATCHER;
-                                return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
-                        }
-                }
-                else if(isAgentTrapedInBlockade() != null &&
-                        isMoveLessThanAllowedValue() &&
-                        lastAction == MOVE
+                   this.lastAction != this.NULL &&
+                   lastBlockadePList.equals(currentBlockadePList)
                 ){
                         this.lastAction = CLEAR_FROM_WATCHER;
-                        return new ActionClear(isAgentTrapedInBlockade());
+                        return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
+                }
+                else if(dontMoveCounter > 3 &&
+                        isMoveLessThanAllowedValue() &&
+                        lastAction == MOVE &&
+                        agentInfo.getPositionArea().isBlockadesDefined() &&
+                        ! agentInfo.getPositionArea().getBlockades().isEmpty()
+                ){
+                        this.lastAction = CLEAR_FROM_WATCHER;
+                        return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo,worldInfo, agentInfo.getPositionArea().getBlockades()));
                 }
                 else{
                         this.lastAction = this.NULL;
