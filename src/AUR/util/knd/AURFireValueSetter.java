@@ -45,7 +45,8 @@ public class AURFireValueSetter {
 		calc_GasStation(this.points, 1.6);
 		calc_noName(this.points, 1.6);
 		mul_Color(wsg, points, 1.01);
-		mul_Borders(points, 1.1);
+		mul_Borders(points, 1.2);
+		mul_Safety(points, 2);
 		calc_EffectiiveRadiation(points, 0.5);
 		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override
@@ -152,6 +153,14 @@ public class AURFireValueSetter {
 					p.value += 0.001 * coefficient;
 					break;
 				}
+			}
+		}
+	}
+	
+	private void mul_Safety(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if(p.ag.getBuilding().isSafePerceptible()) {
+				p.value *= coefficient;
 			}
 		}
 	}

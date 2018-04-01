@@ -68,6 +68,33 @@ public class AURBuilding {
 		return (int) (Math.ceil((double) this.getPerceptCost() / AURConstants.Agent.VELOCITY));
 	}
 	
+	public boolean isSafePerceptible() {
+		if (getPerceptTime() == 0) {
+			return true;
+		}
+		this.wsg.KStar(this.ag.area.getID());
+
+		AUREdgeToStand etp = this.edgeToPereceptAndExtinguish;
+		if(etp == null) {
+			return false;
+		}
+		
+		if(etp.ownerAg.isBuilding() && etp.ownerAg.getBuilding().getFieryness() != 8) {
+			return false;
+		}
+		
+		AURNode node = this.edgeToPereceptAndExtinguish.fromNode;
+		while (node.pre != wsg.startNullNode) {
+			AURAreaGraph preAg = node.getPreAreaGraph();
+			if(preAg.isBuilding() && preAg.getBuilding().getFieryness() != 8) {
+				return false;
+			}
+			node = node.pre;
+		}
+		
+		return true;
+	}
+	
 	public int getFieryness() {
 		if (this.building.isFierynessDefined()) {
 			return this.building.getFieryness();
