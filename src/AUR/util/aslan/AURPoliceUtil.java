@@ -110,10 +110,24 @@ public class AURPoliceUtil {
                 return null;
         }
         
-        public static Blockade getNearestBlockadeToAgentFromList(AgentInfo ai, ArrayList<Blockade> list){
+        public static Blockade getNearestBlockadeToAgentFromList(AgentInfo ai, Collection<Blockade> list){
                 Blockade selected = null;
                 double dis = Double.MAX_VALUE;
                 for(Blockade b : list){
+                        double tdis = Math.hypot(ai.getX() - b.getX(), ai.getY() - b.getY());
+                        if(tdis < dis){
+                                dis = tdis;
+                                selected = b;
+                        }
+                }
+                return selected;
+        }
+        
+        public static Blockade getNearestBlockadeToAgentFromList(AgentInfo ai, WorldInfo wi, Collection<EntityID> list){
+                Blockade selected = null;
+                double dis = Double.MAX_VALUE;
+                for(EntityID bid : list){
+                        Blockade b = (Blockade) wi.getEntity(bid);
                         double tdis = Math.hypot(ai.getX() - b.getX(), ai.getY() - b.getY());
                         if(tdis < dis){
                                 dis = tdis;

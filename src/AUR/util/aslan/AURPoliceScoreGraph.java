@@ -15,6 +15,7 @@ import adf.agent.precompute.PrecomputeData;
 import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.Clustering;
 import com.google.common.collect.Lists;
+import java.awt.Polygon;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -322,15 +323,22 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
-        public static double addGasStationScore(AURAreaGraph area, double score) {
+        public void addGasStationScore(AURAreaGraph area, double score) {
                 if(area.isGasStation()){
-                        area.baseScore += score;
-                        for(AURAreaGraph neigs : area.neighbours){
-                                neigs.baseScore += score;
+                        Collection<EntityID> objectIDsInRange = wi.getObjectIDsInRange(
+                                area.getX(),
+                                area.getY(),
+                                si.getFireExtinguishMaxDistance()
+                        );
+                        
+                        Polygon circle = AURGeoTools.getCircle(new int[]{area.getX(), area.getY()}, si.getFireExtinguishMaxDistance());
+                        
+                        for(AURAreaGraph ag : wsg.getAreaGraph(objectIDsInRange)){
+                                if(ag.isRoad() && AURGeoUtil.intersectsOrContains(circle, ag.polygon)){
+                                        ag.baseScore += score;
+                                }
                         }
-                        return score;
                 }
-                return 0;
         }
 
         public static double addHydrandScore(AURAreaGraph area, double score) {
