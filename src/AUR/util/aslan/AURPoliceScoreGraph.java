@@ -693,14 +693,15 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                         continue;
                                 }
                                 
-                                if(true){ // is in sight area
+                                Polygon sightAreaPolygon = areaGraph.getBuilding().getSightAreaPolygon();
+                                if(sightAreaPolygon != null && sightAreaPolygon.contains(ai.getX(), ai.getY())){ // is in sight area
                                         settedBuildings.add(id);
                                         if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
                                                 areaGraph.targetScore = 1.5;
                                                 areaGraph.secondaryScore += score;
                                         }
                                         else{
-                                                
+                                                areaGraph.targetScore = 0.1;
                                         }
                                 }
                         }

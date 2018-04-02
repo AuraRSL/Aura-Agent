@@ -154,7 +154,7 @@ public class AURConstants {
                 public static class BaseScore {
                         public final static double DISTANCE = 0.4;
                         
-                        public final static double REFUGE = 0.5;
+                        public final static double REFUGE = 0.4;
                         public final static double GAS_STATION = 0.0;
                         public final static double HYDRANT = 0.05;
                         
