@@ -652,7 +652,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(policesMaybeBlocked.contains(eid)){
                         PoliceForce p = (PoliceForce) wi.getEntity(eid);
                         AURAreaGraph areaGraph = wsg.getAreaGraph(p.getID());
-                        if(! areaGraph.isBuilding() || areaGraph.isRefuge()){
+                        if(areaGraph != null && ! areaGraph.isBuilding() || areaGraph.isRefuge()){
                                 int clusterIndex = clustering.getClusterIndex(eid);
                                 for(AURAreaGraph ag : wsg.getAreaGraph(clustering.getClusterEntityIDs(clusterIndex))){
                                         if(ag != null){

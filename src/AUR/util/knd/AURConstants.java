@@ -152,13 +152,13 @@ public class AURConstants {
                 public final static double GAS_STATION_EXPLODE_DISTANCE = 20000;
                 
                 public static class BaseScore {
-                        public final static double DISTANCE = 0.3;
+                        public final static double DISTANCE = 0.4;
                         
                         public final static double REFUGE = 0.5;
                         public final static double GAS_STATION = 0.0;
                         public final static double HYDRANT = 0.05;
                         
-                        public final static double WSG_ROAD = 0.125;
+                        public final static double WSG_ROAD = 0.15;
                         public final static double CLUSTER = 0.7;
                         
                         public final static double POLICE_FORCE = 0.1;
