@@ -12,9 +12,12 @@ import adf.agent.info.WorldInfo;
 import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import com.google.common.collect.Lists;
+import java.awt.Polygon;
 import java.awt.Shape;
 import java.util.ArrayList;
+import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
+import rescuecore2.worldmodel.EntityID;
 
 /**
  *
@@ -133,19 +136,43 @@ public class AURClearWatcher extends AbstractModule {
                    this.lastAction != CLEAR_FROM_WATCHER &&
                    currentBlockadeList != null &&
                    currentBlockadeList.size() > 0 &&
-                   this.lastAction != this.NULL 
+                   this.lastAction != this.NULL &&
+                   lastBlockadePList.equals(currentBlockadePList)
                 ){
-                        if(lastBlockadePList.equals(currentBlockadePList)){
-                                this.lastAction = CLEAR_FROM_WATCHER;
-                                return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
-                        }
+                        this.lastAction = CLEAR_FROM_WATCHER;
+                        return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
                 }
-                this.lastAction = this.NULL;
+                else if(dontMoveCounter > 3 &&
+                        isMoveLessThanAllowedValue() &&
+                        lastAction == MOVE &&
+                        agentInfo.getPositionArea().isBlockadesDefined() &&
+                        ! agentInfo.getPositionArea().getBlockades().isEmpty()
+                ){
+                        this.lastAction = CLEAR_FROM_WATCHER;
+                        return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo,worldInfo, agentInfo.getPositionArea().getBlockades()));
+                }
+                else{
+                        this.lastAction = this.NULL;
+                }
                 return result;
         }
         
         private boolean isMoveLessThanAllowedValue(){
                 return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.Agent.RADIUS;
+        }
+        
+        private Blockade isAgentTrapedInBlockade(){
+                Area positionArea = agentInfo.getPositionArea();
+                if(!positionArea.isBlockadesDefined())
+                        return null;
+                
+                Polygon circle = AURGeoTools.getCircle(new int[]{(int) agentInfo.getX(),(int) agentInfo.getY()}, AURConstants.Agent.RADIUS + 10);
+                for(EntityID b : positionArea.getBlockades()){
+                        Blockade blockade = (Blockade) worldInfo.getEntity(b);
+                        if(AURGeoTools.intersect(blockade, circle) || circle.contains(blockade.getX(), blockade.getY()))
+                                return blockade;
+                }
+                return null;
         }
 
         private Action getDontMoveAction() {

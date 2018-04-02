@@ -550,7 +550,11 @@ public class AURWorldGraph extends AbstractModule {
 		this.fireZonesCalculator = new AURFireZonesCalculator(this);
 		
 		updateInfo(null);
+<<<<<<< HEAD
 		
+=======
+
+>>>>>>> bd4f859faf900ded840701044974cbaed084666f
 		setClusters();
 		
 //		System.out.println("walls: " + walls.size());

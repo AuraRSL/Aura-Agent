@@ -108,6 +108,9 @@ public class AURAmbulanceSearch extends Search
 
 
     // update  *************************************************************************************
+
+    int countPos = 0;
+    EntityID lastResult = null;
     @Override
     public Search updateInfo(MessageManager messageManager)
     {
@@ -120,9 +123,25 @@ public class AURAmbulanceSearch extends Search
         if(agentInfo.getTime() < 2 ){
             return this;
         }
+        //
+        if(lastResult != null && result != null) {
+            if (lastResult.equals(result)) {
+                countPos++;
+            } else {
+                countPos = 0;
+            }
+
+            if (countPos > 18) {
+                if (rescueInfo.buildingsInfo.get(result) != null) {
+                    rescueInfo.buildingsInfo.get(result).rate = 0;
+                    result = null;
+                }
+            }
+        }lastResult = result;
 
         this.removevisitedBulding();
         this.removeBuringBulding();
+        this.rescueInfo.updateInformation(messageManager);
         return this;
     }
 
@@ -209,7 +228,10 @@ public class AURAmbulanceSearch extends Search
     {
 
         this.result = this.calcTarget();
-        this.rescueInfo.ambo.searchTarget = rescueInfo.buildingsInfo.get(result);
+        if(this.rescueInfo.ambo != null) {
+            this.rescueInfo.ambo.searchTarget = rescueInfo.buildingsInfo.get(result);
+        }
+
 
         return this;
     }
@@ -237,19 +259,19 @@ public class AURAmbulanceSearch extends Search
 
     private List<BuildingInfo> removeLowRate(List<BuildingInfo> buildings){
 
+        this.rescueInfo.searchList.clear();
         Collection<BuildingInfo> temp = new LinkedList<>();
         for(BuildingInfo building : buildings){
-            if(building.rate >= 1){
+            if(building.rate <= 0){
                 temp.add(building);
+            }else if(building.rate >= 1){
+                this.rescueInfo.searchList.add(building);
             }
         }
-//        buildings.removeAll(temp);
-        this.rescueInfo.searchList.clear();
-        this.rescueInfo.searchList.addAll(temp);
-//        buildings.clear();
-//        buildings.addAll(temp);
+        buildings.removeAll(temp);
         return buildings;
     }
+
 
 
     private List<BuildingInfo> removeCantPass(List<BuildingInfo> buildings){

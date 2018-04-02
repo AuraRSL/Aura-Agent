@@ -75,7 +75,8 @@ public class AURHumanDetector extends HumanDetector
 
 
     // Update ***********************************************************************************
-
+    int countPos = 0;
+    EntityID lastResult = null;
     @Override
     public HumanDetector updateInfo(MessageManager messageManager)
     {
@@ -84,6 +85,24 @@ public class AURHumanDetector extends HumanDetector
         {
             return this;
         }
+
+        //
+        if(lastResult != null && result != null) {
+            if (lastResult.equals(result)) {
+                countPos++;
+            } else {
+                countPos = 0;
+            }
+
+            if (countPos > 18) {
+                if (rescueInfo.civiliansInfo.get(result) != null) {
+                    rescueInfo.civiliansInfo.get(result).rate = 0;
+                    result = null;
+                }
+            }
+
+        }lastResult = result;
+
 
         this.wsg.updateInfo(messageManager);
         this.clustering.updateInfo(messageManager);
@@ -142,7 +161,7 @@ public class AURHumanDetector extends HumanDetector
                     return true;
                 } else if (!target.isPositionDefined()) {
                     return true;
-                } else if(rescueInfo.civiliansInfo.get(result) == null){
+                } else if(rescueInfo.civiliansInfo.get(result) == null && rescueInfo.agentsRate.get(result) == null){
                     return true;
                 }
                 else {
@@ -173,7 +192,6 @@ public class AURHumanDetector extends HumanDetector
 
 
                 }
-
                 if (target instanceof AmbulanceTeam
                         || target instanceof FireBrigade
                         || target instanceof PoliceForce) {
@@ -182,25 +200,27 @@ public class AURHumanDetector extends HumanDetector
                     }
                 }
 
-
-                if(agentInfo.me() instanceof AmbulanceTeam) {
-                    AmbulanceTeam loadAmbulance = (AmbulanceTeam) agentInfo.me();
-                    for (EntityID entityID : worldInfo.getChanged().getChangedEntities()) {
-                        StandardEntity entity = worldInfo.getEntity(entityID);
-                        if (entity instanceof AmbulanceTeam && worldInfo.getPosition(target) != null) {
-                            AmbulanceTeam at = (AmbulanceTeam) entity;
-                            if (at.getPosition().equals(worldInfo.getPosition(target).getID())) {
-                                if (entityID.getValue() < loadAmbulance.getID().getValue()) {
-                                    loadAmbulance = at;
+                if(target.isBuriednessDefined() && target.getBuriedness() < 2) {
+                    if (agentInfo.me() instanceof AmbulanceTeam) {
+                        AmbulanceTeam loadAmbulance = (AmbulanceTeam) agentInfo.me();
+                        for (EntityID entityID : worldInfo.getChanged().getChangedEntities()) {
+                            StandardEntity entity = worldInfo.getEntity(entityID);
+                            if (entity instanceof AmbulanceTeam && worldInfo.getPosition(target) != null) {
+                                AmbulanceTeam at = (AmbulanceTeam) entity;
+                                if (at.isBuriednessDefined() && at.getBuriedness() == 0) {
+                                    if (at.getPosition().equals(worldInfo.getPosition(target).getID())) {
+                                        if (entityID.getValue() < loadAmbulance.getID().getValue()) {
+                                            loadAmbulance = at;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                    if(!loadAmbulance.getID().equals(agentInfo.me().getID())){
-                        return true;
+                        if (!loadAmbulance.getID().equals(agentInfo.me().getID())) {
+                            return true;
+                        }
                     }
                 }
-
 
             }
         }
@@ -346,6 +366,9 @@ public class AURHumanDetector extends HumanDetector
         rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());
         rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
+        for(Integer i : wsg.neighbourClusters) {
+            rescueInfo.neaberClusterEntity.addAll(clustering.getClusterEntities(i));
+        }
 
         return this;
     }
@@ -363,6 +386,9 @@ public class AURHumanDetector extends HumanDetector
         rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());
         rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
+        for(Integer i : wsg.neighbourClusters) {
+            rescueInfo.neaberClusterEntity.addAll(clustering.getClusterEntities(i));
+        }
         return this;
     }
 

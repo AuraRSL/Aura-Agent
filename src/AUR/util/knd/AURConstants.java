@@ -14,10 +14,17 @@ public class AURConstants {
 	}
 	
 	public static class PathPlanning {
+<<<<<<< HEAD
 		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 40;
 		public final static int POLICE_BLOCKADE_FORGET_TIME = 40;
 		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 40;
 		public final static int FIREBRIGADE_BLOCKADE_FORGET_TIME = 50;
+=======
+		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 30;
+		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 30;
+		public final static int POLICE_BLOCKADE_FORGET_TIME = 40;
+		public final static int FIREBRIGADE_BLOCKADE_FORGET_TIME = 30;
+>>>>>>> bd4f859faf900ded840701044974cbaed084666f
 	}
 	
 	public static class Agent {
@@ -149,35 +156,36 @@ public class AURConstants {
                 
                 public final static double DIST_SCORE_COEFFICIENT = 25000;
                 public final static double DECREASE_POLICE_AREA_SCORE = 0.01;
+                public final static double GAS_STATION_EXPLODE_DISTANCE = 20000;
                 
                 public static class BaseScore {
                         public final static double DISTANCE = 0.1;
                         
-                        public final static double REFUGE = 0.4;
-                        public final static double GAS_STATION = 0.2;
-                        public final static double HYDRANT = 0.1;
+                        public final static double REFUGE = 0.5;
+                        public final static double GAS_STATION = 0.0;
+                        public final static double HYDRANT = 0.05;
                         
                         public final static double WSG_ROAD = 0.125;
-                        public final static double CLUSTER = 0.7;
+                        public final static double CLUSTER = 0.5;
                         
                         public final static double POLICE_FORCE = 0.1;
                         public final static double AMBULANCE_TEAM = 0.125;
-                        public final static double FIRE_BRIGADE = 0.075;
+                        public final static double FIRE_BRIGADE = 0.125;
                         
-                        public final static double ENTRANCES_NUMBER = 0.25;
+                        public final static double ENTRANCES_NUMBER = 0.175;
                 }
                 
                 public static class SecondaryScore {
                         public final static double DEAD_POLICE_CLUSTER = 0.3;
-                        public final static double BLOCKED_HUMAN = 0.5;
-                        public final static double DISTANCE = 0.075;
+                        public final static double BLOCKED_HUMAN = 0.2;
+                        public final static double DISTANCE = 0.15;
                         public final static double SELECTED_TARGET = 0.05;
                         public final static double ROADS_WITHOUT_BLOCKADES = 0.0;
                         public final static double RELEASED_AGENTS_START_POSITION_SCORE = 0.0;
-                        public final static double FIRED_BUILDING = 0.3;
-                        public final static double BUILDINGS_THAT_CONTAINS_CIVILANS = 0.3;
-                        public final static double BUILDINGS_DONT_CONTAINS_CIVILIAN = 0.05;
-                        public final static double BLOCKED_BUILDINGS = 0.2;
+//                        public final static double BUILDINGS_THAT_CONTAINS_CIVILANS = 0.3;
+//                        public final static double BUILDINGS_DONT_CONTAINS_CIVILIAN = 0.05;
+                        public final static double BLOCKED_BUILDINGS = 0.15;
+                        public final static double BUILDINGS_THAT_I_KNOW_WHAT_IN_THAT = 0.3;
                 }
                 
         }

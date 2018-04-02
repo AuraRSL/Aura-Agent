@@ -25,19 +25,21 @@ public class BuildingRateDeterminer {
 
 
         rate += clusterEffect(wsg, rescueInfo, building, 1.15);
-        rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.5);
+        rate += neaberClusterEffect(wsg, rescueInfo, building, 0.45);
+        rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.6);
         rate += distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
         rate += broknessEffect(wsg, rescueInfo, building, 0.35);
         rate += buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
         rate += distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
-        rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.55);
+        rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.5);
 
         if(rate >= 1){
-            rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 1.1);
+            rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 1.3);
             rate += distanceFromRefugeInSearchEffect(wsg, rescueInfo, building, 0.2);
             rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.5);
 
         }
+
         // more effectess
         // distance from Cluster without
         // distance form Gas Station
@@ -90,6 +92,14 @@ public class BuildingRateDeterminer {
     public static double clusterEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
 
         for(StandardEntity entity : rescueInfo.clusterEntity){
+            if(entity.getID().equals(building.me.getID())){
+                return 1* coefficient;
+            }
+        }
+        return 0;
+    }
+    public static double neaberClusterEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
+        for(StandardEntity entity : rescueInfo.neaberClusterEntity){
             if(entity.getID().equals(building.me.getID())){
                 return 1* coefficient;
             }
@@ -149,6 +159,7 @@ public class BuildingRateDeterminer {
     //TODO
     public static double otherAgentPossionEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
 
+        int counter = 0;
         Collection<StandardEntity> agentList = wsg.wi.getEntitiesOfType(StandardEntityURN.AMBULANCE_TEAM, StandardEntityURN.FIRE_BRIGADE, StandardEntityURN.POLICE_FORCE);
         for(StandardEntity entity : agentList){
             if(entity instanceof Human){
@@ -159,9 +170,16 @@ public class BuildingRateDeterminer {
 //                            return 0.6*coefficient;
 //                        }
 //                    }
-                    return 1*coefficient;
+                    counter++;
                 }
             }
+        }
+        if(counter == 1){
+            return 1D*coefficient;
+        }else if(counter == 2){
+            return 1.2*coefficient;
+        }else if(counter > 2){
+            return 0.4*counter*coefficient;
         }
 
         return 0;
