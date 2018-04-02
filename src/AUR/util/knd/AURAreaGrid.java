@@ -452,7 +452,7 @@ public class AURAreaGrid {
 
 	public void addBlockades(ArrayList<Polygon> blockades) {
 		blockaePolygons.addAll(blockades);
-		double delta = 300;
+		double delta = 450;
 		for (int i = 0; i < gridM; i++) {
 			for (int j = 0; j < gridN; j++) {
 				if (gridIntInfo[i][j][TYPE] != CELL_BLOCK) {
@@ -659,7 +659,7 @@ public class AURAreaGrid {
 
 
 			if(areaGraph.perceptibleAndExtinguishableBuildings != null) {
-				int r = 750;
+				int r = 500;
 				if(this.areaGraph.polygon.contains(gridPoints[i][j][0] - r, gridPoints[i][j][1] - r, 2 * r, 2 * r) == true) {
 					for(AURBuilding b : perceptibleAreas) {
 						if(b.getPerceptibleAndExtinguishableAreaPolygon().contains((int) gridPoints[i][j][0], (int) gridPoints[i][j][1])) {

@@ -66,7 +66,7 @@ public class AURFireZone {
 			if(b.fireSimBuilding.ignoreFire() == true) {
 				continue;
 			}
-			if(b.ag.isRecentlyReportedFire() && b.ag.isInExtinguishRange()) {
+			if( b.ag.isInExtinguishRange()) { // b.ag.isRecentlyReportedFire() &&
 				time = 0;
 				break;
 			}
@@ -76,7 +76,7 @@ public class AURFireZone {
 	}
 	
 	public boolean ok() {
-		if(getPerceptTime() <= 2) {
+		if(getPerceptTime() <= 5) {
 			return true;
 		}
 		
