@@ -54,10 +54,10 @@ public class AURRoadDetector extends RoadDetector {
                 this.psg = moduleManager.getModule("aslan.PoliceScoreGraph","AUR.util.aslan.AURPoliceScoreGraph");
                 this.psa = moduleManager.getModule("aslan.PoliceScenarioAnalyzer","AUR.util.aslan.AURPoliceScenarioAnalyzer");
                 this.cw = moduleManager.getModule("aslan.PoliceClearWatcher","AUR.util.aslan.AURClearWatcher");
-                registerModule(this.psg);
-                registerModule(this.psa);
                 registerModule(this.clustering);
+                registerModule(this.psa);
                 registerModule(this.cw);
+                registerModule(this.psg);
                 
                 this.result = null;
         }

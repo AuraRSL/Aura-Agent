@@ -938,7 +938,7 @@ public class AURActionExtClear extends ExtAction {
                         EntityID targetEntityID = null;
                         if(! objectsInRange.isEmpty()){
                                 for(StandardEntity se : objectsInRange){
-                                        if(se instanceof Area){
+                                        if(se instanceof Area && ((Area) se).getShape().contains(lastPoint[0], lastPoint[1])){
                                                 targetEntityID = se.getID();
                                                 break;
                                         }
@@ -1182,8 +1182,10 @@ public class AURActionExtClear extends ExtAction {
                         agentInfo.getPosition(),
                         Lists.newArrayList(nextArea)
                 );
-                if(pathToNext.size() <= 2)
+                
+                if(pathToNext.size() <= 2 && ! pathToNext.isEmpty()){
                         return new ActionMove(pathToNext);
+                }
                 
                 Area pArea = agentInfo.getPositionArea();
                 

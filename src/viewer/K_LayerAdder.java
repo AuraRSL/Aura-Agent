@@ -121,6 +121,8 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_POLICE, A_AreasThatBlockadesNotDefined.class, false);
 		viewer.addLayer(TAB_POLICE, A_AroundEntrances.class, false);
 		viewer.addLayer(TAB_POLICE, A_AroundRoadsOfGasStations.class, false);
+		viewer.addLayer(TAB_POLICE, A_VisitedBuilidings.class, false);
+		viewer.addLayer(TAB_POLICE, A_SightAreaPolygon.class, false);
 
 		viewer.addLayer(TAB_AMBULANCE, AgentBig.class, false);
 		viewer.addLayer(TAB_AMBULANCE, CivilianID.class, false);

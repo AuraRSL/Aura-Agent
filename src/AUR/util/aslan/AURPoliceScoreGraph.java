@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.AmbulanceTeam;
 import rescuecore2.standard.entities.Area;
@@ -31,6 +32,7 @@ import rescuecore2.standard.entities.GasStation;
 import rescuecore2.standard.entities.Human;
 import rescuecore2.standard.entities.PoliceForce;
 import rescuecore2.standard.entities.Refuge;
+import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
@@ -50,6 +52,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public ArrayList<AURAreaGraph> areasForScoring = new ArrayList<>();
         
         public Collection<EntityID> clusterEntityIDs;
+        public Collection<EntityID> neighbourClustersEntityIDs = new HashSet<>();
         int cluseterIndex;
         double myClusterCenter[] = new double[2];
         StandardEntity myClusterCenterEntity = null;
@@ -99,6 +102,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
                 myClusterCenter[0] = ((Area) myClusterCenterEntity).getX();
                 myClusterCenter[1] = ((Area) myClusterCenterEntity).getY();
+                
+                // ---
+                
+                for(Integer index : wsg.neighbourClusters){
+                        neighbourClustersEntityIDs.addAll(clustering.getClusterEntityIDs(index));
+                }
                 
                 // ---
                 
@@ -155,6 +164,64 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public EntityID getAreaWithMaximumScore(){
                 return this.areasForScoring.get(0).area.getID();
         }
+        
+        public HashSet<EntityID> visitedBuildings = new HashSet<>();
+        public void updateVisitedBuildings() {
+                boolean intersect = false;
+                Set<EntityID> changedEntities = agentInfo.getChanged().getChangedEntities();
+                
+                if(changedEntities == null)
+                        return;
+                
+                for (EntityID id : changedEntities) {
+                        StandardEntity se = worldInfo.getEntity(id);
+                        if (se instanceof Building
+                            && worldInfo.getDistance(agentInfo.getID(), id) < scenarioInfo.getPerceptionLosMaxDistance()) {
+                            Building building = (Building) se;
+                            intersect = false;
+                            
+                                for (StandardEntity entity : worldInfo.getObjectsInRange(agentInfo.getID(), scenarioInfo.getPerceptionLosMaxDistance())) {
+                                        
+                                        if (entity instanceof Area) {
+                                                Area area = (Area) entity;
+                                                
+                                                if (entity instanceof Road) {
+                                                        continue;
+                                                }
+                                                
+                                                for (Edge edge : area.getEdges()) {
+                                                        double[] d = new double[2];
+                                                        if (edge.isPassable()) {
+                                                                continue;
+                                                        }
+                                                        
+                                                        if (AURGeoUtil.getIntersection(
+                                                            edge.getStartX(), edge.getStartY(),
+                                                            edge.getEndX(), edge.getEndY(),
+                                                            agentInfo.getX(), agentInfo.getY(),
+                                                            building.getX(), building.getY(),
+                                                            d)) {
+                                                                
+                                                                intersect = true;
+                                                                break;
+                                                        }
+                                                }
+                                                if (intersect == true) {
+                                                        break;
+                                                }
+                                        }
+
+                                }
+                                AURAreaGraph b = wsg.getAreaGraph(building.getID());
+                                if(b != null && b.isBuilding()){
+                                        Polygon sightAreaPolygon = wsg.getAreaGraph(building.getID()).getBuilding().getSightAreaPolygon();
+                                        if (intersect == false && sightAreaPolygon != null && sightAreaPolygon.contains(ai.getX(), ai.getY())) {
+                                                visitedBuildings.add(building.getID());
+                                        }
+                                }
+                        }
+                }
+        }
 
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
@@ -166,6 +233,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 wsg.updateInfo(messageManager);
                 wsg.KStarNoBlockade(ai.getPosition());
                 wsg.KStar(ai.getPosition());
+                updateVisitedBuildings();
                 
                 // Set dynamic scores
                 decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
@@ -265,14 +333,13 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(clusterEntityIDs.contains(area.area.getID())){
                         
                 }
+                else if(neighbourClustersEntityIDs.contains(area.area.getID())){
+                        score *= 1 / 2;
+                }
                 else{
                         double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
-                        score *= (1 - distanceFromCluster) * 1 / 2;
+                        score *= (1 - distanceFromCluster) * 1 / 3;
                 }
-                
-//                if(area.isRoad()){
-//                        score /= 2;
-//                }
                 
                 area.baseScore += score;
         }
@@ -400,6 +467,9 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                 agentsInBuildings.put(se.getID(),areaGraph);
                                 score *= 2.0 / 3.0;
                         }
+                        else if(areaGraph.getScore() < 0.5){
+                                score = 0;
+                        }
                         
                         areaGraph.baseScore += score;
                 }
@@ -412,6 +482,9 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         if(areaGraph.isBuilding()){
                                 agentsInBuildings.put(se.getID(),areaGraph);
                                 score *= 2.0 / 3.0;
+                        }
+                        else if(areaGraph.getScore() < 0.5){
+                                score = 0;
                         }
                         
                         areaGraph.baseScore += score;
@@ -589,7 +662,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(policesMaybeBlocked.contains(eid)){
                         PoliceForce p = (PoliceForce) wi.getEntity(eid);
                         AURAreaGraph areaGraph = wsg.getAreaGraph(p.getID());
-                        if(! areaGraph.isBuilding() || areaGraph.isRefuge()){
+                        if(areaGraph != null && (! areaGraph.isBuilding() || areaGraph.isRefuge())){
                                 int clusterIndex = clustering.getClusterIndex(eid);
                                 for(AURAreaGraph ag : wsg.getAreaGraph(clustering.getClusterEntityIDs(clusterIndex))){
                                         if(ag != null){
@@ -622,22 +695,21 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         }
                 }
                 
-                for(BuildingInfo bi : wsg.rescueInfo.visitedList){
-                        EntityID id = bi.me.getID();
+                for(EntityID id : visitedBuildings){
                         if(! settedBuildings.contains(id)){
                                 AURAreaGraph areaGraph = wsg.getAreaGraph(id);
                                 
                                 if(areaGraph.isRefuge()){
                                         continue;
                                 }
-                                        
+                                
                                 settedBuildings.add(id);
                                 if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
                                         areaGraph.targetScore = 1.5;
                                         areaGraph.secondaryScore += score;
                                 }
                                 else{
-                                        areaGraph.targetScore = 0;
+                                        areaGraph.targetScore = 0.1;
                                 }
                         }
                 }
