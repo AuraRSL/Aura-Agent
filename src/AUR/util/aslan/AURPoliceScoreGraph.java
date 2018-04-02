@@ -174,7 +174,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                             intersect = false;
                             
                                 for (StandardEntity entity : worldInfo.getObjectsInRange(agentInfo.getID(), scenarioInfo.getPerceptionLosMaxDistance())) {
-
+                                        
                                         if (entity instanceof Area) {
                                                 Area area = (Area) entity;
                                                 
@@ -205,8 +205,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                         }
 
                                 }
-                                if (intersect == false) {
-                                        visitedBuildings.add(building.getID());
+                                AURAreaGraph b = wsg.getAreaGraph(building.getID());
+                                if(b != null && b.isBuilding()){
+                                        Polygon sightAreaPolygon = wsg.getAreaGraph(building.getID()).getBuilding().getSightAreaPolygon();
+                                        if (intersect == false && sightAreaPolygon != null && sightAreaPolygon.contains(ai.getX(), ai.getY())) {
+                                                visitedBuildings.add(building.getID());
+                                        }
                                 }
                         }
                 }
@@ -693,16 +697,13 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                         continue;
                                 }
                                 
-                                Polygon sightAreaPolygon = areaGraph.getBuilding().getSightAreaPolygon();
-                                if(sightAreaPolygon != null && sightAreaPolygon.contains(ai.getX(), ai.getY())){ // is in sight area
-                                        settedBuildings.add(id);
-                                        if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
-                                                areaGraph.targetScore = 1.5;
-                                                areaGraph.secondaryScore += score;
-                                        }
-                                        else{
-                                                areaGraph.targetScore = 0.1;
-                                        }
+                                settedBuildings.add(id);
+                                if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                        areaGraph.targetScore = 1.5;
+                                        areaGraph.secondaryScore += score;
+                                }
+                                else{
+                                        areaGraph.targetScore = 0.1;
                                 }
                         }
                 }
