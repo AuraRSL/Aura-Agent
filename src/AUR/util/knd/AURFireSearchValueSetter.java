@@ -46,9 +46,10 @@ public class AURFireSearchValueSetter {
 		//calc_noName(this.points, 1.0);
 		//mul_Color(wsg, this.points, 1.1);
 		add_NoSeeTime(this.points, 1.3);
+		mul_Safety(this.points, 2);
 		mul_InitialCluster(this.points, initialCluster, 2.0);
 		mul_soClose(this.points, 0.4);
-		mul_lastTarget(lastTarget, this.points, 1.2);
+		mul_lastTarget(lastTarget, this.points, 1.8);
 		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override
 			public int compare(AURAreaGraphValue o1, AURAreaGraphValue o2) {
@@ -57,6 +58,13 @@ public class AURFireSearchValueSetter {
 		});
 	}
 	
+	private void mul_Safety(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if (p.ag.getBuilding().isSafePerceptible()) {
+				p.value *= coefficient;
+			}
+		}
+	}
 	
 	public void mul_lastTarget(EntityID lastTarget, ArrayList<AURAreaGraphValue> points, double coefficient) {
 		for (AURAreaGraphValue p : points) {

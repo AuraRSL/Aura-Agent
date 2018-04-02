@@ -51,7 +51,7 @@ public class AURWalkWatcher extends AbstractModule {
 			}
 			Step step = (Step) obj;
 			double dist = AURGeoUtil.dist(step.fromX, step.fromY, this.fromX, this.fromY);
-			return dist < 100;
+			return dist < 750;
 		}
 	}
 
@@ -95,7 +95,7 @@ public class AURWalkWatcher extends AbstractModule {
 		randomDirectSelector.update();
 		add(moveAction.getPath());
 		if (anyProblem()) {
-			//System.out.println("problem");
+			System.out.println("problem");
 			randomDirectSelector.generate();
 			List<EntityID> path = new ArrayList<>();
 			path.add(ai.getPosition());

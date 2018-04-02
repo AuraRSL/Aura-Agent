@@ -426,7 +426,7 @@ public class AURActionFireFighting extends ExtAction {
 			exCount = 0;
 			ActionMove actMove = wsg.getMoveActionToPercept(ai.getPosition(), target);
 			//return this.getMoveAction(pathPlanning, agentPosition, target);
-			return actMove;
+			return walkWatcher.check(actMove);
 		}
 	}
 

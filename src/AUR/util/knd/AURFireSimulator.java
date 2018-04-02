@@ -154,7 +154,7 @@ public class AURFireSimulator {
 				b.tempVar = 0;
 				//ag.isOnFire() || ag.getBuilding().fireSimBuilding.isOnFire()
 				int ef = ag.getBuilding().fireSimBuilding.getEstimatedFieryness();
-				if(ag.isOnFire()) { // || ag.getBuilding().fireSimBuilding.isOnFire()
+				if(ag.isOnFire() || ag.getBuilding().fireSimBuilding.isOnFire()) { // || ag.getBuilding().fireSimBuilding.isOnFire()
 					b.tempVar = b.getRadiationEnergy();
 				}
 			}
@@ -195,16 +195,21 @@ public class AURFireSimulator {
 			float dT = cellTemp - (float) building.getEstimatedTemperature();
 			float energyTransferToBuilding = dT * AURConstants.FireSim.AIR_TO_BUILDING_COEFFICIENT * AURConstants.FireSim.TIME_STEP_LENGTH * cellCover * AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
 			
+			if(building.ag.isOnFire()) {
+				energyTransferToBuilding *= 0.5;
+			}
+				
+			
 			energyDelta += energyTransferToBuilding;
 			float newCellTemp = cellTemp - energyTransferToBuilding / (AURConstants.FireSim.AIR_CELL_HEAT_CAPACITY * AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
 			
-			if(dT < 0) {
-				if(building.ag.isOnFire()) {
-					this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
-				}
-			} else {
-				this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
-			}
+//			if(dT < 0) {
+//				if(building.ag.isOnFire()) {
+//					this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
+//				}
+//			} else {
+//				this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
+//			}
 			
 			this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
 			

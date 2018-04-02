@@ -79,20 +79,20 @@ public class AURFireBrigadeSearch extends Search {
 			}
 		}
 
-//		ArrayList<AURAreaGraph> nrus = wsg.getNoBlockadeReachableUnburntBuildingIDs();
-//		if (nrus.size() > 0) {
-//			nrus.remove(agentAg);
-//			list.clear();
-//			for (AURAreaGraph ag : nrus) {
-//				list.add(new AURValuePoint(ag.getX(), ag.getY(), ag));
-//			}
-//
-//			svs.calcNoBlockade(wsg, list, buildingClusterer.getClusterEntityIDs(initialClusterIndex));
-//			if (svs.points.size() > 0) {
-//				this.result = svs.points.get(0).areaGraph.area.getID();
-//				return this;
-//			}
-//		}
+		ArrayList<AURAreaGraph> nrus = wsg.getNoBlockadeReachableUnburntBuildingIDs();
+		if (nrus.size() > 0) {
+			nrus.remove(agentAg);
+			list.clear();
+			for (AURAreaGraph ag : nrus) {
+				list.add(new AURAreaGraphValue(ag));
+			}
+
+			svs.calcNoBlockade(wsg, list, buildingClusterer.getClusterEntityIDs(initialClusterIndex));
+			if (svs.points.size() > 0) {
+				this.result = svs.points.get(0).ag.area.getID();
+				return this;
+			}
+		}
 		return this;
 	}
 

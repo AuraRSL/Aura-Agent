@@ -1,14 +1,8 @@
 package AUR.util.knd;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import rescuecore2.standard.entities.Building;
 
 /**
  *
@@ -37,17 +31,17 @@ public class AURFireValueSetter {
 			p.value = 0;
 		}
 
-//		calc_ConvexHull(this.points, 1.5);
-//
-//		calc_Capacity(this.points, 0.0);
 		calc_EstimatedFieryness(this.points, 1.3);
-		add_TravelCost(this.points, 1.5);
+		add_TravelCost(this.points, 2);
 		calc_GasStation(this.points, 1.6);
-		calc_noName(this.points, 1.6);
+//		calc_noName(this.points, 1.6);
 		mul_Color(wsg, points, 1.01);
 		mul_Borders(points, 1.2);
 		mul_Safety(points, 2);
 		calc_EffectiiveRadiation(points, 0.5);
+		mul_AgentNeighbourCluster(points, 1.1);
+		mul_AgentCluster(points, 1.5);
+		mul_realFire(points, 1.5);
 		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override
 			public int compare(AURAreaGraphValue o1, AURAreaGraphValue o2) {
@@ -56,15 +50,46 @@ public class AURFireValueSetter {
 		});
 	}
 	
+	private void mul_AgentCluster(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if (p.ag.clusterIndex == p.ag.wsg.agentCluster) {
+				p.value *= (1 * coefficient);
+			}
+
+		}
+	}
+	private void mul_realFire(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if (p.ag.isOnFire()) {
+				p.value *= (1 * coefficient);
+			}
+
+		}
+	}
+	
+	private void mul_AgentNeighbourCluster(ArrayList<AURAreaGraphValue> points, double coefficient) {
+		for (AURAreaGraphValue p : points) {
+			if (p.ag.wsg.neighbourClusters.contains(p.ag.clusterIndex)) {
+				p.value *= (1 * coefficient);
+			}
+
+		}
+	}
+	
 	private void add_TravelCost(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		double maxDist = 0;
 		for (AURAreaGraphValue p : points) {
-//			if(p.ag.isRecentlyReportedFire() && p.ag.isInExtinguishRange()) {
-//				p.temp_value = 0;
-//			} else {
-//				p.temp_value = p.ag.getBuilding().getPerceptTime();
-//			}
-			p.temp_value = p.ag.getBuilding().getPerceptTime();
+			if(p.ag.isRecentlyReportedFire() && p.ag.isInExtinguishRange()) {
+				p.temp_value = 0;
+			} else {
+				if(p.ag.isInExtinguishRange()) {
+					p.temp_value = p.ag.getBuilding().getPerceptTime() / 3;
+				} else {
+					p.temp_value = p.ag.getBuilding().getPerceptTime();
+				}
+				
+			}
+//			p.temp_value = p.ag.getBuilding().getPerceptTime();
 			if (p.temp_value > maxDist) {
 				maxDist = p.temp_value;
 			}
@@ -197,21 +222,21 @@ public class AURFireValueSetter {
 		}
 	}
 	
-	private void calc_noName(ArrayList<AURAreaGraphValue> points, double coefficient) {
+//	private void calc_noName(ArrayList<AURAreaGraphValue> points, double coefficient) {
 //		double max = 0;
-//		for (AURValuePoint p : points) {
-//			p.temp_value = p.areaGraph.countUnburntsInGrid();
+//		for (AURAreaGraphValue p : points) {
+//			p.temp_value = p.ag.countUnburntsInGrid();
 //			if (p.temp_value > max) {
 //				max = p.temp_value;
 //			}
 //		}
 //
 //		if (max > 0) {
-//			for (AURValuePoint p : points) {
+//			for (AURAreaGraphValue p : points) {
 //				p.value += ((p.temp_value / max)) * coefficient;
 //			}
 //		}
-	}
+//	}
 
 //	public void draw(Graphics2D g) {
 //		convexHullInstance.draw(g);

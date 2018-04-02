@@ -10,14 +10,21 @@ public class AURConstants {
 	public static class Misc {
 		public final static int CLOSE_BUILDING_THRESHOLD = 25 * 1000;
 		public final static int FIRE_ZONE_BORDER_INTERSECT_THRESHOLD = 5 * 1000;
-		public final static int NUMBER_OF_NEIGHBOUR_CLUSTERS = 4;
+		public final static int NUMBER_OF_NEIGHBOUR_CLUSTERS = 5;
 	}
 	
 	public static class PathPlanning {
+<<<<<<< HEAD
+		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 40;
+		public final static int POLICE_BLOCKADE_FORGET_TIME = 40;
+		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 40;
+		public final static int FIREBRIGADE_BLOCKADE_FORGET_TIME = 50;
+=======
 		public final static int DEFAULT_BLOCKADE_FORGET_TIME = 30;
 		public final static int AMBULANCE_BLOCKADE_FORGET_TIME = 30;
 		public final static int POLICE_BLOCKADE_FORGET_TIME = 40;
 		public final static int FIREBRIGADE_BLOCKADE_FORGET_TIME = 30;
+>>>>>>> bd4f859faf900ded840701044974cbaed084666f
 	}
 	
 	public static class Agent {

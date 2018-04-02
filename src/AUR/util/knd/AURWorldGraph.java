@@ -550,7 +550,11 @@ public class AURWorldGraph extends AbstractModule {
 		this.fireZonesCalculator = new AURFireZonesCalculator(this);
 		
 		updateInfo(null);
+<<<<<<< HEAD
+		
+=======
 
+>>>>>>> bd4f859faf900ded840701044974cbaed084666f
 		setClusters();
 		
 //		System.out.println("walls: " + walls.size());
@@ -750,17 +754,17 @@ public class AURWorldGraph extends AbstractModule {
 //		return result;
 //	}
 //
-//	public ArrayList<AURAreaGraph> getNoBlockadeReachableUnburntBuildingIDs() {
-//		this.NoBlockadeDijkstra(ai.getPosition());
-//		ArrayList<AURAreaGraph> result = new ArrayList<>();
-//		for (AURAreaGraph ag : areas.values()) {
-//			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
-//					&& ag.lastNoBlockadeDijkstraEntranceNode != null) {
-//				result.add(ag);
-//			}
-//		}
-//		return result;
-//	}
+	public ArrayList<AURAreaGraph> getNoBlockadeReachableUnburntBuildingIDs() {
+		this.KStarNoBlockade(ai.getPosition());
+		ArrayList<AURAreaGraph> result = new ArrayList<>();
+		for (AURAreaGraph ag : areas.values()) {
+			if (true && ag.isBuilding() && ag.noSeeTime() > 0 && ag.burnt == false
+					&& ag.lastNoBlockadeDijkstraEntranceNode != null) {
+				result.add(ag);
+			}
+		}
+		return result;
+	}
 
 	private void validateStandPoints() {
 		if (ai.getTime() <= 0) {
