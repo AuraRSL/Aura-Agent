@@ -52,7 +52,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public ArrayList<AURAreaGraph> areasForScoring = new ArrayList<>();
         
         public Collection<EntityID> clusterEntityIDs;
-        public Collection<EntityID> neighbourClustersEntityIDs;
+        public Collection<EntityID> neighbourClustersEntityIDs = new HashSet<>();
         int cluseterIndex;
         double myClusterCenter[] = new double[2];
         StandardEntity myClusterCenterEntity = null;
@@ -662,7 +662,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(policesMaybeBlocked.contains(eid)){
                         PoliceForce p = (PoliceForce) wi.getEntity(eid);
                         AURAreaGraph areaGraph = wsg.getAreaGraph(p.getID());
-                        if(areaGraph != null && ! areaGraph.isBuilding() || areaGraph.isRefuge()){
+                        if(areaGraph != null && (! areaGraph.isBuilding() || areaGraph.isRefuge())){
                                 int clusterIndex = clustering.getClusterIndex(eid);
                                 for(AURAreaGraph ag : wsg.getAreaGraph(clustering.getClusterEntityIDs(clusterIndex))){
                                         if(ag != null){
