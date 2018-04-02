@@ -457,6 +457,9 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                 agentsInBuildings.put(se.getID(),areaGraph);
                                 score *= 2.0 / 3.0;
                         }
+                        else if(areaGraph.getScore() < 0.5){
+                                score = 0;
+                        }
                         
                         areaGraph.baseScore += score;
                 }
@@ -469,6 +472,9 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         if(areaGraph.isBuilding()){
                                 agentsInBuildings.put(se.getID(),areaGraph);
                                 score *= 2.0 / 3.0;
+                        }
+                        else if(areaGraph.getScore() < 0.5){
+                                score = 0;
                         }
                         
                         areaGraph.baseScore += score;
@@ -686,14 +692,16 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                 if(areaGraph.isRefuge()){
                                         continue;
                                 }
-                                        
-                                settedBuildings.add(id);
-                                if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
-                                        areaGraph.targetScore = 1.5;
-                                        areaGraph.secondaryScore += score;
-                                }
-                                else{
-                                        areaGraph.targetScore = 0;
+                                
+                                if(true){ // is in sight area
+                                        settedBuildings.add(id);
+                                        if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                                areaGraph.targetScore = 1.5;
+                                                areaGraph.secondaryScore += score;
+                                        }
+                                        else{
+                                                
+                                        }
                                 }
                         }
                 }
