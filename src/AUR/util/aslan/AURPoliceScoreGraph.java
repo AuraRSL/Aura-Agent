@@ -52,6 +52,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public ArrayList<AURAreaGraph> areasForScoring = new ArrayList<>();
         
         public Collection<EntityID> clusterEntityIDs;
+        public Collection<EntityID> neighbourClustersEntityIDs;
         int cluseterIndex;
         double myClusterCenter[] = new double[2];
         StandardEntity myClusterCenterEntity = null;
@@ -101,6 +102,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
                 myClusterCenter[0] = ((Area) myClusterCenterEntity).getX();
                 myClusterCenter[1] = ((Area) myClusterCenterEntity).getY();
+                
+                // ---
+                
+                for(Integer index : wsg.neighbourClusters){
+                        neighbourClustersEntityIDs.addAll(clustering.getClusterEntityIDs(index));
+                }
                 
                 // ---
                 
@@ -326,14 +333,13 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 if(clusterEntityIDs.contains(area.area.getID())){
                         
                 }
+                else if(neighbourClustersEntityIDs.contains(area.area.getID())){
+                        score *= 1 / 2;
+                }
                 else{
                         double distanceFromCluster = Math.hypot(area.getX() - myClusterCenter[0], area.getY() - myClusterCenter[1]) / this.maxDistToCluster;
-                        score *= (1 - distanceFromCluster) * 1 / 2;
+                        score *= (1 - distanceFromCluster) * 1 / 3;
                 }
-                
-//                if(area.isRoad()){
-//                        score /= 2;
-//                }
                 
                 area.baseScore += score;
         }
