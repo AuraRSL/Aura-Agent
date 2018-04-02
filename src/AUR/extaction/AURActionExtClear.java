@@ -1182,8 +1182,10 @@ public class AURActionExtClear extends ExtAction {
                         agentInfo.getPosition(),
                         Lists.newArrayList(nextArea)
                 );
-                if(pathToNext.size() <= 2)
+                
+                if(pathToNext.size() <= 2 && ! pathToNext.isEmpty()){
                         return new ActionMove(pathToNext);
+                }
                 
                 Area pArea = agentInfo.getPositionArea();
                 
