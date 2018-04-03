@@ -22,6 +22,7 @@ import adf.agent.precompute.PrecomputeData;
 import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.StaticClustering;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.Arrays;
 import viewer.K_Viewer;
 import rescuecore2.standard.entities.Area;
@@ -75,6 +76,8 @@ public class AURWorldGraph extends AbstractModule {
 		{0.8, 0.7, 1.0, 0.9},
 		{0.9, 0.8, 0.7, 1.0}
 	};
+	
+	public double mapDiameter = 0;
 	
 	public final static int dij_9[][] = {
 		{-1, +1},
@@ -464,6 +467,7 @@ public class AURWorldGraph extends AbstractModule {
 		if(this.build == true) {
 			return;
 		}
+		
 		long t = System.currentTimeMillis();
 		areas.clear();
 		AURAreaGraph ag;
@@ -555,9 +559,39 @@ public class AURWorldGraph extends AbstractModule {
 		
 //		System.out.println("walls: " + walls.size());
 		this.build = true;
+		
+		
+		
+		this.mapDiameter = Math.hypot(this.wi.getBounds().getWidth(), this.wi.getBounds().getHeight());
+		
 		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
 	}
 	
+	public boolean isSmallMap() {
+		if(this.mapDiameter < 1381722) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isMediumMap() {
+		if(isSmallMap()) {
+			return false;
+		}
+		if(this.mapDiameter < 2464737) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isBigMap() {
+		if(isSmallMap() || isMediumMap()) {
+			return false;
+		}
+		return true;
+	}
+	
+	public Rectangle myClusterBounds = null;
 	
 	public void setClusters() {
 		this.worldClusterer.calc();
@@ -567,6 +601,12 @@ public class AURWorldGraph extends AbstractModule {
 		this.myCluster = new ArrayList<>();
 		this.neighbourClusters = new ArrayList<>();
 
+		int minX = AURConstants.Math.INT_INF;
+		int minY = AURConstants.Math.INT_INF;
+		
+		int maxX = AURConstants.Math.INT_NEGATIVE_INF;
+		int maxY = AURConstants.Math.INT_NEGATIVE_INF;
+		
 		for (int ci = 0; ci < this.clusters; ci++) {
 			Collection<EntityID> ids = this.worldClusterer.getClusterEntityIDs(ci);
 			for (EntityID id : ids) {
@@ -574,14 +614,28 @@ public class AURWorldGraph extends AbstractModule {
 				if (ag_ != null) {
 					ag_.clusterIndex = ci;
 					if (ci == this.agentCluster) {
+						
+						int x = ag_.getX();
+						int y = ag_.getY();
+						minX = Math.min(minX, x);
+						minY = Math.min(minY, y);
+						maxX = Math.max(maxX, x);
+						maxY = Math.max(maxY, y);
+						
 						this.myCluster.add(ag_);
-						this.myClusterCx += ag_.getX();
-						this.myClusterCy += ag_.getY();
+						this.myClusterCx += x;
+						this.myClusterCy += y;
 					}
 				}
 			}
 		}
+		minX -= AURConstants.Misc.AGENT_CLUSTER_BOUNDS_OFFSET;
+		minY -= AURConstants.Misc.AGENT_CLUSTER_BOUNDS_OFFSET;
+		maxX += AURConstants.Misc.AGENT_CLUSTER_BOUNDS_OFFSET;
+		maxY += AURConstants.Misc.AGENT_CLUSTER_BOUNDS_OFFSET;
 
+		myClusterBounds = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+		
 		if (this.myCluster.size() > 0) {
 			this.myClusterCx /= this.myCluster.size();
 			this.myClusterCy /= this.myCluster.size();
@@ -603,6 +657,16 @@ public class AURWorldGraph extends AbstractModule {
 			this.myClusterCenterArea = this.areas.get(this.ai.getPosition());
 		}
 		
+		for(AURAreaGraph ag_ : this.areas.values()) {
+			if(ag_.clusterIndex != this.agentCluster) {
+				if(this.myClusterBounds.intersects(ag_.polygon.getBounds())) {
+					if(this.neighbourClusters.contains(ag_.clusterIndex) == false) {
+						this.neighbourClusters.add(ag_.clusterIndex);
+					}
+				}
+			}
+		}
+		
 		KStar(this.myClusterCenterArea.area.getID());
 		
 		int times[][] = new int[this.clusters][2];
@@ -619,9 +683,14 @@ public class AURWorldGraph extends AbstractModule {
 				return o1[1] - o2[1];
 			}
 		});
-		for(int i = 0; i < AURConstants.Misc.NUMBER_OF_NEIGHBOUR_CLUSTERS + 1; i++) {
+		for(int i = 0; i < this.clusters; i++) {
 			if(times[i][0] != this.agentCluster) {
-				this.neighbourClusters.add(times[i][0]);
+				if(this.neighbourClusters.contains(times[i][0]) == false) {
+					this.neighbourClusters.add(times[i][0]);
+				}
+				if(this.neighbourClusters.size() >= AURConstants.Misc.MIN_NUMBER_OF_NEIGHBOUR_CLUSTERS) {
+					break;
+				}
 			}
 		}
 	}

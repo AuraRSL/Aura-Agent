@@ -76,7 +76,7 @@ public class AURFireZone {
 	}
 	
 	public boolean ok() {
-		if(getPerceptTime() <= 5) {
+		if(getPerceptTime() <= 2) {
 			return true;
 		}
 		
