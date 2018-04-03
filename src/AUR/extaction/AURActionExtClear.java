@@ -38,6 +38,7 @@ import java.awt.Rectangle;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Stack;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.Pair;
@@ -701,8 +702,15 @@ public class AURActionExtClear extends ExtAction {
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
                 if(pathNodes == null && path.size() > 1){
+                
+                if(pathNodes == null &&
+                   (path.size() > 1)){
+                        
                         System.out.println("Full Clear Action... ( " + path.get(1) + " )");
                         return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
+                }
+                else{
+                        isLastFullClear = false;
                 }
 
                 double[] buildingEntranceLine = bp.getBuildingEntranceLine(path);
@@ -1181,7 +1189,18 @@ public class AURActionExtClear extends ExtAction {
                 return null;
         }
         
+        boolean isLastFullClear = false;
         private Action getAreaFullClearActionOrIgnoreBlockades(EntityID nextArea){
+                boolean isLastFullClearTemp = isLastFullClear;
+                isLastFullClear = true;
+                
+                if(! isLastFullClearTemp){
+                        return new ActionClear(
+                                agentInfo.getPositionArea().getX(),
+                                agentInfo.getPositionArea().getY()
+                        );
+                }
+                
                 ArrayList<EntityID> pathToNext = wsg.getPathToClosest(
                         agentInfo.getPosition(),
                         Lists.newArrayList(nextArea)
