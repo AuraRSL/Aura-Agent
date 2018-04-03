@@ -363,7 +363,10 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         private void addClusterScore(AURAreaGraph area, double score) {
                 if(clusterEntityIDs.contains(area.area.getID())){
-                        
+                        // Full Score Added
+                }
+                else if(area.isRefuge() && neighbourClustersEntityIDs.contains(area.area.getID())){
+                        // Full Score Added
                 }
                 else if(neighbourClustersEntityIDs.contains(area.area.getID())){
                         score *= 1 / 2;
