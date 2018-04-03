@@ -143,6 +143,7 @@ public class AURClearWatcher extends AbstractModule {
         private Action getNewAction(Action action){
                 Action result = action;
                 System.out.println("Dont Move With Move Counter : " + dontMoveWithMoveCounter);
+                
                 if(dontMoveWithMoveCounter >= AURConstants.ClearWatcher.DONT_MOVE_COUNTER_LIMIT){
                         System.out.println("Get Random Directed Move . . . ");
                         randomDirectSelector.generate();
@@ -153,16 +154,16 @@ public class AURClearWatcher extends AbstractModule {
                         );
                 }
                 else if(isMoveLessThanAllowedValue() &&
-                   this.lastAction != CLEAR_FROM_WATCHER &&
-                   currentBlockadeList != null &&
-                   currentBlockadeList.size() > 0 &&
-                   this.lastAction != this.NULL &&
-                   lastBlockadePList.equals(currentBlockadePList)
+                        this.lastAction != CLEAR_FROM_WATCHER &&
+                        currentBlockadeList != null &&
+                        currentBlockadeList.size() > 0 &&
+                        this.lastAction != this.NULL &&
+                        lastBlockadePList.equals(currentBlockadePList)
                 ){
                         this.lastAction = CLEAR_FROM_WATCHER;
                         return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
                 }
-                else if(dontMoveCounter > 3 &&
+                else if(dontMoveCounter > AURConstants.ClearWatcher.OLD_FUNCTION_CLEAR_COUNTER_LIMIT &&
                         isMoveLessThanAllowedValue() &&
                         lastAction == MOVE &&
                         agentInfo.getPositionArea().isBlockadesDefined() &&
@@ -178,7 +179,7 @@ public class AURClearWatcher extends AbstractModule {
         }
         
         private boolean isMoveLessThanAllowedValue(){
-                return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.Agent.RADIUS;
+                return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.ClearWatcher.ALLOWED_MOVE_VALUE ;
         }
         
         private Blockade isAgentTrapedInBlockade(){
