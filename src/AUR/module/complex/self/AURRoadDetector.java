@@ -3,14 +3,9 @@ package AUR.module.complex.self;
 import AUR.util.aslan.AURClearWatcher;
 import AUR.util.aslan.AURPoliceScoreGraph;
 import AUR.util.aslan.AURPoliceScenarioAnalyzer;
-import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURWorldGraph;
-import static rescuecore2.standard.entities.StandardEntityURN.AMBULANCE_TEAM;
-import static rescuecore2.standard.entities.StandardEntityURN.REFUGE;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

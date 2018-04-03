@@ -1077,7 +1077,7 @@ public class AURActionExtClear extends ExtAction {
                         for(int j = 0;j < points.size();j ++){
                                 if(
                                         i != j &&
-                                        ! AURGeoTools.intersect(AURGeoTools.getClearPolygon(points.get(i), points.get(j), AURConstants.PoliceExtClear.GUID_POINT_CLEAR_POLYGON_HEIGHT ),
+                                        ! AURGeoTools.intersect(AURGeoTools.getClearPolygon(points.get(i), points.get(j), AURConstants.PoliceExtClear.GUID_POINT_CLEAR_POLYGON_HEIGHT , true),
                                                 areas
                                         )
                                 ){
@@ -1139,7 +1139,7 @@ public class AURActionExtClear extends ExtAction {
                 v = v.normalised().scale(v.getLength() + agentSize);
                 
                 
-                Polygon clearPolygon = AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), new Point2D(agentInfo.getX() + v.getX(), agentInfo.getY() + v.getY()), AURConstants.Agent.RADIUS * 3);
+                Polygon clearPolygon = AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), new Point2D(agentInfo.getX() + v.getX(), agentInfo.getY() + v.getY()), AURConstants.Agent.RADIUS * 3, true);
                 Pair<Integer, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon, (Area) worldInfo.getEntity(agentInfo.getPosition()));
                 cw.setBlockadeList(blockadesList.second());
                 
@@ -1365,7 +1365,7 @@ public class AURActionExtClear extends ExtAction {
                                         if(e.isPassable() &&
                                            disTemp > dis &&
                                            edgeMid.minus(new Point2D(agentInfo.getX(), agentInfo.getY())).getLength() < this.clearDistance - 50 &&
-                                           isPolygonOnBlockades(AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), edgeMid, AURConstants.Agent.RADIUS * 2 + 100))){
+                                           isPolygonOnBlockades(AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), edgeMid, AURConstants.Agent.RADIUS * 2 + 100, true))){
                                                 dis = disTemp;
                                                 result = new int[]{(int) edgeMid.getX(),(int) edgeMid.getY()};
                                         }
