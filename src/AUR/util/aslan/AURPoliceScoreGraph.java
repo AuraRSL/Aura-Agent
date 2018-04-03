@@ -272,6 +272,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 if(ai.getChanged().getChangedEntities() != null){
                         for(EntityID eid : ai.getChanged().getChangedEntities()){
+                                resetAgentsBlockadeScoreWhenNoBodyIsHere(eid);
+                                
                                 setPolicesClusterThatMaybeBlockedWhenSeeThatNotBlockedLooool(eid, - AURConstants.RoadDetector.BaseScore.CLUSTER);
                                 setFiredBuildingsScore(eid);
                                 setBlockedHumansScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
@@ -836,9 +838,28 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 for(MessageCivilian msg : civilianMessage){
                         if(msg != null && msg.isPositionDefined()){
                                 AURAreaGraph ag = wsg.getAreaGraph(msg.getPosition());
-                                if(ag.isBuilding()){
+                                if(ag.isBuilding() && !(wi.getEntity(msg.getSenderID()) instanceof PoliceForce)){
                                         ag.secondaryScore += AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_I_KNOW_WHAT_IN_THAT;
-                                        ag.targetScore = 1.5;
+                                }
+                        }
+                }
+        }
+
+        private void resetAgentsBlockadeScoreWhenNoBodyIsHere(EntityID eid) {
+                AURAreaGraph ag = wsg.getAreaGraph(eid);
+                if(ag != null && this.startPositionOfAgents.containsValue(eid)){
+                        Set<EntityID> changedEntities = ai.getChanged().getChangedEntities();
+                        for(EntityID e : startPositionOfAgents.keySet()){
+                                if(startPositionOfAgents.get(e).equals(eid) && (! ((Human) wi.getEntity(e)).getPosition().equals(eid) || ! changedEntities.contains(e) )){
+                                        if(wi.getEntity(eid).getStandardURN() == StandardEntityURN.AMBULANCE_TEAM){
+                                                ag.baseScore -= AURConstants.RoadDetector.BaseScore.AMBULANCE_TEAM;
+                                        }
+                                        else if(wi.getEntity(eid).getStandardURN() == StandardEntityURN.FIRE_BRIGADE){
+                                                ag.baseScore -= AURConstants.RoadDetector.BaseScore.FIRE_BRIGADE;
+                                        }
+                                        else if(wi.getEntity(eid).getStandardURN() == StandardEntityURN.POLICE_FORCE && ag.isBuilding()){
+                                                ag.baseScore -= AURConstants.RoadDetector.BaseScore.POLICE_FORCE;
+                                        }
                                 }
                         }
                 }
