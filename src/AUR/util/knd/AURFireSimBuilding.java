@@ -49,7 +49,7 @@ public class AURFireSimBuilding {
 	
 	public double fireProbability = 0.2;
 	
-	private GaussianGenerator burnRate = new GaussianGenerator(0.13, 0.025, new Random(0));
+	private GaussianGenerator burnRate = new GaussianGenerator(0.14, 0.025, new Random(0));
 	
 	public double tempVar = 0;
 	
@@ -455,7 +455,7 @@ public class AURFireSimBuilding {
 //			f *= 0.5;
 //		}
 		if(this.ag.isOnFire() == false) {
-			f *= 0.5;
+			f *= 0.9;
 		}
 		return getInitialFuel() * f;
 	}

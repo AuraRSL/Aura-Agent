@@ -31,16 +31,16 @@ public class AURFireValueSetter {
 			p.value = 0;
 		}
 
-		calc_EstimatedFieryness(this.points, 1.3);
+		//calc_EstimatedFieryness(this.points, 1.3);
 		add_TravelCost(this.points, 2);
 		calc_GasStation(this.points, 1.6);
 //		calc_noName(this.points, 1.6);
-		mul_Color(wsg, points, 1.01);
+		//mul_Color(wsg, points, 1.01);
 		mul_Borders(points, 1.2);
 		mul_Safety(points, 2);
-		calc_EffectiiveRadiation(points, 0.5);
-		mul_AgentNeighbourCluster(points, 1.1);
-		mul_AgentCluster(points, 1.5);
+		calc_EffectiiveRadiation(points, 2.5);
+		mul_AgentNeighbourCluster(points, 2.1);
+		mul_AgentCluster(points, 4.5);
 		mul_realFire(points, 1.5);
 		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override

@@ -48,7 +48,7 @@ public class A_AroundEntrances extends K_ViewerLayer {
                                 for (Edge e : b.getEdges()) {
                                         if (e.isPassable()
                                             && AURGeoTools.getEdgeMid(e).minus(new Point2D(wsg.ai.getX(), wsg.ai.getY())).getLength() < wsg.si.getClearRepairDistance() - 50
-                                            && isPolygonOnBlockades(wsg.wi, g2, kst, AURGeoTools.getClearPolygon(new Point2D(wsg.ai.getX(), wsg.ai.getY()), AURGeoTools.getEdgeMid(e), AURConstants.Agent.RADIUS * 2 + 100))) {
+                                            && isPolygonOnBlockades(wsg.wi, g2, kst, AURGeoTools.getClearPolygon(new Point2D(wsg.ai.getX(), wsg.ai.getY()), AURGeoTools.getEdgeMid(e), AURConstants.Agent.RADIUS * 2 + 100, true))) {
                                                 
                                                 g2.setColor(Color.RED);
                                                 g2.drawLine(

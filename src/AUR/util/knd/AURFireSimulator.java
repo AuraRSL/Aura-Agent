@@ -195,9 +195,9 @@ public class AURFireSimulator {
 			float dT = cellTemp - (float) building.getEstimatedTemperature();
 			float energyTransferToBuilding = dT * AURConstants.FireSim.AIR_TO_BUILDING_COEFFICIENT * AURConstants.FireSim.TIME_STEP_LENGTH * cellCover * AURConstants.FireSim.WORLD_AIR_CELL_SIZE;
 			
-			if(building.ag.isOnFire()) {
-				energyTransferToBuilding *= 0.5;
-			}
+//			if(building.ag.isOnFire() == false) {
+//				energyTransferToBuilding *= 0.9;
+//			}
 				
 			
 			energyDelta += energyTransferToBuilding;

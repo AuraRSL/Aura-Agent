@@ -701,8 +701,7 @@ public class AURActionExtClear extends ExtAction {
                 ArrayList<EntityID> path = AURPoliceUtil.filterAlirezaPathBug(this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target)));
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
-                if(pathNodes == null && path.size() > 1){
-                
+		
                 if(pathNodes == null &&
                    (path.size() > 1)){
                         

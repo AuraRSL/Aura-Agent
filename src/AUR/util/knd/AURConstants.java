@@ -10,7 +10,8 @@ public class AURConstants {
 	public static class Misc {
 		public final static int CLOSE_BUILDING_THRESHOLD = 25 * 1000;
 		public final static int FIRE_ZONE_BORDER_INTERSECT_THRESHOLD = 5 * 1000;
-		public final static int NUMBER_OF_NEIGHBOUR_CLUSTERS = 5;
+		public final static int MIN_NUMBER_OF_NEIGHBOUR_CLUSTERS = 5;
+		public final static int AGENT_CLUSTER_BOUNDS_OFFSET = 1000 * 10;
 	}
 	
 	public static class PathPlanning {
@@ -28,6 +29,7 @@ public class AURConstants {
 	public static class Math {
 		public final static double DOUBLE_INF = Double.MAX_VALUE;
 		public final static int INT_INF = Integer.MAX_VALUE;
+		public final static int INT_NEGATIVE_INF = Integer.MIN_VALUE;
 		public final static double sqr2 = 1.41421;
 	}
 	
