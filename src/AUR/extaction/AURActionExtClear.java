@@ -38,6 +38,7 @@ import java.awt.Rectangle;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Stack;
 import rescuecore2.config.NoSuchConfigOptionException;
 import rescuecore2.misc.Pair;
@@ -701,8 +702,15 @@ public class AURActionExtClear extends ExtAction {
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
                 if(pathNodes == null && path.size() > 1){
+                
+                if(pathNodes == null &&
+                   (path.size() > 1)){
+                        
                         System.out.println("Full Clear Action... ( " + path.get(1) + " )");
                         return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
+                }
+                else{
+                        isLastFullClear = false;
                 }
 
                 double[] buildingEntranceLine = bp.getBuildingEntranceLine(path);
@@ -1069,7 +1077,7 @@ public class AURActionExtClear extends ExtAction {
                         for(int j = 0;j < points.size();j ++){
                                 if(
                                         i != j &&
-                                        ! AURGeoTools.intersect(AURGeoTools.getClearPolygon(points.get(i), points.get(j), AURConstants.PoliceExtClear.GUID_POINT_CLEAR_POLYGON_HEIGHT ),
+                                        ! AURGeoTools.intersect(AURGeoTools.getClearPolygon(points.get(i), points.get(j), AURConstants.PoliceExtClear.GUID_POINT_CLEAR_POLYGON_HEIGHT , true),
                                                 areas
                                         )
                                 ){
@@ -1131,7 +1139,7 @@ public class AURActionExtClear extends ExtAction {
                 v = v.normalised().scale(v.getLength() + agentSize);
                 
                 
-                Polygon clearPolygon = AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), new Point2D(agentInfo.getX() + v.getX(), agentInfo.getY() + v.getY()), AURConstants.Agent.RADIUS * 3);
+                Polygon clearPolygon = AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), new Point2D(agentInfo.getX() + v.getX(), agentInfo.getY() + v.getY()), AURConstants.Agent.RADIUS * 3, true);
                 Pair<Integer, ArrayList<Blockade>> blockadesList = isThereBlockadesIntersectWithClearPolygon(clearPolygon, (Area) worldInfo.getEntity(agentInfo.getPosition()));
                 cw.setBlockadeList(blockadesList.second());
                 
@@ -1151,10 +1159,14 @@ public class AURActionExtClear extends ExtAction {
                         }
                 }
                 
+                Set<EntityID> changedEntities = agentInfo.getChanged().getChangedEntities();
                 Collection<EntityID> objectIDsInRange = worldInfo.getObjectIDsInRange(agentPosition[0], agentPosition[1], distToRescueBlockedAgents);
                 for(EntityID o : objectIDsInRange){
                         StandardEntity se = worldInfo.getEntity(o);
                         if(se instanceof Human &&
+                           ((changedEntities != null &&
+                           changedEntities.contains(se.getID())) ||
+                           changedEntities == null) &&
                            (AURConstants.PoliceExtClear.IGNORE_POLICES_RESCUE || ! (se instanceof PoliceForce)) &&
                            (!(se instanceof Civilian) ||
                            (se instanceof Civilian && isThereGasStation)) &&
@@ -1177,7 +1189,18 @@ public class AURActionExtClear extends ExtAction {
                 return null;
         }
         
+        boolean isLastFullClear = false;
         private Action getAreaFullClearActionOrIgnoreBlockades(EntityID nextArea){
+                boolean isLastFullClearTemp = isLastFullClear;
+                isLastFullClear = true;
+                
+                if(! isLastFullClearTemp){
+                        return new ActionClear(
+                                agentInfo.getPositionArea().getX(),
+                                agentInfo.getPositionArea().getY()
+                        );
+                }
+                
                 ArrayList<EntityID> pathToNext = wsg.getPathToClosest(
                         agentInfo.getPosition(),
                         Lists.newArrayList(nextArea)
@@ -1342,7 +1365,7 @@ public class AURActionExtClear extends ExtAction {
                                         if(e.isPassable() &&
                                            disTemp > dis &&
                                            edgeMid.minus(new Point2D(agentInfo.getX(), agentInfo.getY())).getLength() < this.clearDistance - 50 &&
-                                           isPolygonOnBlockades(AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), edgeMid, AURConstants.Agent.RADIUS * 2 + 100))){
+                                           isPolygonOnBlockades(AURGeoTools.getClearPolygon(new Point2D(agentInfo.getX(), agentInfo.getY()), edgeMid, AURConstants.Agent.RADIUS * 2 + 100, true))){
                                                 dis = disTemp;
                                                 result = new int[]{(int) edgeMid.getX(),(int) edgeMid.getY()};
                                         }

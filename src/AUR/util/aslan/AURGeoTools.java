@@ -199,11 +199,11 @@ public class AURGeoTools {
                 return false;
         }
         
-        public static Polygon getClearPolygon(Point2D p1, Point2D p2, double width) {
+        public static Polygon getClearPolygon(Point2D p1, Point2D p2, double width, boolean useHead) {
                 Vector2D v = p2.minus(p1).normalised().scale(AURConstants.Agent.RADIUS * 2 / 3);
                 Vector2D vp = AURGeoTools.getUnitPerpendicularVector(v);
                 Polygon p = new Polygon();
-                Point2D head = p1.plus(v);
+                Point2D head = useHead ? p1.plus(v) : p1;
                 p.addPoint(
                         (int) (head.getX() + vp.getX() * width / 2),
                         (int) (head.getY() + vp.getY() * width / 2)

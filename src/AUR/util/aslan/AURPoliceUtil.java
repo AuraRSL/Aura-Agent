@@ -80,7 +80,7 @@ public class AURPoliceUtil {
         }
         
         public static Polygon getClearPolygon(Point2D p1, Point2D p2) {
-                return AURGeoTools.getClearPolygon(p1, p2, AURConstants.PoliceExtClear.CLEAR_POLYGON_HEIGHT);
+                return AURGeoTools.getClearPolygon(p1, p2, AURConstants.PoliceExtClear.CLEAR_POLYGON_HEIGHT, true);
         }
         
         /**

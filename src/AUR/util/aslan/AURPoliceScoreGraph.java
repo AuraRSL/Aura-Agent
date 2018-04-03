@@ -1,11 +1,17 @@
 package AUR.util.aslan;
 
+import AUR.util.AURCommunication;
 import AUR.util.ambulance.Information.BuildingInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.communication.MessageManager;
+import adf.agent.communication.standard.bundle.information.MessageAmbulanceTeam;
+import adf.agent.communication.standard.bundle.information.MessageBuilding;
+import adf.agent.communication.standard.bundle.information.MessageCivilian;
+import adf.agent.communication.standard.bundle.information.MessageFireBrigade;
+import adf.agent.communication.standard.bundle.information.MessagePoliceForce;
 import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
@@ -20,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import rescuecore2.misc.Pair;
 import rescuecore2.standard.entities.AmbulanceTeam;
@@ -49,6 +56,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
         public ScenarioInfo si;
         public AURWorldGraph wsg;
         
+        private final AURCommunication communication;
+        
         public ArrayList<AURAreaGraph> areasForScoring = new ArrayList<>();
         
         public Collection<EntityID> clusterEntityIDs;
@@ -57,6 +66,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         double myClusterCenter[] = new double[2];
         StandardEntity myClusterCenterEntity = null;
         double maxDistToCluster = 0;
+        HashMap<EntityID, EntityID> startPositionOfAgents = new HashMap<>();
         
         double maxDisFromAgentStartPoint = 0;
         
@@ -65,6 +75,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.ai = ai;
                 this.si = si;
                 this.wi = wi;
+                
+                this.communication = new AURCommunication(ai, wi, si, developData);
                 
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 this.wsg.calc();
@@ -79,6 +91,15 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         private void fillLists(){
                 this.areas = wsg.areas;
+                
+                // ---
+                
+                for(EntityID eid : wi.getEntityIDsOfType(StandardEntityURN.AMBULANCE_TEAM,StandardEntityURN.FIRE_BRIGADE,StandardEntityURN.POLICE_FORCE)){
+                        startPositionOfAgents.put(
+                                eid,
+                                ((Human) wi.getEntity(eid)).getPosition()
+                        );
+                }
                 
                 // ---
                 
@@ -226,6 +247,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
         @Override
         public AbstractModule updateInfo(MessageManager messageManager) {
                 super.updateInfo(messageManager);
+                communication.updateInfo(messageManager);
                 
                 long sTime = System.currentTimeMillis();
                 System.out.println("Updating RoadDetector Scores...");
@@ -235,14 +257,23 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 wsg.KStar(ai.getPosition());
                 updateVisitedBuildings();
                 
-                // Set dynamic scores
-                decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
+                // set dynamic communication score
+                setPoliceForcesComScore(communication.getPfMessage());
+                setAmbulanceTeamComScore(communication.getAtMessage());
+                setFireBrigadeComScore(communication.getFbMessage());
+                setBuildingsComScore(communication.getBuildingMessage());
+                SetCiviliansComScore(communication.getCivilianMessage());
+                
+                // Set dynamic agent changeset scores
+                decreasePoliceTravelAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
                 setReleasedAgentStartEntityScore(AURConstants.RoadDetector.SecondaryScore.RELEASED_AGENTS_START_POSITION_SCORE);
                 setBuildingsThatIKnowWhatInThat(AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_I_KNOW_WHAT_IN_THAT); // Building Info
                 
                 if(ai.getChanged().getChangedEntities() != null){
                         for(EntityID eid : ai.getChanged().getChangedEntities()){
+                                resetAgentsBlockadeScoreWhenNoBodyIsHere(eid);
+                                
                                 setPolicesClusterThatMaybeBlockedWhenSeeThatNotBlockedLooool(eid, - AURConstants.RoadDetector.BaseScore.CLUSTER);
                                 setFiredBuildingsScore(eid);
                                 setBlockedHumansScore(eid, AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN);
@@ -269,7 +300,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 wsg.KStarNoBlockade(ai.getPosition());
                 
-                decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
+                decreasePoliceTravelAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 
                 setPoliceForceScore(AURConstants.RoadDetector.BaseScore.POLICE_FORCE);
                 setFireBrigadeScore(AURConstants.RoadDetector.BaseScore.FIRE_BRIGADE);
@@ -345,8 +376,13 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
         
         HashSet<EntityID> visitedAreas = new HashSet<>();
-        private void decreasePoliceAreasScore(double score) {
-                setTargetAsReached(ai.getPosition(), score);
+        private void decreasePoliceTravelAreasScore(double score) {
+                ArrayList<StandardEntity> travelAreas = AURUtil.getTravelAreas(wi, (Human) ai.me());
+                if(travelAreas != null){
+                        for(StandardEntity se : travelAreas){
+                                setTargetAsReached(se.getID(), score);
+                        }
+                }
         }
 
         private void setTargetAsReached(EntityID entity,double score){
@@ -722,6 +758,113 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                         areaGraph.targetScore = 1.5;
                                         areaGraph.secondaryScore += score;
                                         settedBuildings.add(civilian.getPosition());
+                                }
+                        }
+                }
+        }
+
+        private void setPoliceForcesComScore(List<MessagePoliceForce> pfMessage) {
+                for(MessagePoliceForce msg : pfMessage){
+                        if(msg.isPositionDefined()){
+                                AURAreaGraph areaGraph = wsg.getAreaGraph(msg.getPosition());
+
+                                if(msg.isBuriednessDefined() && msg.getBuriedness() > 0 && (msg.isHPDefined() && msg.getHP() > 0) || ! msg.isBuriednessDefined()){
+                                        if(areaGraph.getTravelCost() == AURConstants.Math.INT_INF || areaGraph.getNoBlockadeTravelCost() * 4 < areaGraph.getTravelCost()){
+                                                areaGraph.secondaryScore += AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN;
+                                        }
+                                }
+                                else{
+                                        setTargetAsReached(ai.getPosition(), AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
+                                }
+
+                                if(msg.isHPDefined() && msg.getHP() == 0){
+                                        areaGraph.targetScore = 0;
+                                }
+                        }
+                }
+        }
+
+        private void setAmbulanceTeamComScore(List<MessageAmbulanceTeam> atMessage) {
+                for(MessageAmbulanceTeam msg : atMessage){
+                        if(msg != null && msg.isPositionDefined()){
+                                AURAreaGraph areaGraph = wsg.getAreaGraph(msg.getPosition());
+
+                                if(msg.isBuriednessDefined() && msg.getBuriedness() > 0 && (msg.isHPDefined() && msg.getHP() > 0) || ! msg.isBuriednessDefined()){
+                                        if(areaGraph.getTravelCost() == AURConstants.Math.INT_INF || areaGraph.getNoBlockadeTravelCost() * 4 < areaGraph.getTravelCost()){
+                                                areaGraph.secondaryScore += AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN;
+                                        }
+                                }
+
+                                if(msg.isHPDefined() && msg.getHP() == 0){
+                                        areaGraph.targetScore = 0;
+                                }
+                                
+                                if(! startPositionOfAgents.get(msg.getAgentID()).equals(msg.getPosition())){
+                                        areaGraph.targetScore = 0;
+                                }
+                        }
+                }
+        }
+
+        private void setFireBrigadeComScore(List<MessageFireBrigade> fbMessage) {
+                for(MessageFireBrigade msg : fbMessage){
+                        if(msg != null && msg.isPositionDefined()){
+                                AURAreaGraph areaGraph = wsg.getAreaGraph(msg.getPosition());
+
+                                if(msg.isBuriednessDefined() && msg.getBuriedness() > 0 && (msg.isHPDefined() && msg.getHP() > 0) || ! msg.isBuriednessDefined()){
+                                        if(areaGraph.getTravelCost() == AURConstants.Math.INT_INF || areaGraph.getNoBlockadeTravelCost() * 4 < areaGraph.getTravelCost()){
+                                                areaGraph.secondaryScore += AURConstants.RoadDetector.SecondaryScore.BLOCKED_HUMAN;
+                                        }
+                                }
+
+                                if(msg.isHPDefined() && msg.getHP() == 0){
+                                        areaGraph.targetScore = 0;
+                                }
+                                
+                                if(! startPositionOfAgents.get(msg.getAgentID()).equals(msg.getPosition())){
+                                        areaGraph.targetScore = 0;
+                                }
+                        }
+                }
+        }
+
+        private void setBuildingsComScore(List<MessageBuilding> buildingMessage) {
+                for(MessageBuilding msg : buildingMessage){
+                        if(msg != null){
+                                AURAreaGraph ag = wsg.getAreaGraph(msg.getBuildingID());
+                                if(msg.isFierynessDefined() && msg.getFieryness() > 0){
+                                        ag.targetScore = 0;
+                                }
+                        }
+                }
+        }
+
+        private void SetCiviliansComScore(List<MessageCivilian> civilianMessage) {
+                for(MessageCivilian msg : civilianMessage){
+                        if(msg != null && msg.isPositionDefined()){
+                                AURAreaGraph ag = wsg.getAreaGraph(msg.getPosition());
+                                if(ag.isBuilding() && !(wi.getEntity(msg.getSenderID()) instanceof PoliceForce)){
+                                        ag.secondaryScore += AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_I_KNOW_WHAT_IN_THAT;
+                                }
+                        }
+                }
+        }
+
+        private void resetAgentsBlockadeScoreWhenNoBodyIsHere(EntityID eid) {
+                AURAreaGraph ag = wsg.getAreaGraph(eid);
+                if(ag != null && this.startPositionOfAgents.containsValue(eid)){
+                        Set<EntityID> changedEntities = ai.getChanged().getChangedEntities();
+                        for(EntityID e : startPositionOfAgents.keySet()){
+                                if(startPositionOfAgents.get(e).equals(eid) && (! ((Human) wi.getEntity(e)).getPosition().equals(eid) || ! changedEntities.contains(e) )){
+                                        if(wi.getEntity(eid).getStandardURN() == StandardEntityURN.AMBULANCE_TEAM){
+                                                ag.baseScore -= AURConstants.RoadDetector.BaseScore.AMBULANCE_TEAM;
+                                        }
+                                        else if(wi.getEntity(eid).getStandardURN() == StandardEntityURN.FIRE_BRIGADE){
+                                                ag.baseScore -= AURConstants.RoadDetector.BaseScore.FIRE_BRIGADE;
+                                        }
+                                        else if(wi.getEntity(eid).getStandardURN() == StandardEntityURN.POLICE_FORCE && ag.isBuilding()){
+                                                ag.baseScore -= AURConstants.RoadDetector.BaseScore.POLICE_FORCE;
+                                        }
                                 }
                         }
                 }
