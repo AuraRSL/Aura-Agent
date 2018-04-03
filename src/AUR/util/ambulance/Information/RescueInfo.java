@@ -3,6 +3,7 @@ package AUR.util.ambulance.Information;
 
 import AUR.util.AURCommunication;
 import AUR.util.ambulance.ProbabilityDeterminant.AgentRateDeterminer;
+import AUR.util.ambulance.ProbabilityDeterminant.BuildingRateDeterminer;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.common.ActionMove;
@@ -120,8 +121,6 @@ public class RescueInfo extends AbstractModule {
                 Building b = (Building)entity;
 
                 this.buildingsInfo.put(entity.getID(), new BuildingInfo(wsg, this , b));
-
-
             }
         }
 
@@ -170,6 +169,7 @@ public class RescueInfo extends AbstractModule {
 
     int lastRun = -1;
     public void updateInformation(MessageManager messageManager){
+//        long time = System.currentTimeMillis();
         if(lastRun == agentInfo.getTime())
             return;
         lastRun = agentInfo.getTime();
@@ -178,13 +178,20 @@ public class RescueInfo extends AbstractModule {
             init();
             initB = true;
         }
-
         this.acm.updateInfo(messageManager);
 
         this.updateChanges();
+//        System.out.println("t1 : " + (System.currentTimeMillis() - time) );
+//        time = System.currentTimeMillis();
         this.updateMessageCivilian();
+//        System.out.println("t2 : " + (System.currentTimeMillis() - time) );
+//        time = System.currentTimeMillis();
         this.updateBuildingInfo();
+//        System.out.println("t3 : " + (System.currentTimeMillis() - time) );
+//        time = System.currentTimeMillis();
         this.updateCycle();
+//        System.out.println("t4 : " + (System.currentTimeMillis() - time) );
+
 
     }
 
@@ -226,8 +233,8 @@ public class RescueInfo extends AbstractModule {
                 updateCivilianInfo(civilian);
                 //TODO
             }else if(      entity.getStandardURN().equals(StandardEntityURN.POLICE_FORCE)
-                        || entity.getStandardURN().equals(StandardEntityURN.AMBULANCE_TEAM)
-                        || entity.getStandardURN().equals(StandardEntityURN.FIRE_BRIGADE)){
+                    || entity.getStandardURN().equals(StandardEntityURN.AMBULANCE_TEAM)
+                    || entity.getStandardURN().equals(StandardEntityURN.FIRE_BRIGADE)){
                 Human human = (Human)entity;
                 updateAgentInfo(human);
             }

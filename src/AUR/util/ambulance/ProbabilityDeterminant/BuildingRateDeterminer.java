@@ -15,23 +15,29 @@ import java.util.Collection;
  */
 public class BuildingRateDeterminer {
 
-    public static double calc(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building){
+    public static double baseCalc(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building){
         double rate = 0;
+        rate += clusterEffect(wsg, rescueInfo, building, 1.15);
+        rate += neaberClusterEffect(wsg, rescueInfo, building, 0.45);
+        rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.5);
+
+        return rate;
+    }
+
+    public static double calc(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building){
+        double rate = building.baseRate;
 
 
         if( ignoreBulding(wsg, rescueInfo, building)){
-            return rate;
+            return 0;
         }
 
 
-        rate += clusterEffect(wsg, rescueInfo, building, 1.15);
-        rate += neaberClusterEffect(wsg, rescueInfo, building, 0.45);
         rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 0.6);
         rate += distanceFromFireEffect(wsg, rescueInfo, building, 0.2);
-        rate += broknessEffect(wsg, rescueInfo, building, 0.35);
+        rate += broknessEffect(wsg, rescueInfo, building, 0.3);
         rate += buildingTemperatureEffect(wsg, rescueInfo, building, 0.2);
         rate += distanceFromRefugeEffect(wsg, rescueInfo, building, 0.15);
-        rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.5);
 
         if(rate >= 1){
             rate += TravelCostToBuildingEffect(wsg, rescueInfo, building, 1.3);
@@ -110,7 +116,7 @@ public class BuildingRateDeterminer {
     public static double TravelCostToBuildingEffect(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building , double coefficient){
         double tempRate = 0;
         if(rescueInfo.maxTravelCost > building.travelCostTobulding ){
-             tempRate = Math.pow(rescueInfo.maxTravelCost - building.travelCostTobulding , 2);
+            tempRate = Math.pow(rescueInfo.maxTravelCost - building.travelCostTobulding , 2);
         }
         return (tempRate / Math.pow(rescueInfo.maxTravelCost, 2) )*coefficient;
     }
