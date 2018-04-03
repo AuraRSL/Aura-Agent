@@ -91,8 +91,14 @@ public class AURConstants {
                 public final static boolean OPEN_NEAR_BUILDINGS_ENTRANCES = false;
         }
         
+        /**
+         * 
+         * @author Amir Aslan Aslani - Mar 2018
+         */
         public static class ClearWatcher {
-                public final static int DONT_MOVE_COUNTER_LIMIT = 20;
+                public final static int DONT_MOVE_COUNTER_LIMIT = 4;
+                public final static int OLD_FUNCTION_CLEAR_COUNTER_LIMIT = 3;
+                public final static double ALLOWED_MOVE_VALUE = AURConstants.Agent.RADIUS;
         }
         
         /**

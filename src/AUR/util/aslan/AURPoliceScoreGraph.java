@@ -13,6 +13,7 @@ import adf.agent.communication.standard.bundle.information.MessageBuilding;
 import adf.agent.communication.standard.bundle.information.MessageCivilian;
 import adf.agent.communication.standard.bundle.information.MessageFireBrigade;
 import adf.agent.communication.standard.bundle.information.MessagePoliceForce;
+import adf.agent.communication.standard.bundle.information.MessageRoad;
 import adf.agent.develop.DevelopData;
 import adf.agent.info.AgentInfo;
 import adf.agent.info.ScenarioInfo;
@@ -78,7 +79,6 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 this.wi = wi;
                 
                 this.communication = new AURCommunication(ai, wi, si, developData);
-                
                 this.wsg = moduleManager.getModule("knd.AuraWorldGraph");
                 this.wsg.calc();
                 
@@ -263,7 +263,8 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 setAmbulanceTeamComScore(communication.getAtMessage());
                 setFireBrigadeComScore(communication.getFbMessage());
                 setBuildingsComScore(communication.getBuildingMessage());
-                SetCiviliansComScore(communication.getCivilianMessage());
+                setCiviliansComScore(communication.getCivilianMessage());
+                setRoadsComScore(communication.getRoadMessage());
                 
                 // Set dynamic agent changeset scores
                 decreasePoliceTravelAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
@@ -363,7 +364,10 @@ public class AURPoliceScoreGraph extends AbstractModule {
 
         private void addClusterScore(AURAreaGraph area, double score) {
                 if(clusterEntityIDs.contains(area.area.getID())){
-                        
+                        // Full Score Added
+                }
+                else if(area.isRefuge() && neighbourClustersEntityIDs.contains(area.area.getID())){
+                        // Full Score Added
                 }
                 else if(neighbourClustersEntityIDs.contains(area.area.getID())){
                         score *= 1 / 2;
@@ -840,7 +844,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
         }
 
-        private void SetCiviliansComScore(List<MessageCivilian> civilianMessage) {
+        private void setCiviliansComScore(List<MessageCivilian> civilianMessage) {
                 for(MessageCivilian msg : civilianMessage){
                         if(msg != null && msg.isPositionDefined()){
                                 AURAreaGraph ag = wsg.getAreaGraph(msg.getPosition());
@@ -867,6 +871,15 @@ public class AURPoliceScoreGraph extends AbstractModule {
                                                 ag.baseScore -= AURConstants.RoadDetector.BaseScore.POLICE_FORCE;
                                         }
                                 }
+                        }
+                }
+        }
+
+        private void setRoadsComScore(List<MessageRoad> roadMessage) {
+                for(MessageRoad msg : roadMessage){
+                        AURAreaGraph ag = wsg.getAreaGraph(msg.getRoadID());
+                        if(ag != null && ag.isRoad()){
+                                ag.targetScore = 0;
                         }
                 }
         }
