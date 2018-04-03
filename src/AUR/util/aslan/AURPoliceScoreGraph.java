@@ -265,7 +265,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 SetCiviliansComScore(communication.getCivilianMessage());
                 
                 // Set dynamic agent changeset scores
-                decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
+                decreasePoliceTravelAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 setDeadPoliceClusterScore(AURConstants.RoadDetector.SecondaryScore.DEAD_POLICE_CLUSTER / this.clustering.getClusterNumber() * 2);
                 setReleasedAgentStartEntityScore(AURConstants.RoadDetector.SecondaryScore.RELEASED_AGENTS_START_POSITION_SCORE);
                 setBuildingsThatIKnowWhatInThat(AURConstants.RoadDetector.SecondaryScore.BUILDINGS_THAT_I_KNOW_WHAT_IN_THAT); // Building Info
@@ -300,7 +300,7 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 wsg.KStarNoBlockade(ai.getPosition());
                 
-                decreasePoliceAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
+                decreasePoliceTravelAreasScore(AURConstants.RoadDetector.DECREASE_POLICE_AREA_SCORE);
                 
                 setPoliceForceScore(AURConstants.RoadDetector.BaseScore.POLICE_FORCE);
                 setFireBrigadeScore(AURConstants.RoadDetector.BaseScore.FIRE_BRIGADE);
@@ -376,8 +376,13 @@ public class AURPoliceScoreGraph extends AbstractModule {
         }
         
         HashSet<EntityID> visitedAreas = new HashSet<>();
-        private void decreasePoliceAreasScore(double score) {
-                setTargetAsReached(ai.getPosition(), score);
+        private void decreasePoliceTravelAreasScore(double score) {
+                ArrayList<StandardEntity> travelAreas = AURUtil.getTravelAreas(wi, (Human) ai.me());
+                if(travelAreas != null){
+                        for(StandardEntity se : travelAreas){
+                                setTargetAsReached(se.getID(), score);
+                        }
+                }
         }
 
         private void setTargetAsReached(EntityID entity,double score){
