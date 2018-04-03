@@ -90,7 +90,7 @@ public class AURConstants {
         }
         
         public static class ClearWatcher {
-                public final static int DONT_MOVE_COUNTER_LIMIT = 20;
+                public final static int DONT_MOVE_COUNTER_LIMIT = 4;
         }
         
         /**

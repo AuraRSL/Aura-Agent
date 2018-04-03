@@ -39,7 +39,7 @@ public class AURPoliceScenarioAnalyzer extends AbstractModule {
         public AbstractModule updateInfo(MessageManager messageManager) {
                 super.updateInfo(messageManager);
                 
-                if(blockadeStatusInMap == this.UNDEFINED){
+                if(blockadeStatusInMap == this.UNDEFINED || blockadeStatusInMap == this.NO){
                         Collection<EntityID> blockadesCollection = worldInfo.getEntityIDsOfType(StandardEntityURN.BLOCKADE);
                         if(! blockadesCollection.isEmpty()){
                                 this.blockadeStatusInMap = this.YES;
