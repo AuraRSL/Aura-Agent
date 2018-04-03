@@ -69,6 +69,7 @@ public class K_LayerAdder {
 		viewer.addLayer(TAB_MISC, K_TravelHistory.class, true);
 		viewer.addLayer(TAB_MISC, K_TravelHistoryExt.class, false);
 		viewer.addLayer(TAB_MISC, K_WorldGrid.class, false);
+		viewer.addLayer(TAB_MISC, K_MapInfo.class, true);
 		
 		viewer.addLayer(TAB_FIRE, K_AirCells.class, false);
 		viewer.addLayer(TAB_FIRE, K_BuildingAirCells.class, false);

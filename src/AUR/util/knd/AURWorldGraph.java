@@ -77,6 +77,8 @@ public class AURWorldGraph extends AbstractModule {
 		{0.9, 0.8, 0.7, 1.0}
 	};
 	
+	public double mapDiameter = 0;
+	
 	public final static int dij_9[][] = {
 		{-1, +1},
 		{+0, +1},
@@ -465,6 +467,7 @@ public class AURWorldGraph extends AbstractModule {
 		if(this.build == true) {
 			return;
 		}
+		
 		long t = System.currentTimeMillis();
 		areas.clear();
 		AURAreaGraph ag;
@@ -556,7 +559,36 @@ public class AURWorldGraph extends AbstractModule {
 		
 //		System.out.println("walls: " + walls.size());
 		this.build = true;
+		
+		
+		
+		this.mapDiameter = Math.hypot(this.wi.getBounds().getWidth(), this.wi.getBounds().getHeight());
+		
 		System.out.println("Graph build time: " + (System.currentTimeMillis() - t));
+	}
+	
+	public boolean isSmallMap() {
+		if(this.mapDiameter < 1381722) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isMediumMap() {
+		if(isSmallMap()) {
+			return false;
+		}
+		if(this.mapDiameter < 2464737) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isBigMap() {
+		if(isSmallMap() || isMediumMap()) {
+			return false;
+		}
+		return true;
 	}
 	
 	public Rectangle myClusterBounds = null;
