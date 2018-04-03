@@ -1151,10 +1151,14 @@ public class AURActionExtClear extends ExtAction {
                         }
                 }
                 
+                Set<EntityID> changedEntities = agentInfo.getChanged().getChangedEntities();
                 Collection<EntityID> objectIDsInRange = worldInfo.getObjectIDsInRange(agentPosition[0], agentPosition[1], distToRescueBlockedAgents);
                 for(EntityID o : objectIDsInRange){
                         StandardEntity se = worldInfo.getEntity(o);
                         if(se instanceof Human &&
+                           ((changedEntities != null &&
+                           changedEntities.contains(se.getID())) ||
+                           changedEntities == null) &&
                            (AURConstants.PoliceExtClear.IGNORE_POLICES_RESCUE || ! (se instanceof PoliceForce)) &&
                            (!(se instanceof Civilian) ||
                            (se instanceof Civilian && isThereGasStation)) &&
