@@ -14,6 +14,11 @@ import rescuecore2.standard.entities.Building;
 import rescuecore2.standard.entities.StandardEntityURN;
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017
+ */
+
 public class AURRandomDirectSelector {
 
 	private final int AGENT_POSITION_HISTORY_SIZE = 4;
@@ -173,7 +178,7 @@ public class AURRandomDirectSelector {
 		double y = ai.getY();
 		LinkedList<RandomPoint> list = new LinkedList<>();
 		for (int i = 0; i < 500; i++) {
-			list.add(new RandomPoint(x, y, 5000));
+			list.add(new RandomPoint(x, y, 9000));
 		}
 
 		LinkedList<Area> allAroundAreas = getAroundAreas();

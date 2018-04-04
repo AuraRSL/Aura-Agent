@@ -18,15 +18,27 @@ public class K_WorldGrid extends K_ViewerLayer {
 
 	@Override
 	public void paint(Graphics2D g2, K_ScreenTransform kst, AURWorldGraph wsg, AURAreaGraph selected_ag) {
-//		g2.setColor(Color.cyan);
-//		g2.setStroke(new BasicStroke(1));
-//		
-//		for(int i = 0; i < wsg.gridRows; i++) {
-//			kst.drawTransformedLine(g2, wsg.g, i, i, i);
-//		}
-//		for(int j = 0; j < wsg.gridCols; j++) {
-//
-//		}
+		g2.setColor(Color.cyan);
+		g2.setStroke(new BasicStroke(1));
+		
+		for(int i = 0; i <= wsg.gridRows; i++) {
+			kst.drawTransformedLine(
+				g2,
+				wsg.gridDx,
+				wsg.gridDy + wsg.worldGridSize * i,
+				wsg.gridDx + wsg.worldGridSize * wsg.gridCols,
+				wsg.gridDy + wsg.worldGridSize * i
+			);
+		}
+		for(int j = 0; j <= wsg.gridCols; j++) {
+			kst.drawTransformedLine(
+				g2,
+				wsg.gridDx + wsg.worldGridSize * j,
+				wsg.gridDy,
+				wsg.gridDx + wsg.worldGridSize * j,
+				wsg.gridDy + wsg.worldGridSize * wsg.gridRows
+			);
+		}
 
 	}
 

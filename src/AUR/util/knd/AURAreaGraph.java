@@ -234,22 +234,22 @@ public class AURAreaGraph {
 		return AURGeoUtil.dist(b1.CenterNode.x, b1.CenterNode.y, b2.CenterNode.x, b2.CenterNode.y);
 	}
 	
-//	public int countUnburntsInGrid() {
-//		int result = 0;
-//
-//		int i = (int) ((this.getX() - wsg.gridDy) / wsg.worldGridSize);
-//		int j = (int) ((this.getY() - wsg.gridDx) / wsg.worldGridSize);
-//		if (wsg.areaGraphsGrid[i][j] != null) {
-//
-//			for(AURAreaGraph ag : wsg.areaGraphsGrid[i][j]) {
-//				if(ag.isBuilding() && ag.burnt == false && ag.isOnFire()) {
-//					result++;
-//				}
-//			}
-//		}
-//		
-//		return result;
-//	}
+	public int countUnburntsInGrid() {
+		int result = 0;
+
+		int j = (int) ((this.getX() - wsg.gridDx) / wsg.worldGridSize);
+		int i = (int) ((this.getY() - wsg.gridDy) / wsg.worldGridSize);
+		if (wsg.areaGraphsGrid[i][j] != null) {
+
+			for(AURAreaGraph ag : wsg.areaGraphsGrid[i][j]) {
+				if(ag.isBuilding() && ag.burnt == false && ag.isOnFire()) {
+					result++;
+				}
+			}
+		}
+		
+		return result;
+	}
 		
 	public int getWaterNeeded() {
 		if (isBuilding() == false) {
@@ -525,7 +525,7 @@ public class AURAreaGraph {
 	public int fireReportTime = -1;
 	public int lastTemperature = 0;
 	
-	public final static int FIRE_REPORT_FORGET_TIME = 3;
+	public final static int FIRE_REPORT_FORGET_TIME = 2;
 	
 	public boolean isRecentlyReportedFire() {
 		return (wsg.ai.getTime() - fireReportTime) <= FIRE_REPORT_FORGET_TIME;

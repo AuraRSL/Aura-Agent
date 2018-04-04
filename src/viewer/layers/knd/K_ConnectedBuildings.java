@@ -32,7 +32,7 @@ public class K_ConnectedBuildings extends K_ViewerLayer {
 			return;
 		}
 		
-		selected_ag.getBuilding().fireSimBuilding.calcConnectionsAndPaint(g2, kst);
+//		selected_ag.getBuilding().fireSimBuilding.calcConnectionsAndPaint(g2, kst);
 		
 		if(selected_ag.getBuilding().fireSimBuilding.connections == null) {
 			return;

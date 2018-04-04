@@ -11,6 +11,11 @@ import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import rescuecore2.worldmodel.EntityID;
 
+/**
+ *
+ * @author Alireza Kandeh - 2017 & 2018
+ */
+
 public class AURWalkWatcher extends AbstractModule {
 
 	AgentInfo ai = null;
@@ -33,15 +38,19 @@ public class AURWalkWatcher extends AbstractModule {
 	class Step {
 
 		int fromID;
-		int toID;
 		double fromX = 0;
 		double fromY = 0;
+		double destX = 0;
+		double destY = 0;
+		boolean destXYDefined = false;
 
-		public Step(int fromID, int toID) {
+		public Step(int fromID, int destX, int destY, boolean destXYDefined) {
 			this.fromID = fromID;
-			this.toID = toID;
 			this.fromX = ai.getX();
 			this.fromY = ai.getY();
+			this.destX = destX;
+			this.destY = destY;
+			this.destXYDefined = destXYDefined;
 		}
 
 		@Override
@@ -57,8 +66,14 @@ public class AURWalkWatcher extends AbstractModule {
 
 	public ArrayList<Step> recentSteps = new ArrayList<>();
 
-	private void add(List<EntityID> path) {
-		recentSteps.add(new Step(ai.getPosition().getValue(), path.get(0).getValue()));
+	private void add(ActionMove actMove) {
+		Step step = new Step(
+			ai.getPosition().getValue(),
+			actMove.getPosX(),
+			actMove.getPosY(),
+			actMove.getUsePosition()
+		);
+		recentSteps.add(step);
 		if (recentSteps.size() > 4) {
 			recentSteps.remove(0);
 		}
@@ -71,6 +86,15 @@ public class AURWalkWatcher extends AbstractModule {
 		}
 		Step last = recentSteps.get(size - 1);
 		Step beforeLast = recentSteps.get(size - 2);
+
+		
+		if(last.destXYDefined) {
+			double dist = AURGeoUtil.dist(this.ai.getX(), this.ai.getY(), last.destX, last.destY);
+			if(dist < 40) {
+				return false;
+			}
+		}
+		
 		if (last.equals(beforeLast)) {
 			return true;
 		}
@@ -93,7 +117,7 @@ public class AURWalkWatcher extends AbstractModule {
 			return moveAction;
 		}
 		randomDirectSelector.update();
-		add(moveAction.getPath());
+		add(moveAction);
 		if (anyProblem()) {
 			System.out.println("problem");
 			randomDirectSelector.generate();
