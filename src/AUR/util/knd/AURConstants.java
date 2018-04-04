@@ -185,7 +185,7 @@ public class AURConstants {
                         public final static double RELEASED_AGENTS_START_POSITION_SCORE = 0.0;
 //                        public final static double BUILDINGS_THAT_CONTAINS_CIVILANS = 0.3;
 //                        public final static double BUILDINGS_DONT_CONTAINS_CIVILIAN = 0.05;
-                        public final static double BLOCKED_BUILDINGS = 0.15;
+                        public final static double BLOCKED_BUILDINGS = 0.25;
                         public final static double BUILDINGS_THAT_I_KNOW_WHAT_IN_THAT = 0.3;
                 }
                 
