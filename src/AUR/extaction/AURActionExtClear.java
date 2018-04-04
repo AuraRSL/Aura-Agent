@@ -953,7 +953,7 @@ public class AURActionExtClear extends ExtAction {
                         }
                         
                         EntityID areaOfLastPoint = targetEntityID == null ? agentInfo.getPosition() : targetEntityID;
-                                
+                        
                         return this.cw.getAction(
                                 new ActionMove(
                                         wsg.getNoBlockadePathToClosest(agentInfo.getPosition(), Lists.newArrayList(areaOfLastPoint)),
