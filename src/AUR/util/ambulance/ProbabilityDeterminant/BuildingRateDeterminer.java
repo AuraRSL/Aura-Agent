@@ -118,6 +118,9 @@ public class BuildingRateDeterminer {
         if(rescueInfo.maxTravelCost > building.travelCostTobulding ){
             tempRate = Math.pow(rescueInfo.maxTravelCost - building.travelCostTobulding , 2);
         }
+        if(rescueInfo.maxTravelCost == 0){
+            return 0;
+        }
         return (tempRate / Math.pow(rescueInfo.maxTravelCost, 2) )*coefficient;
     }
 

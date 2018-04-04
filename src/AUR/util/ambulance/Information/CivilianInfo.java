@@ -122,6 +122,9 @@ public class CivilianInfo {
         if(refuges == null || refuges.size() == 0){
             return null;
         }
+        if(me.isPositionDefined()){
+            return null;
+        }
 
         ArrayList<EntityID> path = wsg.getPathToClosest(me.getPosition(), refuges);
         if(path == null || path.size() == 0){

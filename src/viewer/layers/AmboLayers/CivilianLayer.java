@@ -34,7 +34,7 @@ public class CivilianLayer extends K_ViewerLayer {
 					if(c.getHP() == 0 ){
 						g2.setColor(new Color(87, 34, 7));
 					}else {
-						g2.setColor(new Color(0, (int)255 * (c.getHP() / 10000), 0));
+						g2.setColor(new Color(0, (int)(255 * ( 1D*c.getHP() / 10000)), 0));
 					}
 				}else{
 					g2.setColor(Color.green);

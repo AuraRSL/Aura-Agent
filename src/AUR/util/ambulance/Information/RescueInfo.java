@@ -127,7 +127,7 @@ public class RescueInfo extends AbstractModule {
         int maxD = 0;
         for(BuildingInfo b : this.buildingsInfo.values()){
 
-            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE - 1e4)){
+            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE)){
                 maxD = b.travelCostTobulding;
             }
         }
@@ -210,11 +210,14 @@ public class RescueInfo extends AbstractModule {
     private void updateBuildingInfo(){
         int maxD = 0;
         for(BuildingInfo b : this.buildingsInfo.values()){
+            //Update
             b.updateInformation();
-            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE - 1e4) ){
+            //
+            if( maxD < b.travelCostTobulding && (b.travelCostTobulding <= Integer.MAX_VALUE) ){
                 maxD = b.travelCostTobulding;
             }
         }
+        System.out.println("max Dis:" +  maxD);
         this.maxTravelCost = maxD;
 
     }
@@ -228,7 +231,7 @@ public class RescueInfo extends AbstractModule {
         Set<EntityID> changes = worldInfo.getChanged().getChangedEntities();
         for(EntityID id: changes){
             StandardEntity entity = worldInfo.getEntity(id);
-            if(entity.getStandardURN().equals(StandardEntityURN.CIVILIAN)) {
+            if(entity.getStandardURN().equals(StandardEntityURN.CIVILIAN) && entity instanceof Civilian) {
                 Civilian civilian = (Civilian) entity;
                 updateCivilianInfo(civilian);
                 //TODO
