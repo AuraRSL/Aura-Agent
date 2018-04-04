@@ -2,6 +2,7 @@ package AUR.util.aslan;
 
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
+import AUR.util.knd.AURRandomDirectSelector;
 import adf.agent.action.Action;
 import adf.agent.action.common.ActionMove;
 import adf.agent.action.police.ActionClear;
@@ -13,7 +14,6 @@ import adf.agent.module.ModuleManager;
 import adf.component.module.AbstractModule;
 import com.google.common.collect.Lists;
 import java.awt.Polygon;
-import java.awt.Shape;
 import java.util.ArrayList;
 import rescuecore2.standard.entities.Area;
 import rescuecore2.standard.entities.Blockade;
@@ -46,9 +46,14 @@ public class AURClearWatcher extends AbstractModule {
         public int currentTime;
         
         public int dontMoveCounter = 0;
+        public int dontMoveWithMoveCounter = 0;
+        
+        AURRandomDirectSelector randomDirectSelector;
 
         public AURClearWatcher(AgentInfo ai, WorldInfo wi, ScenarioInfo si, ModuleManager moduleManager, DevelopData developData) {
                 super(ai, wi, si, moduleManager, developData);
+                randomDirectSelector = new AURRandomDirectSelector(ai, wi);
+                
                 this.lastAction = this.NULL;
                 
                 this.lastBlockadePList = new ArrayList<>();
@@ -73,6 +78,8 @@ public class AURClearWatcher extends AbstractModule {
         }
         
         public void updateAgentInformations() {
+                randomDirectSelector.update();
+                
                 this.xLastPos = this.xCurrentPos;
                 this.yLastPos = this.yCurrentPos;
                 this.xCurrentPos = this.agentInfo.getX();
@@ -86,6 +93,13 @@ public class AURClearWatcher extends AbstractModule {
                 else{
                         dontMoveCounter = 0;
                 }
+                
+                if(dontMoveWithMoveCounter < 10 && isMoveLessThanAllowedValue() && lastAction == MOVE){
+                        dontMoveWithMoveCounter ++;
+                }
+                else{
+                        dontMoveWithMoveCounter = 0;
+                }
         }
         
         public void setBlockadeList(ArrayList<Blockade> blockades){
@@ -96,12 +110,7 @@ public class AURClearWatcher extends AbstractModule {
         
         public Action getAction(Action action){
                 Action newAction;
-                if(dontMoveCounter > AURConstants.ClearWatcher.DONT_MOVE_COUNTER_LIMIT){
-                        newAction = getDontMoveAction();
-                }
-                else{
-                        newAction = getNewAction(action);
-                }
+                newAction = getNewAction(action);
                 
                 if(this.lastAction == CLEAR_FROM_WATCHER)
                         System.out.println(" -> CLEAR_FROM_WATCHER");
@@ -132,17 +141,28 @@ public class AURClearWatcher extends AbstractModule {
         
         private Action getNewAction(Action action){
                 Action result = action;
-                if(isMoveLessThanAllowedValue() &&
-                   this.lastAction != CLEAR_FROM_WATCHER &&
-                   currentBlockadeList != null &&
-                   currentBlockadeList.size() > 0 &&
-                   this.lastAction != this.NULL &&
-                   lastBlockadePList.equals(currentBlockadePList)
+                System.out.println("Dont Move With Move Counter : " + dontMoveWithMoveCounter);
+                
+                if(dontMoveWithMoveCounter >= AURConstants.ClearWatcher.DONT_MOVE_COUNTER_LIMIT){
+                        System.out.println("Get Random Directed Move . . . ");
+                        randomDirectSelector.generate();
+                        return new ActionMove(
+                                Lists.newArrayList(agentInfo.getPosition()),
+                                (int) (randomDirectSelector.generatedPoint.getX()),
+                                (int) (randomDirectSelector.generatedPoint.getY())
+                        );
+                }
+                else if(isMoveLessThanAllowedValue() &&
+                        this.lastAction != CLEAR_FROM_WATCHER &&
+                        currentBlockadeList != null &&
+                        currentBlockadeList.size() > 0 &&
+                        this.lastAction != this.NULL &&
+                        lastBlockadePList.equals(currentBlockadePList)
                 ){
                         this.lastAction = CLEAR_FROM_WATCHER;
                         return new ActionClear(AURPoliceUtil.getNearestBlockadeToAgentFromList(agentInfo, currentBlockadeList));
                 }
-                else if(dontMoveCounter > 3 &&
+                else if(dontMoveCounter > AURConstants.ClearWatcher.OLD_FUNCTION_CLEAR_COUNTER_LIMIT &&
                         isMoveLessThanAllowedValue() &&
                         lastAction == MOVE &&
                         agentInfo.getPositionArea().isBlockadesDefined() &&
@@ -158,7 +178,7 @@ public class AURClearWatcher extends AbstractModule {
         }
         
         private boolean isMoveLessThanAllowedValue(){
-                return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.Agent.RADIUS;
+                return AURGeoUtil.dist(xLastPos, yLastPos, xCurrentPos, yCurrentPos) < AURConstants.ClearWatcher.ALLOWED_MOVE_VALUE ;
         }
         
         private Blockade isAgentTrapedInBlockade(){
@@ -175,18 +195,18 @@ public class AURClearWatcher extends AbstractModule {
                 return null;
         }
 
-        private Action getDontMoveAction() {
-                Shape shape = agentInfo.getPositionArea().getShape();
-                double[] p, agent = new double[]{agentInfo.getX(), agentInfo.getY()};
-                do{
-                        p = AURGeoMetrics.getVectorScaled(AURGeoMetrics.getPointsPlus(
-                                agent,
-                                AURGeoTools.getNormalVectorWithRadian(2 * Math.PI * Math.random())
-                        ),AURConstants.Agent.RADIUS * 2);
-                }while(! shape.contains(p[0], p[1]));
-                
-                return new ActionMove(Lists.newArrayList(agentInfo.getPosition()), (int) p[0], (int) p[1]);
-        }
+//        private Action getDontMoveAction() {
+//                Shape shape = agentInfo.getPositionArea().getShape();
+//                double[] p, agent = new double[]{agentInfo.getX(), agentInfo.getY()};
+//                do{
+//                        p = AURGeoMetrics.getVectorScaled(AURGeoMetrics.getPointsPlus(
+//                                agent,
+//                                AURGeoTools.getNormalVectorWithRadian(2 * Math.PI * Math.random())
+//                        ),AURConstants.Agent.RADIUS * 2);
+//                }while(! shape.contains(p[0], p[1]));
+//                
+//                return new ActionMove(Lists.newArrayList(agentInfo.getPosition()), (int) p[0], (int) p[1]);
+//        }
 
         @Override
         public AbstractModule calc() {
