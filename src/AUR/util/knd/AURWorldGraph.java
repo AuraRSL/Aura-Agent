@@ -55,7 +55,7 @@ public class AURWorldGraph extends AbstractModule {
 	public double gridDy = 0;
 	public int gridCols = 0;
 	public int gridRows = 0;
-	public double worldGridSize = 500 * 2 * 22.08568;
+	public double worldGridSize = 500 * 2 * 50.01;
 	public boolean grid[][] = null;
 	public AURFireSimulator fireSimulator = null;
 	public LinkedList<AURAreaGraph> areaGraphsGrid[][] = null;
@@ -100,9 +100,9 @@ public class AURWorldGraph extends AbstractModule {
 		gridDx = 0 - worldBounds.getMinX();
 		gridDy = 0 - worldBounds.getMinY();
 		gridCols = (int) (worldBounds.getWidth() / worldGridSize) + 1;
-		gridRows = (int) (worldBounds.getHeight() / worldGridSize) + 1;
+		gridRows = (int) (worldBounds.getHeight() / worldGridSize) + 2;
 		grid = new boolean[gridRows][gridCols];
-		areaGraphsGrid = new LinkedList [gridRows][gridCols];
+		areaGraphsGrid = new LinkedList[gridRows][gridCols];
 		int i, j;
 		for (AURAreaGraph ag : areas.values()) {
 			if (ag.isBuilding()) {

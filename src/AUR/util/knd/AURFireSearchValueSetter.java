@@ -144,7 +144,7 @@ public class AURFireSearchValueSetter {
 				max_ = p.temp_value;
 			}
 		}
-		if (max_ > 0) {
+		if (max_ > 0.5) {
 			for (AURAreaGraphValue p : points) {
 				p.temp_value /= max_;
 			}
@@ -219,20 +219,26 @@ public class AURFireSearchValueSetter {
 	
 	private void add_FireProbability(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		
-		double max = -100;
-		for (AURAreaGraphValue p : points) {
-			
-			max = Math.max(max, p.ag.getBuilding().fireSimBuilding.fireProbability);
+//		double max = -100;
+//		for (AURAreaGraphValue p : points) {
+//			
+//			max = Math.max(max, p.ag.getBuilding().fireSimBuilding.fireProbability);
+//
+//		}
+//		if(max <= 0.00001) {
+//			return;
+//		}
+//		
+//		for (AURAreaGraphValue p : points) {
+//			
+//			if (true) {
+//				p.value += ((double) p.ag.getBuilding().fireSimBuilding.fireProbability / max) * coefficient;
+//			}
+//		}
 
-		}
-		if(max <= 0.00001) {
-			return;
-		}
-		
 		for (AURAreaGraphValue p : points) {
-			
-			if (true) {
-				p.value += ((double) p.ag.getBuilding().fireSimBuilding.fireProbability / max) * coefficient;
+			if (p.ag.onFireProbability) {
+				p.value += (1 + 0) * coefficient;
 			}
 		}
 	}
@@ -245,7 +251,7 @@ public class AURFireSearchValueSetter {
 				maxDist = p.temp_value;
 			}
 		}
-		if (maxDist > 0) {
+		if (maxDist > 0.5) {
 			for (AURAreaGraphValue p : points) {
 				p.value += (1 - (p.temp_value / maxDist)) * coefficient;
 			}
@@ -261,6 +267,9 @@ public class AURFireSearchValueSetter {
 			}
 		}
 
+		if(maxDist <= 0.5) {
+			return;
+		}
 		for (AURAreaGraphValue p : points) {
 			p.value += (1 - (p.temp_value / maxDist)) * coefficient;
 		}

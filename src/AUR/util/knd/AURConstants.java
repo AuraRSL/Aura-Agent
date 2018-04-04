@@ -9,8 +9,8 @@ public class AURConstants {
 
 	public static class Misc {
 		public final static int CLOSE_BUILDING_THRESHOLD = 25 * 1000;
-		public final static int FIRE_ZONE_BORDER_INTERSECT_THRESHOLD = 5 * 1000;
-		public final static int MIN_NUMBER_OF_NEIGHBOUR_CLUSTERS = 5;
+		public final static int FIRE_ZONE_BORDER_INTERSECT_THRESHOLD = 10 * 1000;
+		public final static int MIN_NUMBER_OF_NEIGHBOUR_CLUSTERS = 6;
 		public final static int AGENT_CLUSTER_BOUNDS_OFFSET = 1000 * 10;
 	}
 	
@@ -91,14 +91,8 @@ public class AURConstants {
                 public final static boolean OPEN_NEAR_BUILDINGS_ENTRANCES = false;
         }
         
-        /**
-         * 
-         * @author Amir Aslan Aslani - Mar 2018
-         */
         public static class ClearWatcher {
-                public final static int DONT_MOVE_COUNTER_LIMIT = 4;
-                public final static int OLD_FUNCTION_CLEAR_COUNTER_LIMIT = 3;
-                public final static double ALLOWED_MOVE_VALUE = AURConstants.Agent.RADIUS;
+                public final static int DONT_MOVE_COUNTER_LIMIT = 20;
         }
         
         /**

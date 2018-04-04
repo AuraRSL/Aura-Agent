@@ -391,9 +391,12 @@ public class AURActionFireFighting extends ExtAction {
 		
 		AURAreaGraph targetAg = wsg.getAreaGraph(target);
 		
-		if(targetAg.noSeeTime() > 4 && targetAg.getBuilding().edgeToPereceptAndExtinguish != null) {
+		if(targetAg.noSeeTime() > 1 && targetAg.getBuilding().edgeToPereceptAndExtinguish != null) {
 			if(targetAg.isRecentlyReportedFire() == false) {
-				return false;
+				if(targetAg.getBuilding().isSafePerceptible()) {
+					return false;
+				}
+				
 			}
 		}
 //		
@@ -406,7 +409,7 @@ public class AURActionFireFighting extends ExtAction {
 	}
 
 	public boolean needRefill() {
-		return ai.getWater() < 800;
+		return ai.getWater() < 100;
 	}
 
 	int exCount = 0;

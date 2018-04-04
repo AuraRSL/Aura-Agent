@@ -455,7 +455,7 @@ public class AURFireSimBuilding {
 //			f *= 0.5;
 //		}
 		if(this.ag.isOnFire() == false) {
-			f *= 0.9;
+			f *= 0.5;
 		}
 		return getInitialFuel() * f;
 	}
@@ -668,7 +668,7 @@ public class AURFireSimBuilding {
 		
 		int f = getEstimatedFieryness();
 		
-		if(getEstimatedTemperature() >= getIgnitionPoint() * 0.8 && f != 8) {
+		if(getEstimatedTemperature() >= getIgnitionPoint() * 0.9 && f != 8) {
 			return true;
 		}
 		
