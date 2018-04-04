@@ -13,7 +13,7 @@ import java.awt.*;
 
 /**
  * Created by armanaxh on 12/20/17.
- * modified by Alireza on Feb. 7, 2018
+ * 
  */
 
 public class CivilianLayer extends K_ViewerLayer {
@@ -34,7 +34,7 @@ public class CivilianLayer extends K_ViewerLayer {
 					if(c.getHP() == 0 ){
 						g2.setColor(new Color(87, 34, 7));
 					}else {
-						g2.setColor(new Color(0, (int)(255 * ( 1D*c.getHP() / 10000)), 0));
+						g2.setColor(new Color(0, Math.min((int)(255 * ( 1D*c.getHP() / 10000)), 255), 0));
 					}
 				}else{
 					g2.setColor(Color.green);

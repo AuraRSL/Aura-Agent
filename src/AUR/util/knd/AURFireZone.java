@@ -80,9 +80,9 @@ public class AURFireZone {
 	public boolean ok() {
 		
 		
-		if(wsg.si.getCommsChannelsCount() <= 1) {
-			return true;
-		}
+//		if(wsg.si.getCommsChannelsCount() <= 1) {
+//			return true;
+//		}
 		
 		int pt = getPerceptTime();
 		

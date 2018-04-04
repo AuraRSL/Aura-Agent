@@ -219,28 +219,28 @@ public class AURFireSearchValueSetter {
 	
 	private void add_FireProbability(ArrayList<AURAreaGraphValue> points, double coefficient) {
 		
-//		double max = -100;
-//		for (AURAreaGraphValue p : points) {
-//			
-//			max = Math.max(max, p.ag.getBuilding().fireSimBuilding.fireProbability);
-//
-//		}
-//		if(max <= 0.00001) {
-//			return;
-//		}
-//		
-//		for (AURAreaGraphValue p : points) {
-//			
-//			if (true) {
-//				p.value += ((double) p.ag.getBuilding().fireSimBuilding.fireProbability / max) * coefficient;
-//			}
-//		}
-
+		double max = -100;
 		for (AURAreaGraphValue p : points) {
-			if (p.ag.onFireProbability) {
-				p.value += (1 + 0) * coefficient;
+			
+			max = Math.max(max, p.ag.getBuilding().fireSimBuilding.fireProbability);
+
+		}
+		if(max <= 0.00001) {
+			return;
+		}
+		
+		for (AURAreaGraphValue p : points) {
+			
+			if (true) {
+				p.value += ((double) p.ag.getBuilding().fireSimBuilding.fireProbability / max) * coefficient;
 			}
 		}
+
+//		for (AURAreaGraphValue p : points) {
+//			if (p.ag.onFireProbability) {
+//				p.value += (1 + 0) * coefficient;
+//			}
+//		}
 	}
 
 	private void add_GasStation(ArrayList<AURAreaGraphValue> points, double coefficient) {

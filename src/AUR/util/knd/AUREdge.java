@@ -33,9 +33,13 @@ public class AUREdge {
 
 	public double getPriority() {
 		double result = 0;
-		double w = Math.max(weight / 100, 10);
-		result += w;
 		AURAreaGraph ag = areaGraph;
+		double w = Math.max(weight / 100, 10);
+		if (ag.longTimeNoSee() && ag.hasBlockade()) {
+			w *= 2;
+		}
+		result += w;
+
 		boolean isSmallOrExtraSmall = (ag.isExtraSmall() || ag.isSmall());
 		
 		if(isSmallOrExtraSmall == true && ag.isAlmostConvex() == false) {
@@ -70,21 +74,51 @@ public class AUREdge {
 	}
 	
 	public double getNoBlockadePriority() {
+		double result = 0;
+		AURAreaGraph ag = areaGraph;
+		double w = Math.max(weight / 100, 10);
+		if (ag.longTimeNoSee() && ag.hasBlockade()) {
+			w *= 2;
+		}
+		result += w;
 
-		switch(this.areaGraph.wsg.ai.me().getStandardURN()) {
+		boolean isSmallOrExtraSmall = (ag.isExtraSmall() || ag.isSmall());
+
+		if (isSmallOrExtraSmall == true && ag.isAlmostConvex() == false) {
+			result += w * 2;
+		}
+
+		if (ag.isExtraSmall()) {
+			result += w * 10;
+		}
+
+		AURBuilding b = ag.getBuilding();
+		if (b != null) {
+			result += w * 10;
+		}
+		if (b != null && b.fireSimBuilding.inflammable()) {
+			if (b.getFieryness() != 8) {
+				result += Math.max(w, 25) * 200;
+			}
+		}
+
+		if (isSmallOrExtraSmall && ag.isBuildingNeighbour() == true) {
+			result += w * 40;
+		}
+
+		result += 3 * (1 - ((double) Math.min(500, ag.noSeeTime()) / 500)) * w;
+
+		switch (this.areaGraph.wsg.ai.me().getStandardURN()) {
 			case FIRE_BRIGADE:
 			case AMBULANCE_TEAM: {
-				return getPriority();
+				result *= 1.1;
 			}
 			case POLICE_FORCE: {
-				double p = getPriority();
-				if(this.areaGraph.isPassed()) {
-					return p * 5;
-				}
+				result *= 1.65;
 			}
 		}
 		
-		return getPriority();
+		return result;
 	}
 	
 }
