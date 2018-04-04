@@ -1,7 +1,6 @@
 package AUR.util.aslan;
 
 import AUR.util.AURCommunication;
-import AUR.util.ambulance.Information.BuildingInfo;
 import AUR.util.knd.AURAreaGraph;
 import AUR.util.knd.AURConstants;
 import AUR.util.knd.AURGeoUtil;
@@ -24,6 +23,7 @@ import adf.component.module.AbstractModule;
 import adf.component.module.algorithm.Clustering;
 import com.google.common.collect.Lists;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -105,7 +105,9 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 // ---
                 
                 int counter = 0;
-                for(StandardEntity se : this.clustering.getClusterEntities(cluseterIndex)){
+                                
+                Rectangle clusterBound = wsg.myClusterBounds;
+                for(StandardEntity se : wi.getObjectsInRectangle(clusterBound.x, clusterBound.y, clusterBound.x + clusterBound.width, clusterBound.y + clusterBound.height)){
                         if(se instanceof Area){
                                 myClusterCenter[0] += ((Area) se).getX();
                                 myClusterCenter[1] += ((Area) se).getY();
