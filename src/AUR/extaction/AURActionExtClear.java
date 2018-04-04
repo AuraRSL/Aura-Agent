@@ -237,13 +237,13 @@ public class AURActionExtClear extends ExtAction {
                  */
                 int[] blockedAgentInClearArea = getBlockedAgentInClearArea();
                 if(blockedAgentInClearArea != null){
-                        System.out.println("Get Rescue Agent That Blocked...");
+//                        System.out.println("Get Rescue Agent That Blocked...");
                         this.result = this.cw.getAction(
                                 getOpenPointAction(blockedAgentInClearArea)
                         );
                         if(this.result != null)
                                 return this;
-                        System.out.println("Failed!");
+//                        System.out.println("Failed!");
                 }
 
                 /**
@@ -251,13 +251,13 @@ public class AURActionExtClear extends ExtAction {
                  */
                 int[] blockedBuildingsEntranceInClearArea = getblockedBuildingsEntranceInClearArea();
                 if(blockedBuildingsEntranceInClearArea != null){
-                        System.out.println("Get Open Building That Blocked...");
+//                        System.out.println("Get Open Building That Blocked...");
                         this.result = this.cw.getAction(
                                 getOpenPointAction(blockedBuildingsEntranceInClearArea)
                         );
                         if(this.result != null)
                                 return this;
-                        System.out.println("Failed!");
+//                        System.out.println("Failed!");
                 }
                 
                 /**
@@ -278,7 +278,7 @@ public class AURActionExtClear extends ExtAction {
                  * if agent is standing on the target
                  */
                 if (agentPosition.equals(this.target)) {
-                        System.out.println("getAreaClearAction <- beacause of reach to target :)");
+//                        System.out.println("getAreaClearAction <- beacause of reach to target :)");
                         this.result = this.cw.getAction(
                                 this.getAreaClearAction(policeForce, targetStandardEntity)
                         );
@@ -290,7 +290,7 @@ public class AURActionExtClear extends ExtAction {
                  * Improved road clearing if agent is standind on the area then
                  * open road to target
                  */
-                System.out.println("Get improved road clearing...");
+//                System.out.println("Get improved road clearing...");
                 this.result = improvedRoadClearing(policeForce, target);
                 return this;
         }
@@ -696,8 +696,8 @@ public class AURActionExtClear extends ExtAction {
 
         // Improved Road Clearing Methodes
         private Action improvedRoadClearing(PoliceForce policeForce, EntityID target) {
-                System.out.println("From: " + agentInfo.getPosition());
-                System.out.println("Target: " + target);
+//                System.out.println("From: " + agentInfo.getPosition());
+//                System.out.println("Target: " + target);
                 ArrayList<EntityID> path = AURPoliceUtil.filterAlirezaPathBug(this.wsg.getNoBlockadePathToClosest(policeForce.getPosition(), Lists.newArrayList(target)));
                 
                 ArrayList<Pair<Point2D, EntityID>> pathNodes = getPathNodes(path);
@@ -705,7 +705,7 @@ public class AURActionExtClear extends ExtAction {
                 if(pathNodes == null &&
                    (path.size() > 1)){
                         
-                        System.out.println("Full Clear Action... ( " + path.get(1) + " )");
+//                        System.out.println("Full Clear Action... ( " + path.get(1) + " )");
                         return getAreaFullClearActionOrIgnoreBlockades(path.get(1));
                 }
                 else{
@@ -738,7 +738,7 @@ public class AURActionExtClear extends ExtAction {
                         decidedLine = pathNodes.get(index);
                         
                         if(AURConstants.PoliceExtClear.USE_STRAIGHT_ROAD_DETECTION && isThereStraightRoadExistsOnPath(pathNodes,index)){ // If there is straight road exists then just move!
-                                System.out.println("Straight Road Found!!");
+//                                System.out.println("Straight Road Found!!");
                                 return cw.getAction(
                                         new ActionMove(
                                                 wsg.getPathToClosest(agentInfo.getPosition(), Lists.newArrayList(decidedLine.second()))
@@ -760,7 +760,7 @@ public class AURActionExtClear extends ExtAction {
                         ! isPassable(new Point2D(agentInfo.getX(), agentInfo.getY()),agentInfo.getPosition(),path.get(1))
                    )
                 ){
-                        System.out.println("Area Guid Point For First Area Added...");
+//                        System.out.println("Area Guid Point For First Area Added...");
                         ArrayList<Pair<Point2D, EntityID>> areaGuidPoints = getAreaGuidPoints(policeForcePoint,agentInfo.getPosition(),path.get(1));
                         if(areaGuidPoints == null){
                                 return null;
