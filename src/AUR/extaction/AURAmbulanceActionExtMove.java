@@ -170,7 +170,6 @@ public class AURAmbulanceActionExtMove extends ExtAction
                 return this;
             }
         }
-        System.out.println("target : " + target);
         if (this.target == null)
         {
 

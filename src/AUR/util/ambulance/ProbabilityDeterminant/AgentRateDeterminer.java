@@ -141,6 +141,9 @@ public class AgentRateDeterminer {
 
     public static double distanceFromFireEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human , double coefficient){
         double tempRate = rescueInfo.maxTravelCost;
+        if(rescueInfo.maxDistance == 0){
+            return 0;
+        }
         return (tempRate/ rescueInfo.maxTravelCost)*coefficient;
     }
     public static double buriednessEffect(AURWorldGraph wsg, RescueInfo rescueInfo, Human human , double coefficient){

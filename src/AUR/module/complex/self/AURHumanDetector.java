@@ -238,7 +238,7 @@ public class AURHumanDetector extends HumanDetector
 
         List<CivilianInfo> civilians = new LinkedList<>();
         civilians.addAll(rescueInfo.civiliansInfo.values());
-        
+
 
         // TODO HaHa:D
         this.removeCantRescue(civilians);
@@ -261,6 +261,8 @@ public class AURHumanDetector extends HumanDetector
         List<EntityID> agents = new LinkedList<>();
         agents.addAll(rescueInfo.agentsRate.keySet());
 
+        agents = this.removeCantPassAgent(agents);
+
         EntityID maxAgent = null;
         double maxValue = 0;
         for(EntityID id : agents) {
@@ -278,6 +280,24 @@ public class AURHumanDetector extends HumanDetector
         return null;
     }
 
+
+    private List<EntityID> removeCantPassAgent(List<EntityID> agents){
+
+        wsg.KStar(agentInfo.getPosition());
+
+        Collection<EntityID> temp = new LinkedList<>();
+        for(EntityID id: agents){
+            StandardEntity entity = worldInfo.getEntity(id);
+            if(entity instanceof Human) {
+                Human h = (Human)entity;
+                if (wsg.getAreaGraph(h.getPosition()).lastDijkstraEntranceNode == null) {
+                    temp.add(id);
+                }
+            }
+        }
+        agents.removeAll(temp);
+        return agents;
+    }
 
     private List<CivilianInfo> removeCantRescue(List<CivilianInfo> civilians){
 
@@ -363,13 +383,12 @@ public class AURHumanDetector extends HumanDetector
         }
         this.wsg.resume(precomputeData);
         clustering.preparate();
-        rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());
         rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
         for(Integer i : wsg.neighbourClusters) {
             rescueInfo.neaberClusterEntity.addAll(clustering.getClusterEntities(i));
         }
-
+        rescueInfo.initCalc();
         return this;
     }
 
@@ -383,12 +402,12 @@ public class AURHumanDetector extends HumanDetector
         }
         this.wsg.preparate();
         clustering.preparate();
-        rescueInfo.initCalc();
         int index = clustering.getClusterIndex(agentInfo.me());
         rescueInfo.clusterEntity.addAll(clustering.getClusterEntities(index));
         for(Integer i : wsg.neighbourClusters) {
             rescueInfo.neaberClusterEntity.addAll(clustering.getClusterEntities(i));
         }
+        rescueInfo.initCalc();
         return this;
     }
 

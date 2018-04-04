@@ -3,6 +3,7 @@ package AUR.util.ambulance.Information;
 
 import AUR.util.AURCommunication;
 import AUR.util.ambulance.ProbabilityDeterminant.AgentRateDeterminer;
+import AUR.util.ambulance.ProbabilityDeterminant.BuildingRateDeterminer;
 import AUR.util.knd.AURGeoUtil;
 import AUR.util.knd.AURWorldGraph;
 import adf.agent.action.common.ActionMove;
@@ -120,15 +121,13 @@ public class RescueInfo extends AbstractModule {
                 Building b = (Building)entity;
 
                 this.buildingsInfo.put(entity.getID(), new BuildingInfo(wsg, this , b));
-
-
             }
         }
 
         int maxD = 0;
         for(BuildingInfo b : this.buildingsInfo.values()){
 
-            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE - 1e4)){
+            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE)){
                 maxD = b.travelCostTobulding;
             }
         }
@@ -170,6 +169,7 @@ public class RescueInfo extends AbstractModule {
 
     int lastRun = -1;
     public void updateInformation(MessageManager messageManager){
+//        long time = System.currentTimeMillis();
         if(lastRun == agentInfo.getTime())
             return;
         lastRun = agentInfo.getTime();
@@ -178,13 +178,20 @@ public class RescueInfo extends AbstractModule {
             init();
             initB = true;
         }
-
         this.acm.updateInfo(messageManager);
 
         this.updateChanges();
+//        System.out.println("t1 : " + (System.currentTimeMillis() - time) );
+//        time = System.currentTimeMillis();
         this.updateMessageCivilian();
+//        System.out.println("t2 : " + (System.currentTimeMillis() - time) );
+//        time = System.currentTimeMillis();
         this.updateBuildingInfo();
+//        System.out.println("t3 : " + (System.currentTimeMillis() - time) );
+//        time = System.currentTimeMillis();
         this.updateCycle();
+//        System.out.println("t4 : " + (System.currentTimeMillis() - time) );
+
 
     }
 
@@ -203,11 +210,14 @@ public class RescueInfo extends AbstractModule {
     private void updateBuildingInfo(){
         int maxD = 0;
         for(BuildingInfo b : this.buildingsInfo.values()){
+            //Update
             b.updateInformation();
-            if( maxD < b.travelCostTobulding && (b.travelCostTobulding < Integer.MAX_VALUE - 1e4) ){
+            //
+            if( maxD < b.travelCostTobulding && (b.travelCostTobulding <= Integer.MAX_VALUE) ){
                 maxD = b.travelCostTobulding;
             }
         }
+        System.out.println("max Dis:" +  maxD);
         this.maxTravelCost = maxD;
 
     }
@@ -221,13 +231,13 @@ public class RescueInfo extends AbstractModule {
         Set<EntityID> changes = worldInfo.getChanged().getChangedEntities();
         for(EntityID id: changes){
             StandardEntity entity = worldInfo.getEntity(id);
-            if(entity.getStandardURN().equals(StandardEntityURN.CIVILIAN)) {
+            if(entity.getStandardURN().equals(StandardEntityURN.CIVILIAN) && entity instanceof Civilian) {
                 Civilian civilian = (Civilian) entity;
                 updateCivilianInfo(civilian);
                 //TODO
             }else if(      entity.getStandardURN().equals(StandardEntityURN.POLICE_FORCE)
-                        || entity.getStandardURN().equals(StandardEntityURN.AMBULANCE_TEAM)
-                        || entity.getStandardURN().equals(StandardEntityURN.FIRE_BRIGADE)){
+                    || entity.getStandardURN().equals(StandardEntityURN.AMBULANCE_TEAM)
+                    || entity.getStandardURN().equals(StandardEntityURN.FIRE_BRIGADE)){
                 Human human = (Human)entity;
                 updateAgentInfo(human);
             }

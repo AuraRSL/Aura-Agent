@@ -39,9 +39,9 @@ public class AURFireValueSetter {
 		mul_Color(wsg, points, 1.2);
 		mul_Borders(points, 2);
 		mul_Safety(points, 2);
-		mul_AgentNeighbourCluster(points, 2.1);
+		mul_AgentNeighbourCluster(points, 3.1);
 		mul_AgentCluster(points, 4.5);
-		mul_realFire(points, 1.9);
+		mul_realFire(points, 1.1);
 		Collections.sort(this.points, new Comparator<AURAreaGraphValue>() {
 			@Override
 			public int compare(AURAreaGraphValue o1, AURAreaGraphValue o2) {

@@ -18,8 +18,10 @@ public class AURFireZone {
 	public ArrayList<AURBuilding> buildings = null;
 
 	private Polygon polygon = null;
+	public AURWorldGraph wsg = null;
 	
-	public AURFireZone() {
+	public AURFireZone(AURWorldGraph wsg) {
+		this.wsg = wsg;
 		this.buildings = new ArrayList<>();
 	}
 	
@@ -77,6 +79,11 @@ public class AURFireZone {
 	
 	public boolean ok() {
 		
+		
+		if(wsg.si.getCommsChannelsCount() <= 1) {
+			return true;
+		}
+		
 		int pt = getPerceptTime();
 		
 		if(pt <= 4) {
@@ -99,7 +106,6 @@ public class AURFireZone {
 //			return true;
 //		}
 		
-//		return false;\
 		return false;
 	}
 	
