@@ -246,7 +246,8 @@ public class AURAmbulanceSearch extends Search
 
         this.removeLowRate(builidngs);
 //        if(age Pollice
-        this.removeCantPass(builidngs);
+//        this.removeCantPass(builidngs);
+        this.removeCantSee(builidngs);
 
         if(builidngs.size() > 0 ){
 
@@ -292,7 +293,25 @@ public class AURAmbulanceSearch extends Search
         buildings.removeAll(temp);
         return buildings;
     }
+    private List<BuildingInfo> removeCantSee(List<BuildingInfo> buildings){
 
+        wsg.KStar(agentInfo.getPosition());
+
+        Collection<BuildingInfo> temp = new LinkedList<>();
+        for(BuildingInfo bi: buildings){
+            if(bi.travelCostTobulding == Integer.MAX_VALUE){
+                temp.add(bi);
+                continue;
+            }
+
+            if(wsg.getMoveActionToSeeInside(agentInfo.getPosition(), bi.me.getID() ) == null
+                    || wsg.getMoveActionToSeeInside(agentInfo.getPosition(), bi.me.getID()).getPath().size() == 0){
+                temp.add(bi);
+            }
+        }
+        buildings.removeAll(temp);
+        return buildings;
+    }
 
     private void reset()
     {

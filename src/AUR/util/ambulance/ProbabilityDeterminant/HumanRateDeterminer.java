@@ -21,6 +21,7 @@ public class HumanRateDeterminer {
 
     private CivilianInfo civilian;
     private AURWorldGraph wsg;
+    private EntityID lastPosCi = null;
 
     public HumanRateDeterminer(AURWorldGraph wsg, CivilianInfo ci){
         this.civilian = ci;
@@ -81,6 +82,16 @@ public class HumanRateDeterminer {
         if(!civilian.me.isHPDefined() || civilian.me.getHP() == 0 ){
             return true;
         }
+
+        if(lastPosCi != null){
+            if(civilian.me.isPositionDefined()){
+                if(!lastPosCi.equals(civilian.me.getPosition())){
+                    return true;
+                }
+            }
+        }
+        lastPosCi = civilian.me.getPosition();
+
         if(wsg.wi.getEntity(civilian.getPosition()) instanceof AmbulanceTeam){
             return true;
         }

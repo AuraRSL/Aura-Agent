@@ -12,6 +12,7 @@ import rescuecore2.standard.entities.*;
 public class BuildingInfo {
 
     public double rate = 0;
+    public double baseRate = 0;
     public boolean visit = false;
     public AURWorldGraph wsg;
     public RescueInfo rescueInfo;
@@ -34,6 +35,7 @@ public class BuildingInfo {
         this.travelCostTobulding = calcTravelCostToBuilding();
         this.distanceFromFire = calcDistanceFromFire();
         this.distanceFromRefuge = calcDistanceFromRefuge();
+        this.baseRate = BuildingRateDeterminer.baseCalc(wsg, rescueInfo, this);
         this.rate = BuildingRateDeterminer.calc(wsg, rescueInfo, this);
 
     }
