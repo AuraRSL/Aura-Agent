@@ -53,7 +53,7 @@ public class AURFireZonesCalculator {
 				continue;
 			}
 			
-			AURFireZone zone = new AURFireZone();
+			AURFireZone zone = new AURFireZone(this.wsg);
 			zones.add(zone);
 			Queue<AURAreaGraph> qu = new LinkedList<>();
 			qu.add(ag);
