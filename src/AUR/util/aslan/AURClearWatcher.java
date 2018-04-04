@@ -94,7 +94,9 @@ public class AURClearWatcher extends AbstractModule {
                         dontMoveCounter = 0;
                 }
                 
-                if(dontMoveWithMoveCounter < 10 && isMoveLessThanAllowedValue() && lastAction == MOVE){
+                if(dontMoveWithMoveCounter < 10 && isMoveLessThanAllowedValue() &&
+                   (lastAction == MOVE ||
+                   lastAction == CLEAR_FROM_WATCHER)){
                         dontMoveWithMoveCounter ++;
                 }
                 else{
@@ -144,13 +146,19 @@ public class AURClearWatcher extends AbstractModule {
                 System.out.println("Dont Move With Move Counter : " + dontMoveWithMoveCounter);
                 
                 if(dontMoveWithMoveCounter >= AURConstants.ClearWatcher.DONT_MOVE_COUNTER_LIMIT){
-                        System.out.println("Get Random Directed Move . . . ");
-                        randomDirectSelector.generate();
-                        return new ActionMove(
-                                Lists.newArrayList(agentInfo.getPosition()),
-                                (int) (randomDirectSelector.generatedPoint.getX()),
-                                (int) (randomDirectSelector.generatedPoint.getY())
-                        );
+                        if(isAgentTrapedInBlockade() != null){
+                                this.lastAction = CLEAR_FROM_WATCHER;
+                                return new ActionClear(isAgentTrapedInBlockade());
+                        }
+                        else{
+                                System.out.println("Get Random Directed Move . . . ");
+                                randomDirectSelector.generate();
+                                return new ActionMove(
+                                        Lists.newArrayList(agentInfo.getPosition()),
+                                        (int) (randomDirectSelector.generatedPoint.getX()),
+                                        (int) (randomDirectSelector.generatedPoint.getY())
+                                );
+                        }
                 }
                 else if(isMoveLessThanAllowedValue() &&
                         this.lastAction != CLEAR_FROM_WATCHER &&

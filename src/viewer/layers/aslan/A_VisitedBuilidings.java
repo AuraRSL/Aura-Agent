@@ -12,6 +12,7 @@ import java.awt.*;
 import java.util.HashSet;
 import java.util.Set;
 import rescuecore2.standard.entities.Area;
+import rescuecore2.standard.entities.Civilian;
 import rescuecore2.standard.entities.Edge;
 import rescuecore2.standard.entities.Road;
 import rescuecore2.standard.entities.StandardEntity;
@@ -34,8 +35,17 @@ public class A_VisitedBuilidings extends K_ViewerLayer {
                 if(changedEntities == null)
                         return;
                 
+                
                 for (EntityID id : changedEntities) {
                         StandardEntity se = wsg.wi.getEntity(id);
+                
+                        if (se instanceof Civilian){
+                                AURAreaGraph ag = wsg.getAreaGraph(((Civilian) se).getPosition());
+                                if(ag.isBuilding() && ! ag.isRefuge()){
+                                        visitedBuildings.add(((Civilian) se).getPosition());
+                                }
+                        }
+                
                         if (se instanceof Building
                             && wsg.wi.getDistance(wsg.ai.getID(), id) < wsg.si.getPerceptionLosMaxDistance()) {
                             Building building = (Building) se;

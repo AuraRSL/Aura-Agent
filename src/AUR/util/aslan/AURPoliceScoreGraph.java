@@ -199,6 +199,14 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 
                 for (EntityID id : changedEntities) {
                         StandardEntity se = worldInfo.getEntity(id);
+                        
+                        if (se instanceof Civilian){
+                                AURAreaGraph ag = wsg.getAreaGraph(((Civilian) se).getPosition());
+                                if(ag.isBuilding() && ! ag.isRefuge()){
+                                        visitedBuildings.add(((Civilian) se).getPosition());
+                                }
+                        }
+                        
                         if (se instanceof Building
                             && worldInfo.getDistance(agentInfo.getID(), id) < scenarioInfo.getPerceptionLosMaxDistance()) {
                             Building building = (Building) se;
@@ -739,21 +747,21 @@ public class AURPoliceScoreGraph extends AbstractModule {
                 }
                 
                 for(EntityID id : visitedBuildings){
-                        if(! settedBuildings.contains(id)){
-                                AURAreaGraph areaGraph = wsg.getAreaGraph(id);
-                                
-                                if(areaGraph.isRefuge()){
-                                        continue;
-                                }
-                                
-                                settedBuildings.add(id);
-                                if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
-                                        areaGraph.targetScore = 1.5;
+                        AURAreaGraph areaGraph = wsg.getAreaGraph(id);
+
+                        if(areaGraph.isRefuge()){
+                                continue;
+                        }
+                        
+                        if(civiliansPosition.contains(id) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                areaGraph.targetScore = 1.5;
+                                if(! settedBuildings.contains(id)){
                                         areaGraph.secondaryScore += score;
+                                        settedBuildings.add(id);
                                 }
-                                else{
-                                        areaGraph.targetScore = 0.1;
-                                }
+                        }
+                        else{
+                                areaGraph.targetScore = 0.1;
                         }
                 }
                 
@@ -761,10 +769,12 @@ public class AURPoliceScoreGraph extends AbstractModule {
                         Civilian civilian = (Civilian) se;
                         if(civilian.isHPDefined() && civilian.getHP() > 0){
                                 AURAreaGraph areaGraph = wsg.getAreaGraph(civilian.getPosition());
-                                if(areaGraph != null && areaGraph.isBuilding() && ! areaGraph.isRefuge() && ! settedBuildings.contains(civilian.getPosition()) && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
+                                if(areaGraph != null && areaGraph.isBuilding() && ! areaGraph.isRefuge() && areaGraph.getTravelCost() == AURConstants.Math.INT_INF){
                                         areaGraph.targetScore = 1.5;
-                                        areaGraph.secondaryScore += score;
-                                        settedBuildings.add(civilian.getPosition());
+                                        if(! settedBuildings.contains(civilian.getPosition())){
+                                                areaGraph.secondaryScore += score;
+                                                settedBuildings.add(civilian.getPosition());
+                                        }
                                 }
                         }
                 }
