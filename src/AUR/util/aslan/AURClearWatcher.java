@@ -94,7 +94,9 @@ public class AURClearWatcher extends AbstractModule {
                         dontMoveCounter = 0;
                 }
                 
-                if(dontMoveWithMoveCounter < 10 && isMoveLessThanAllowedValue() && lastAction == MOVE){
+                if(dontMoveWithMoveCounter < 10 && isMoveLessThanAllowedValue() &&
+                   (lastAction == MOVE ||
+                   lastAction == CLEAR_FROM_WATCHER)){
                         dontMoveWithMoveCounter ++;
                 }
                 else{
@@ -112,16 +114,16 @@ public class AURClearWatcher extends AbstractModule {
                 Action newAction;
                 newAction = getNewAction(action);
                 
-                if(this.lastAction == CLEAR_FROM_WATCHER)
-                        System.out.println(" -> CLEAR_FROM_WATCHER");
+                if(this.lastAction == CLEAR_FROM_WATCHER);
+//                        System.out.println(" -> CLEAR_FROM_WATCHER");
                 else if(newAction instanceof ActionClear){
-                        System.out.println(" -> CLEAR");
+//                        System.out.println(" -> CLEAR");
                         this.lastAction = this.CLEAR;
                 }
                 else if(newAction instanceof ActionMove){
                         ActionMove actionMove = (ActionMove)newAction;
                         
-                        System.out.println(" -> MOVE");
+//                        System.out.println(" -> MOVE");
                         this.lastAction = this.MOVE;
                         if(((ActionMove)newAction).getUsePosition()){
                                 this.lastMoveVector[0] = actionMove.getPosX() - agentInfo.getX();
@@ -141,16 +143,22 @@ public class AURClearWatcher extends AbstractModule {
         
         private Action getNewAction(Action action){
                 Action result = action;
-                System.out.println("Dont Move With Move Counter : " + dontMoveWithMoveCounter);
+//                System.out.println("Dont Move With Move Counter : " + dontMoveWithMoveCounter);
                 
                 if(dontMoveWithMoveCounter >= AURConstants.ClearWatcher.DONT_MOVE_COUNTER_LIMIT){
-                        System.out.println("Get Random Directed Move . . . ");
-                        randomDirectSelector.generate();
-                        return new ActionMove(
-                                Lists.newArrayList(agentInfo.getPosition()),
-                                (int) (randomDirectSelector.generatedPoint.getX()),
-                                (int) (randomDirectSelector.generatedPoint.getY())
-                        );
+                        if(isAgentTrapedInBlockade() != null){
+                                this.lastAction = CLEAR_FROM_WATCHER;
+                                return new ActionClear(isAgentTrapedInBlockade());
+                        }
+                        else{
+//                                System.out.println("Get Random Directed Move . . . ");
+                                randomDirectSelector.generate();
+                                return new ActionMove(
+                                        Lists.newArrayList(agentInfo.getPosition()),
+                                        (int) (randomDirectSelector.generatedPoint.getX()),
+                                        (int) (randomDirectSelector.generatedPoint.getY())
+                                );
+                        }
                 }
                 else if(isMoveLessThanAllowedValue() &&
                         this.lastAction != CLEAR_FROM_WATCHER &&
