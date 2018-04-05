@@ -745,6 +745,24 @@ public class AURFireSimBuilding {
 	
 	public int getWaterNeeded() {
 		if(isOnFire() == true) {
+			
+//			int maxWater = this.wsg.si.getFireExtinguishMaxSum();
+//			int a = 0;
+//			int b = maxWater;
+//			double requiredTemerature = 10;
+//			int w = (a + b) / 2;
+//			while(a < b && w < maxWater && w > 0 && a != w && b != w) {
+//				w = (a + b) / 2;
+//				
+//				double tempAfterCooling = temperatureAfterCooling(w);
+////				System.out.println(w + ", " + tempAfterCooling);
+//				if(tempAfterCooling > requiredTemerature) {
+//					a = w;
+//				} else {
+//					b = w;
+//				}
+//			}
+//			return (int) (w * 1.5);
 			double wq = getWaterNeeded_() * 2.5;
 			return (int) Math.min(wq, ag.wsg.si.getFireExtinguishMaxSum() - 1);
 //			return (Math.max(ag.wsg.si.getFireExtinguishMaxSum() - 1, 1));
@@ -753,6 +771,26 @@ public class AURFireSimBuilding {
 			return 0;
 		}
 	}
+	
+	
+	private double temperatureAfterCooling(double waterQuantity) {
+		double lWATER_COEFFICIENT = (getEstimatedFieryness() > 0 && getEstimatedFieryness() < 4 ? AURConstants.FireSim.WATER_COEFFICIENT : AURConstants.FireSim.WATER_COEFFICIENT * AURConstants.FireSim.GAMMA);
+		if (waterQuantity > 0.0) {
+			double dE = getEstimatedTemperature() * getCapacity();
+			if (dE <= 0) {
+				return 0;
+			}
+			double effect = waterQuantity * lWATER_COEFFICIENT;
+			if (effect > dE) {
+				double pc = 1 - ((effect - dE) / effect);
+				effect *= pc;
+			}
+			double energy = getEstimatedEnergy() - effect;
+			return energy / getCapacity();
+		}
+		return getEstimatedTemperature();
+	}
+	
 	
 	// mrl
 	private int getWaterNeeded_() {

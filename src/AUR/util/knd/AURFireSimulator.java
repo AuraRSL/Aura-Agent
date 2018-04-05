@@ -198,11 +198,11 @@ public class AURFireSimulator {
 //			if(building.ag.isOnFire() == false) {
 //				energyTransferToBuilding *= 0.9;
 //			}
-				
-			
+
+
 			energyDelta += energyTransferToBuilding;
 			float newCellTemp = cellTemp - energyTransferToBuilding / (AURConstants.FireSim.AIR_CELL_HEAT_CAPACITY * AURConstants.FireSim.WORLD_AIR_CELL_SIZE);
-			
+
 //			if(dT < 0) {
 //				if(building.ag.isOnFire()) {
 //					this.airCells.getCells()[cellX][cellY][0] = newCellTemp;
