@@ -116,8 +116,8 @@ public class AURGeoTools {
                                 apexes1[i * 2 + 1] = polygon.ypoints[i];
                         }
                         for (int i = 0; i < another.npoints; i++) {
-                                apexes1[i * 2] = another.xpoints[i];
-                                apexes1[i * 2 + 1] = another.ypoints[i];
+                                apexes0[i * 2] = another.xpoints[i];
+                                apexes0[i * 2 + 1] = another.ypoints[i];
                         }
 
                         for (int i = 0; i < (apexes0.length - 2); i += 2) {
