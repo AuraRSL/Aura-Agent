@@ -158,7 +158,10 @@ public class CivilianInfo {
 //            double distance = wsg.getAreaGraph(refuge.refuge.getID()).getLastDijkstraCost();
 //            double distance = wsg.wi.getDistance(me.getPosition(), refuge.refuge.getID());
 //            int tempT = (int)(distance/RescueInfo.moveDistance);
-            int tempT = wsg.getAreaGraph(refuge.refuge.getID()).getTravelTime();
+
+            int tempT;
+            if(wsg.getAreaGraph(refuge.refuge.getID()).lastDijkstraEntranceNode != null) {
+                tempT = wsg.getAreaGraph(refuge.refuge.getID()).getTravelTime();
 
 
 //            if(tempT == 0){
@@ -166,7 +169,8 @@ public class CivilianInfo {
 //                    tempT =  1;
 //                }
 //            }
-            return tempT;
+                return tempT;
+            }
         }
         return RescueInfo.maxTravelTime;
     }
@@ -181,12 +185,16 @@ public class CivilianInfo {
             StandardEntity pos = wsg.wi.getEntity(me.getPosition());
             if(pos instanceof Area) {
                 if(wsg.getAreaGraph(me.getPosition()) != null) {
-                    tempT = wsg.getAreaGraph(me.getPosition()).getTravelTime();
+                    if(wsg.getAreaGraph(me.getPosition()).lastDijkstraEntranceNode != null) {
+                        tempT = wsg.getAreaGraph(me.getPosition()).getTravelTime();
+                    }
                 }
             }else if(pos instanceof AmbulanceTeam){
                 AmbulanceTeam amtPos = (AmbulanceTeam)pos;
                 if(wsg.getAreaGraph(amtPos.getPosition()) != null) {
-                    tempT = wsg.getAreaGraph(amtPos.getPosition()).getTravelTime();
+                    if(wsg.getAreaGraph(amtPos.getPosition()).lastDijkstraEntranceNode != null) {
+                        tempT = wsg.getAreaGraph(amtPos.getPosition()).getTravelTime();
+                    }
                 }
             }
 //            if(tempT == 0){

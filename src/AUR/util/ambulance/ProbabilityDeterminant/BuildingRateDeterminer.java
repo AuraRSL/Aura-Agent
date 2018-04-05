@@ -17,8 +17,8 @@ public class BuildingRateDeterminer {
 
     public static double baseCalc(AURWorldGraph wsg, RescueInfo rescueInfo, BuildingInfo building){
         double rate = 0;
-        rate += clusterEffect(wsg, rescueInfo, building, 1.15);
-        rate += neaberClusterEffect(wsg, rescueInfo, building, 0.45);
+        rate += clusterEffect(wsg, rescueInfo, building, 1.3);
+        rate += neaberClusterEffect(wsg, rescueInfo, building, 0.6);
         rate += otherAgentPossionEffect(wsg, rescueInfo, building, 0.5);
 
         return rate;

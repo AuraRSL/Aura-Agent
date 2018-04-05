@@ -200,7 +200,14 @@ public class RescueInfo extends AbstractModule {
             if(cm.isPositionDefined() && cm.isBuriednessDefined() && cm.isHPDefined() && cm.isDamageDefined() ){
                 StandardEntity entity = worldInfo.getEntity(cm.getAgentID());
                 if(entity != null && entity instanceof Civilian) {
-                    updateCivilianInfo((Civilian)entity);
+                    Civilian c = (Civilian) entity;
+                    if(c.isPositionDefined()) {
+                        if (wsg.getAreaGraph(c.getPosition()) != null){
+                            if(wsg.getAreaGraph(c.getPosition()).clusterIndex == wsg.agentCluster || wsg.neighbourClusters.contains(wsg.getAreaGraph(c.getPosition()).clusterIndex)){
+                                updateCivilianInfo(c);
+                            }
+                        }
+                    }
                 }
             }
         }
