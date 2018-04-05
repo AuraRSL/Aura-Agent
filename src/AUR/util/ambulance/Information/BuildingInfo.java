@@ -85,7 +85,7 @@ public class BuildingInfo {
                 if(wsg.getAreaGraph(me.getID()) != null) {
                     tempT = wsg.getAreaGraph(me.getID()).getTravelCost();
                 }
-            }else if(pos instanceof AmbulanceTeam){
+            } else if(pos instanceof AmbulanceTeam){
                 AmbulanceTeam amtPos = (AmbulanceTeam)pos;
                 if(wsg.getAreaGraph(amtPos.getPosition()) != null) {
                     tempT = wsg.getAreaGraph(amtPos.getPosition()).getTravelCost();
